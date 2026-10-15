@@ -1,0 +1,8 @@
+from django.apps import AppConfig
+
+
+class UnitsConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.units"
+    label = "units"
+    verbose_name = "Unit Master"

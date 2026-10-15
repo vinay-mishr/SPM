@@ -1,0 +1,278 @@
+/* Sale Order ("Acceptance of Order") — print view. Same visual structure,
+   spacing, borders, typography as the Purchase Order print (purchase_order_print.css),
+   adapted to Sale Order's own fields/columns -- plain black-on-white, thin
+   borders, no app/web styling. Standalone page (no app shell). */
+
+* { box-sizing: border-box; }
+
+/* Document is 2% taller and 6% wider than the original 190mm x 277mm content
+   area, by trimming the page margins (was a uniform 10mm) rather than scaling
+   anything -- scaling a bordered box ("transform: scale") is what made the
+   outer rectangle disappear in an earlier version; a bigger content area
+   doesn't have that problem and keeps the document centred on the page. */
+@page {
+  size: A4 portrait;
+  margin: 7.2mm 4.3mm;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11.2px;
+}
+
+/* Thin black outer border around the whole document, like the reference image.
+   A flex column so .sop-bottom-block (Remarks/Totals + Terms/Signature) can be
+   pushed down to the bottom of the sheet with margin-top: auto, instead of the
+   item grid needing blank filler rows to reach that far down itself. */
+.sop-sheet {
+  position: relative; /* .sop-logo below is positioned against this, same idea as
+                          the legacy report's "from page top / from left" offsets */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  /* A fixed width matching the @page content area (not 100%) so this renders
+     identically on screen and on the printed page -- a small script measures
+     the gap above Remarks before printing, and that measurement is only
+     trustworthy if what's on screen is the same size as what gets printed. */
+  width: 201.4mm;
+  margin: 0 auto;
+  min-height: 282.6mm; /* A4 height minus the @page margins above */
+  padding: 4px 8px;
+  border: 2px solid #000;
+}
+
+.sop-gstin { margin: 0 0 4px; font-size: 13px; font-weight: bold; }
+.sop-copy-type { position: absolute; top: 0; right: 0; margin: 0; font-size: 11px; font-weight: bold; }
+
+.sop-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+/* Same logo file and size as the legacy PO1 report's Picture/OLE control
+   (d:\spm\logo1.bmp): 0.052in from the left, 1.552in x 1.312in. Shifted up from
+   the legacy report's own 0.312in top offset -- this header has more text above
+   the party block than the VFP band did, so the lower offset keeps the whole
+   logo (including the "COMPLETE PACKAGING SOLUTIONS" line) clear of the party
+   section's top border instead of overlapping it. */
+.sop-logo {
+  position: absolute;
+  left: 0.052in;
+  top: 0.3in;
+  width: 1.58in;
+  height: 1.34in;
+  object-fit: contain;
+}
+
+.sop-title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.sop-company { text-align: center; margin-bottom: 8px; }
+.sop-company h1 { margin: 3px 0; font-size: 26px; font-weight: bold; color: #000; }
+.sop-company p { margin: 2px 0; font-size: 13px; }
+
+/* Stretched by the sheet's side padding (same trick as .sop-table) so the line
+   above the supplier block reaches the document border on both sides; the
+   matching padding keeps the actual text sitting where it was. */
+.sop-party {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 -8px 6px;
+  padding: 6px 8px 0;
+  border-top: 1px solid #000;
+}
+
+.sop-party__supplier p { margin: 1px 0; }
+.sop-party__name { font-weight: bold; }
+
+/* Left-aligned (not right) so "P.O.NO:" and "P.O.DATE:" both start at the same
+   left edge instead of each line's text hugging the right edge by itself. */
+.sop-party__po { text-align: left; white-space: nowrap; }
+.sop-party__po p { margin: 1px 0; font-size: 13px; }
+.sop-kind-attention { font-size: 13px; font-weight: bold; }
+
+.sop-instruction { margin: 0 0 6px; font-weight: bold; font-size: 13px; }
+
+/* Stretched out by the sheet's own side padding (8px) so the grid's left/right
+   edges sit flush against the document border, with nothing left over between
+   them -- no separate border drawn there (see tr > *:first/last-child below),
+   just the grid's content reaching all the way out to the existing border
+   instead of stopping short of it. No table-bottom border either -- Remarks'
+   own top border is the one line shared between grid and Remarks/Totals. */
+.sop-table {
+  width: calc(100% + 16px);
+  margin-left: -8px;
+  margin-right: -8px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.sop-table th, .sop-table td {
+  padding: 3px 4px;
+  font-size: 10px;
+  vertical-align: top;
+  overflow-wrap: break-word;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
+}
+.sop-table tr > *:first-child { border-left: none; }
+.sop-table tr > *:last-child { border-right: none; }
+.sop-table thead th { border-top: 1px solid #000; border-bottom: 1px solid #000; }
+.sop-table thead { display: table-header-group; } /* repeats on every printed page */
+.sop-table th { font-weight: bold; text-align: left; background: #fff; }
+.sop-table tbody td { font-weight: bold; }
+.sop-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.sop-table tbody td { height: 15px; } /* keeps every row -- real or filler -- the same compact height */
+
+/* Column widths -- all percentages (summing to exactly 100%) rather than a mix
+   of px and %, so the grid always fills the full table width with no rounding
+   slack left over on the right, whatever the page width is. Same relative
+   proportions as before; the extra space still goes to Part Description. */
+.sop-col-sno { width: 5%; text-align: center; white-space: nowrap; }
+.sop-col-desc { width: 28%; }
+.sop-col-part { width: 10%; white-space: nowrap; } /* item code shouldn't wrap */
+.sop-col-dis { width: 9%; white-space: nowrap; }
+.sop-col-qty { width: 9%; white-space: nowrap; }
+.sop-col-rate { width: 13%; white-space: nowrap; }
+.sop-col-srate { width: 13%; white-space: nowrap; }
+.sop-col-amount { width: 13%; white-space: nowrap; }
+
+/* Pushed to the bottom of .sop-sheet (a flex column) so Remarks/Totals and
+   Terms/Signature still land near the bottom of the printed page even when the
+   item grid (real rows + its fixed filler rows) doesn't reach that far down. */
+/* Same edge-to-edge treatment as .sop-table: stretched out by the sheet's own
+   side padding so Remarks/Totals and Terms/Signature reach the document border
+   on the left and right too, instead of stopping short of it. */
+/* margin-top: auto pushes Remarks+Totals and Terms+Signature down as one unit
+   so Terms and Conditions/the signature box sit right against the document's
+   bottom border -- the trade-off (per the user) is a gap opening up above
+   Remarks instead, between it and the item grid, rather than the grid and
+   Remarks touching with Terms left floating above the bottom border. */
+.sop-bottom-block { margin-top: auto; margin-left: -8px; margin-right: -8px; }
+
+/* Only a top border (the one shared line below the grid) and the internal
+   Remarks/Totals divider -- no left/right/bottom, which would otherwise
+   duplicate the document's own outer border a few mm further out.
+   align-items: stretch (the default, but stated here since it matters) makes
+   Remarks and Totals the same height as each other, so the divider between
+   them runs the full height of the box down to the line above Terms, instead
+   of stopping wherever the shorter of the two columns happened to end. */
+.sop-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 16px;
+  border-top: 1px solid #000;
+}
+
+.sop-remarks { flex: 1 1 auto; padding: 6px 10px; min-height: 60px; border-right: 1px solid #000; }
+.sop-remarks__label { margin: 0 0 4px; font-weight: bold; }
+.sop-remarks__text { margin: 0; white-space: pre-wrap; }
+
+.sop-totals { flex: 0 0 220px; padding: 6px 10px; }
+.sop-totals__row {
+  display: grid;
+  grid-template-columns: 1fr 14px auto;
+  gap: 4px;
+  padding: 2px 0;
+}
+.sop-totals__row--net { border-top: 1px solid #000; margin-top: 2px; padding-top: 4px; font-weight: bold; }
+.sop-rupee { text-align: center; }
+
+/* Top border only -- the one shared line below Remarks/Totals; no left/right/
+   bottom, same reasoning as .sop-bottom above (the document border closes off
+   the bottom and sides of the whole sheet already). */
+.sop-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #000;
+}
+
+.sop-terms { flex: 1 1 auto; padding: 6px 10px; }
+.sop-terms__title { margin: 0 0 4px; font-weight: bold; }
+.sop-terms ol { margin: 0; padding-left: 16px; }
+.sop-terms li { margin: 1px 0; }
+
+.sop-signature {
+  flex: 0 0 220px;
+  padding: 6px 10px;
+  text-align: right;
+  border-left: 1px solid #000;
+}
+.sop-signature p { margin: 2px 0; }
+.sop-signature__space { height: 40px; }
+
+/* Without this, some browsers print images/backgrounds in grayscale by default
+   even when nothing here asks for it -- forces the logo to print in its real
+   colours. */
+.sop-logo {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  color-adjust: exact;
+}
+
+/* Bar shown only to someone opening a public share link (no app toolbar of
+   their own) -- gives them a way to get a PDF. Never shows up in the print
+   output itself (see @media print below). */
+.sop-public-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+  background: #f0f8f2;
+  border: 1px solid #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+}
+.sop-public-bar button {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.sop-public-bar button:hover { background: #eee; }
+.sop-public-bar__pdf-link {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.sop-public-bar__pdf-link:hover { background: #eee; }
+
+.sop-actions { margin: 10px; }
+.sop-actions button { padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; }
+
+@media print {
+  html, body { font-size: 11.2px; }
+  .sop-sheet { border-width: 2px; }
+  .sop-actions { display: none; }
+  .sop-public-bar { display: none; }
+  .sop-logo {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}

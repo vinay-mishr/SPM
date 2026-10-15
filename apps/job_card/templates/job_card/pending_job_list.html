@@ -1,0 +1,45 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pending Job List · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'job_card/css/job_card.css' %}">
+  <script src="{% static 'job_card/js/pending_job_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Pending Job List{% endblock %}
+{% block page_subtitle %}Job Card &rsaquo; Pending Job List{% endblock %}
+
+{% block content %}
+<section class="master-page jc-page" data-pending-jobs
+         data-data-url="{% url 'job_card:pending_job_data' %}"
+         data-export-url="{% url 'job_card:pending_job_export' %}">
+  <div class="master-toolbar" role="toolbar" aria-label="Pending job actions">
+    <div class="jc-filters">
+      <label class="jc-filter">Start Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="jc-filter">End Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-show>Show</button>
+      <button class="btn btn--secondary" type="button" data-export>Excel</button>
+    </div>
+  </div>
+
+  <div class="alert alert--error" role="alert" data-listing-alert hidden></div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table jc-table">
+      <thead><tr><th>Div.</th><th>Job Card</th><th>Job Date</th><th>Code</th><th>Item Name</th><th>Unit</th><th class="num">Qty</th></tr></thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No pending job cards in this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pending-job-initial" }}
+{% endblock %}

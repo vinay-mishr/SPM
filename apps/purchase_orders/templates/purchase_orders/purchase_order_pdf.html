@@ -1,0 +1,109 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Purchase Order {{ order.div }}/{{ order.po_no }}</title>
+  <style>
+    /* xhtml2pdf's renderer only supports a CSS2-era subset -- no flexbox, no
+       CSS grid. This is deliberately a plain table-based layout, not the same
+       stylesheet as the on-screen/browser-print page
+       (purchase_order_print.css), which relies on both. Same data, same
+       calculations, simpler presentation -- see the view's own docstring. */
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #000; }
+    /* A <div> border wrapping several block children draws a box around each
+       child individually in xhtml2pdf, not one box around the whole thing --
+       a single-cell table is what actually renders as one outer border there. */
+    table.pdf-border { width: 100%; border-collapse: collapse; }
+    table.pdf-border > tr > td { border: 2px solid #000; padding: 8px; }
+    .pdf-title { text-align: center; font-size: 16px; font-weight: bold; margin: 0 0 4px; }
+    .pdf-company { text-align: center; font-size: 10px; margin: 0 0 8px; }
+    .pdf-company .name { font-size: 13px; font-weight: bold; }
+    table.pdf-meta { width: 100%; border-top: 1px solid #000; padding-top: 4px; margin-bottom: 8px; }
+    table.pdf-meta td { vertical-align: top; font-size: 10px; }
+    table.pdf-meta .right { text-align: right; }
+    .pdf-items { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .pdf-items th, .pdf-items td { border: 1px solid #000; padding: 3px 4px; font-size: 9px; }
+    .pdf-items th { background: #eee; text-align: left; }
+    .pdf-items .num { text-align: right; }
+    table.pdf-totals { width: 100%; }
+    table.pdf-totals td { font-size: 10px; padding: 1px 0; }
+    .pdf-totals .right { text-align: right; width: 120px; }
+    .pdf-terms { font-size: 9px; margin-top: 8px; }
+    .pdf-sign { text-align: right; font-size: 10px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <table class="pdf-border"><tr><td>
+    {% if copy_type %}<p style="text-align:right; font-size:10px; font-weight:bold; margin:0;">{{ copy_type|upper }}</p>{% endif %}
+    <p class="pdf-title">PURCHASE ORDER</p>
+    <div class="pdf-company">
+      <p class="name">{{ brand.name }}</p>
+      <p>{{ brand.address_line1 }}, {{ brand.address_line2 }}</p>
+      <p>Mobile: {{ brand.print_mobile }} &nbsp; Email: {{ brand.email }}</p>
+      {% if brand.gstin %}<p>GSTIN: {{ brand.gstin }}</p>{% endif %}
+    </div>
+
+    <table class="pdf-meta">
+      <tr>
+        <td>
+          <strong>M/s {{ party.name|default:order.party_code }}</strong><br>
+          {% if party.address_1 %}{{ party.address_1 }}<br>{% endif %}
+          {% if party.address_2 %}{{ party.address_2 }}<br>{% endif %}
+          {{ party.city }}
+        </td>
+        <td class="right">
+          P.O. No: <strong>{{ order.po_no }}</strong><br>
+          P.O. Date: <strong>{{ order.order_date }}</strong>
+        </td>
+      </tr>
+    </table>
+
+    <table class="pdf-items">
+      <thead>
+        <tr>
+          <th>#</th><th>Description</th><th>Part No.</th><th>HSN</th><th>Unit</th>
+          <th class="num">Qty</th><th class="num">Rate</th><th class="num">Disc %</th>
+          <th class="num">GST %</th><th class="num">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in order.lines %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ line.part_name }}</td>
+          <td>{{ line.part_code }}</td>
+          <td>{{ line.hsn_code }}</td>
+          <td>{{ line.unit }}</td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num">{{ line.rate|floatformat:2 }}</td>
+          <td class="num">{{ line.discount_percent }}</td>
+          <td class="num">{{ line.gst_percent }}</td>
+          <td class="num">{{ line.amount }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <table class="pdf-totals">
+      <tr><td></td><td class="right">Total Amount: <strong>{{ order.gross_amount }}</strong></td></tr>
+      <tr><td></td><td class="right">Discount Amt: <strong>{{ order.discount_amount }}</strong></td></tr>
+      <tr><td></td><td class="right">GST Amount: <strong>{{ order.gst_amount }}</strong></td></tr>
+      <tr><td></td><td class="right">Net Amount: <strong>{{ order.net_amount }}</strong></td></tr>
+    </table>
+
+    {% if order.remarks %}<p>Remarks: {{ order.remarks }}</p>{% endif %}
+
+    <div class="pdf-terms">
+      <strong>Terms and Conditions:</strong>
+      <ol>
+        {% for term in terms %}<li>{{ term }}</li>{% endfor %}
+      </ol>
+    </div>
+
+    <div class="pdf-sign">
+      For {{ brand.name }}<br><br><br>
+      Authorised Signatory
+    </div>
+  </td></tr></table>
+</body>
+</html>

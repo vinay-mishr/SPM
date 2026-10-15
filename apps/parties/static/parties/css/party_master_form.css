@@ -1,0 +1,69 @@
+/* Party Master — Add / Modify / View form (two columns on desktop, one on small screens).
+   Field, label, error and modal styles come from static/css/components.css. */
+
+.party-form-modal {
+  width: min(1040px, calc(100vw - 32px));
+}
+
+.pform {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 28px;
+  align-items: start;
+}
+
+.pform__col {
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 8px 12px;
+}
+
+.pform .mform__input.form-control {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+/* Short fields (PIN, state code, mobiles, cr days, yes/no) don't need the full width. */
+.pform .pform__short {
+  max-width: 180px;
+}
+
+.pform__upper {
+  text-transform: uppercase;
+}
+
+.pform__upper::placeholder {
+  text-transform: none;
+}
+
+/* State row: narrow code box + the state name dropdown, side by side. */
+.pform__state {
+  display: flex;
+  gap: 8px;
+}
+
+.pform__state .pform__short {
+  flex: 0 0 70px;
+  max-width: 70px;
+}
+
+.pform__state select {
+  flex: 1;
+}
+
+/* Credit days: type left-to-right like the text fields, not right-aligned. */
+.pform #p-credit_days {
+  text-align: left;
+}
+
+@media (max-width: 860px) {
+  .pform {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 767px) {
+  .pform .pform__short {
+    max-width: none;
+  }
+}

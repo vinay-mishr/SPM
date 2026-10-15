@@ -1,0 +1,56 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Short List · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'job_card/css/job_card.css' %}">
+  <script src="{% static 'job_card/js/job_card_short_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Short List{% endblock %}
+{% block page_subtitle %}Job Card &rsaquo; Short List{% endblock %}
+
+{% block content %}
+<section class="master-page jc-page" data-short-list
+         data-items-url="{% url 'job_card:api_items' %}"
+         data-export-url="{% url 'job_card:short_list_export' %}">
+  <form method="get" class="master-toolbar" role="search">
+    <div class="jc-filters">
+      <label class="jc-filter jc-filter--search">Item Name
+        <input class="form-control" type="text" autocomplete="off" placeholder="Type item code or name..." data-item-search value="{{ item_code }}">
+        <input type="hidden" name="item" value="{{ item_code }}" data-item-code>
+      </label>
+      <label class="jc-filter">Quantity
+        <input class="form-control" type="text" name="qty" inputmode="numeric" value="{{ qty }}" maxlength="9">
+      </label>
+      <label class="jc-filter">Inv. Rate (Y/N)
+        <select class="form-control" name="rate">
+          <option value="N"{% if not with_rate %} selected{% endif %}>N</option>
+          <option value="Y"{% if with_rate %} selected{% endif %}>Y</option>
+        </select>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="submit">Show</button>
+      {% if data %}<a class="btn btn--secondary" href="{% url 'job_card:short_list_export' %}?item={{ item_code }}&amp;qty={{ qty }}&amp;rate={% if with_rate %}Y{% else %}N{% endif %}">Excel</a>{% endif %}
+    </div>
+  </form>
+
+  {% if not_found %}<div class="alert alert--error">Item not found.</div>{% endif %}
+
+  {% if data %}
+  <h3 class="jc-list-title">SHORT-LIST FOR {{ data.item_name }} {{ data.item_code }} &mdash; QUANTITY {{ data.qty }}</h3>
+  <div class="master-table-wrap">
+    <table class="table master-table jc-table">
+      <thead><tr><th>Code</th><th>Item Description</th><th>Unit</th><th class="num">Inv. Rate</th><th class="num">Stock</th><th class="num">Reqd. Qty</th><th class="num">Shortage</th></tr></thead>
+      <tbody>
+        {% for r in data.rows %}
+        <tr><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.unit }}</td><td class="num">{{ r.rate }}</td><td class="num">{{ r.stock }}</td><td class="num">{{ r.reqd }}</td><td class="num">{{ r.shortage }}</td></tr>
+        {% empty %}<tr><td colspan="7">No BOM components for this item.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

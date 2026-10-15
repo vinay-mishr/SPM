@@ -1,0 +1,64 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Job Entry (Sub-Assembly) · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'returnable_challan/css/challan_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'job_card/css/job_card.css' %}">
+  <script src="{% static 'job_card/js/sub_assembly_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Job Entry (Sub-Assembly){% endblock %}
+{% block page_subtitle %}Job Card &rsaquo; Job Card (Sub Assembly){% endblock %}
+
+{% block content %}
+<section class="master-page sa-page" data-sa
+         data-next-url="{% url 'job_card:sa_next' %}"
+         data-detail-url-template="{% url 'job_card:sa_detail' number='__NO__' %}"
+         data-save-url="{% url 'job_card:sa_save' %}"
+         data-parts-url="{% url 'purchase_orders:api_parts' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+  <div class="master-toolbar" role="toolbar" aria-label="Job actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-act="add"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-act="modify"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-act="delete"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-act="close"{% if not can_edit %} disabled{% endif %}>C<span class="master-toolbar__key">l</span>ose</button>
+    </div>
+  </div>
+
+  <div class="dn-alert" role="alert" data-alert hidden></div>
+
+  <dialog class="modal ch-form-modal" id="sa-form-dialog" aria-labelledby="sa-form-title">
+    <form novalidate data-sa-form>
+      <header class="ch-head">
+        <span id="sa-form-title">JOB ENTRY (SUB-ASSEMBLY)</span>
+        <span class="ch-mode" data-mode-label></span>
+        <button class="modal__close" type="button" aria-label="Close" data-act="cancel">&times;</button>
+      </header>
+      <div class="ch-body">
+        <div class="ch-top">
+          <div class="ch-col">
+            <label>JOB NO. <input data-field="number" maxlength="9" placeholder="Job no., then Enter"></label>
+            <label>JOB DATE <input data-field="job_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            <label>QTY ISSUED <input class="num" data-field="qty"></label>
+            <label>PRODUCED QTY <input class="num" data-field="produced"></label>
+          </div>
+          <div class="ch-col ch-col--wide">
+            <label>PROD. NAME <input data-item-search placeholder="Type item code or name..." autocomplete="off" disabled><input type="hidden" data-field="item_code"></label>
+            <label>FINISH REJECTION <input class="num" data-field="finish_rejection"></label>
+            <label>CLOSING DT <input data-field="close_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          </div>
+        </div>
+        <div class="ch-actions">
+          <button class="btn-ok" type="button" data-act="confirm" disabled>Confirm</button>
+          <button class="btn-exit" type="button" data-act="exit">Exit</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+</section>
+{% endblock %}

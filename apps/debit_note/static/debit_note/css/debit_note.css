@@ -1,0 +1,95 @@
+.dn-page {
+  --dn-green: #bfe0c9;
+  --dn-border: #9ca3af;
+  background: #f2faf5;
+  border: 1px solid var(--dn-border);
+  border-radius: 6px;
+  padding: 14px;
+  min-height: calc(100vh - 150px);
+  font-size: 13px;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+}
+.dn-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
+.dn-toolbar label, .dn-fields label, .dn-totals label {
+  display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 12px; text-transform: uppercase;
+}
+.dn-toolbar input { height: 28px; width: 150px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; }
+.dn-search input { width: 220px; }
+.dn-buttons { display: flex; gap: 8px; }
+.dn-buttons .btn { height: 28px; padding: 0 12px; font-size: 12px; }
+.dn-alert { margin-bottom: 10px; padding: 8px 12px; border-radius: 4px; background: #dc2626; color: #fff; font-weight: 700; }
+.dn-grid { flex: 1; background: #fff; border: 1px solid var(--dn-border); border-radius: 4px; overflow: auto; }
+.dn-grid table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dn-grid th { position: sticky; top: 0; background: var(--dn-green); padding: 6px 8px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--dn-border); }
+.dn-grid td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-weight: 700; white-space: nowrap; }
+.dn-grid tbody tr.is-selected td { background: #fef9c3; }
+.dn-grid tbody tr.empty td { text-align: center; color: #6b7280; font-weight: 400; }
+.dn-grid .num { text-align: right; }
+.dn-grid .dn-code { font-weight: 700; }
+
+.dn-form-modal { width: min(1200px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--dn-border); border-radius: 6px; background: #f2faf5; }
+.dn-titlebar { padding: 10px 14px; background: #8fc4a2; font-weight: 700; font-size: 15px; }
+.dn-mode { color: #b91c1c; font-style: italic; margin-left: 10px; }
+.dn-body { padding: 14px; }
+.dn-fields { display: grid; grid-template-columns: repeat(4, max-content); gap: 8px 16px; align-items: end; }
+.dn-fields input, .dn-totals input, .dn-rate input {
+  height: 28px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 13px; font-weight: 400; text-transform: none;
+}
+.dn-fields input[readonly] { background: #e5e7eb; }
+.dn-wide { grid-column: span 2; }
+.dn-wide input { width: 340px; }
+.dn-check { flex-direction: row; align-items: center; gap: 6px; }
+.dn-check input { height: auto; }
+.dn-narration { margin-top: 12px; }
+.dn-narration-title { font-weight: 700; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+.dn-narration textarea { width: 100%; max-width: 600px; border: 2px solid #000; border-radius: 4px; padding: 6px 8px; font-size: 13px; resize: vertical; }
+.dn-rates { margin-top: 12px; border: 1px solid var(--dn-border); border-radius: 4px; background: #fff; }
+.dn-rate-head, .dn-rate { display: grid; grid-template-columns: 110px 170px 150px 150px 150px; gap: 6px; align-items: center; padding: 4px 8px; }
+.dn-rate-head { background: var(--dn-green); font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.dn-rate span { font-weight: 700; text-align: right; }
+.dn-rate span:first-child { text-align: left; }
+.dn-rate input { text-align: right; }
+.dn-totals { display: grid; grid-template-columns: repeat(3, max-content); gap: 12px; justify-content: end; padding: 8px; border-top: 1px solid var(--dn-border); }
+.dn-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+.dn-footer .btn { min-width: 110px; }
+.dn-confirm { border: 1px solid var(--dn-border); border-radius: 6px; padding: 16px; }
+.dn-confirm p { font-weight: 700; margin: 0 0 12px; }
+.dn-item-row { display: grid; grid-template-columns: 2fr 1fr 80px 90px 110px 100px 80px auto; gap: 8px; align-items: end; margin: 12px 0; }
+.dn-item-row label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.dn-item-row input { height: 28px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 13px; font-weight: 400; }
+.dn-item-row .dn-wide { grid-column: auto; }
+.dn-item-row .dn-row-error { grid-column: 1 / -1; color: #dc2626; font-size: 12px; }
+.dn-items { height: 220px; }
+.dn-summary { display: grid; grid-template-columns: repeat(3, max-content); gap: 8px 16px; justify-content: end; margin-top: 10px; }
+.dn-summary label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.dn-summary input { height: 26px; width: 150px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
+.dn-summary input[readonly] { background: #e5e7eb; }
+.dn-items table { width: 100%; border-collapse: collapse; }
+.dn-items th, .dn-items td { border: 1px solid #000; padding: 2px 6px; font-size: 0.95rem; }
+.dn-items th { background: #bfe0c9; font-weight: 700; text-transform: uppercase; }
+.dn-items td.num, .dn-items th.num { text-align: right; }
+.dn-summary { grid-template-columns: max-content; gap: 4px; }
+.dn-summary label { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; width: 300px; }
+.dn-items { flex: none; height: 200px; border: 1px solid #000; overflow: auto; }
+.dn-items tbody td { border-bottom: 1px solid #000; }
+.dn-footer { display: flex; justify-content: center; gap: 10px; }
+.dn-footer .btn { height: 26px; min-width: 84px; padding: 0 14px; font-size: 12px; }
+.dn-footer { margin-top: -24px; }
+.dn-footer { margin-top: -60px; }
+.dn-form-modal input, .dn-form-modal select { font-weight: 700; }
+.dn-item-row .btn[data-item-add] { height: 26px; min-width: 56px; padding: 0 12px; font-size: 12px; align-self: end; }
+.dn-form-modal label { font-size: 14px; }
+.dn-form-modal input, .dn-form-modal select { font-size: 15px; }
+.dn-grid table { font-size: 15px; }
+.dn-grid th { font-size: 14px; }
+.dn-grid td { font-size: 15px; }
+.dn-grid th, .dn-grid td { padding: 2px 6px; }
+.dn-page .btn { font-size: 15px; height: 40px; padding: 0 14px; }
+.dn-page label { font-size: 14px; }
+.dn-page input { font-size: 16px; height: 40px; }
+.dn-grid table { font-size: 17px; }
+.dn-grid th { font-size: 15px; }
+.dn-grid td { font-size: 17px; }
+.dn-grid th, .dn-grid td { padding: 4px 8px; }

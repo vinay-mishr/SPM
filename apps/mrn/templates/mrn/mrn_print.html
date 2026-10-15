@@ -1,0 +1,114 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> </title>
+  <link rel="stylesheet" href="{% static 'mrn/css/mrn_print.css' %}">
+</head>
+<body>
+  {% if public %}
+  <!-- On-screen only (see @media print in the CSS) -- the person opening a
+       shared link has no app toolbar, so this is their way to get a PDF. -->
+  <div class="mop-public-bar">
+    <span>MRN {{ order.div }}/{{ order.mrn_no }} &middot; {{ brand.name }}</span>
+    {% if pdf_url %}
+    <a href="{{ pdf_url }}" class="mop-public-bar__pdf-link">Download PDF</a>
+    {% else %}
+    <button type="button" onclick="window.print()">Download / Print PDF</button>
+    {% endif %}
+  </div>
+  {% endif %}
+  <div class="mop-sheet">
+    <header class="mop-topline">
+      <span>GST NO: {{ brand.gstin }}</span>
+      <h2>MATERIAL RECEIPT NOTE</h2>
+    </header>
+
+    <section class="mop-company">
+      <img class="mop-logo" src="{% static brand.logo_full %}" alt="{{ brand.name }}">
+      <h1>{{ brand.name|upper }}</h1>
+      <p>{{ brand.address_line1 }}</p>
+      <p>{{ brand.address_line2 }}</p>
+      <p>Mobile No: {{ brand.print_mobile }}</p>
+      <p>Email: {{ brand.email }}</p>
+      <p>Website: {{ brand.website }}</p>
+    </section>
+
+    <section class="mop-party">
+      <div class="mop-party__left">
+        <p class="mop-party__name">M/s {{ order.party_name|default:order.party_code }}</p>
+        {% if order.party_address_1 %}<p>{{ order.party_address_1 }}</p>{% endif %}
+        {% if order.party_address_2 %}<p>{{ order.party_address_2 }}</p>{% endif %}
+        {% if order.city %}<p>{{ order.city }}</p>{% endif %}
+        {% if order.party_phone %}<p>{{ order.party_phone }}</p>{% endif %}
+        {% if order.party_gst_no %}<p>GST NO&nbsp;&nbsp;{{ order.party_gst_no }}</p>{% endif %}
+      </div>
+      <div class="mop-party__right">
+        <p><span class="mop-field-label">MRN NO:</span> {{ order.mrn_no }} <span class="mop-field-label mop-field-label--inline">DATE:</span> {{ order.mrn_date|default:"-" }}</p>
+        <p><span class="mop-field-label">CHALLAN NO:</span> {{ order.challan_no }}</p>
+        <p><span class="mop-field-label">DATE:</span> {{ order.challan_date|default:"- -" }}</p>
+        <p><span class="mop-field-label">INVOICE NO:</span> {{ order.bill_no }}</p>
+        <p><span class="mop-field-label">DATE:</span> {{ order.bill_date|default:"- -" }}</p>
+        <p><span class="mop-field-label">G.R./R.R. NO:</span> {{ order.gr_no }}</p>
+        <p><span class="mop-field-label">VEHICLE NO:</span> {{ order.transport }}</p>
+        <p><span class="mop-field-label">P.O. NO:</span> {{ order.po_no }}</p>
+      </div>
+    </section>
+
+    <table class="mop-table">
+      <thead>
+        <tr>
+          <th class="mop-sno">SNO</th>
+          <th class="mop-desc">DESCRIPTION</th>
+          <th>UOM</th>
+          <th class="num">PO QTY</th>
+          <th class="num">INVOICE QTY</th>
+          <th class="num">RECEIVED QTY</th>
+          <th class="num">ACCEPTED QTY</th>
+          <th class="num">REJECTED QTY</th>
+          <th class="num">RATE</th>
+          <th class="num">INV. AMOUNT</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items %}
+        <tr>
+          <td class="mop-sno">{{ forloop.counter }}</td>
+          <td class="mop-desc">{{ item.part_name }}</td>
+          <td>{{ item.unit }}</td>
+          <td class="num">{{ item.po_qty }}</td>
+          <td class="num">{{ item.invoice_qty }}</td>
+          <td class="num">{{ item.qty_received }}</td>
+          <td class="num">{{ item.qty_accepted }}</td>
+          <td class="num">{{ item.qty_rejected }}</td>
+          <td class="num">{{ item.rate }}</td>
+          <td class="num">{{ item.amount }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <section class="mop-totals">
+      <p>TOTAL&nbsp;&nbsp;{{ order.net_amount }}</p>
+    </section>
+
+    <table class="mop-sign">
+      <thead>
+        <tr>
+          <th>RECEIPT INCHARGE</th>
+          <th>QUALITY</th>
+          <th>RM STORE</th>
+          <th>PURCHASE</th>
+          <th>ACCOUNTS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% if not preview %}
+  <script>window.addEventListener("load", function () { window.print(); });</script>
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Dashboard · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="dash-stats" aria-label="Summary">
+  <div class="dash-card"><span class="dash-card__label">Machines</span><strong class="dash-card__value">0</strong></div>
+  <div class="dash-card"><span class="dash-card__label">Customers</span><strong class="dash-card__value">0</strong></div>
+  <div class="dash-card"><span class="dash-card__label">Open Orders</span><strong class="dash-card__value">0</strong></div>
+  <div class="dash-card"><span class="dash-card__label">Pending Quotations</span><strong class="dash-card__value">0</strong></div>
+</section>
+
+<section class="dash-panel">
+  <h2 class="dash-panel__title">Getting started</h2>
+  <p>Modules (Machines, Customers, Products, Inventory, Sales, Reports) will appear in the sidebar as they're built.</p>
+</section>
+{% endblock %}

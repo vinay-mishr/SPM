@@ -1,0 +1,16 @@
+{% extends "accounts/layout.html" %}
+{% comment %}Simple confirmation card. Views pass ``title`` and ``message`` via extra_context.{% endcomment %}
+
+{% block title %}{{ title }} · {{ brand.name }}{% endblock %}
+
+{% block card %}
+<header class="auth-card__header">
+  <h1 class="auth-card__title" id="auth-title">{{ title }}</h1>
+  <p class="auth-card__subtitle">{{ message }}</p>
+</header>
+
+<a class="btn btn--primary btn--block" href="{% url 'accounts:login' %}">
+  <svg aria-hidden="true"><use href="#i-login"></use></svg>
+  Go to Login
+</a>
+{% endblock %}

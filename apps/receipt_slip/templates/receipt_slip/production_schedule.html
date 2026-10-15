@@ -1,0 +1,87 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Production Schedule · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'receipt_slip/css/single_receipt_report.css' %}">
+  <script src="{% static 'receipt_slip/js/production_schedule.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}{% if pending_mode %}Production Schedule (Based upon Pending Order){% else %}Production Schedule (Based upon Inventory){% endif %}{% endblock %}
+{% block page_subtitle %}Stock &rsaquo; Production Schedule{% endblock %}
+
+{% block content %}
+<section class="master-page srr-page" data-production-schedule data-mode="{% if pending_mode %}pending{% else %}inventory{% endif %}"
+         data-data-url="{% if pending_mode %}{% url 'receipt_slip:production_pending_data' %}{% else %}{% url 'receipt_slip:production_schedule_data' %}{% endif %}"
+         data-export-url="{% if pending_mode %}{% url 'receipt_slip:production_pending_export' %}{% else %}{% url 'receipt_slip:production_schedule_export' %}{% endif %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar srr-toolbar" role="toolbar" aria-label="Production schedule filters">
+    {% if not pending_mode %}
+    <label class="srr-filter">DAYS
+      <input class="form-control" type="number" min="1" data-days>
+    </label>
+    {% endif %}
+    <label class="srr-filter">START DATE
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="srr-filter">END DATE
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="srr-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap srr-grid-wrap">
+    <table class="table master-table srr-table">
+      {% if pending_mode %}
+      <thead>
+        <tr>
+          <th scope="col" class="num">SNO</th>
+          <th scope="col">Code</th>
+          <th scope="col">Product Description</th>
+          <th scope="col" class="num">Pending Sale Order Upto</th>
+          <th scope="col" class="num">Qty In Process</th>
+          <th scope="col" class="num">Closing Stock</th>
+          <th scope="col" class="num">Qty Reqd. To Be Produced</th>
+          <th scope="col" class="num">Man Hrs Reqd.</th>
+          <th scope="col" class="num">Man Hrs Per Unit</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+      <tfoot>
+        <tr class="pl-total"><td colspan="7">TOTAL MAN HOURS</td><td class="num" data-total-hrs>0.00</td><td></td></tr>
+      </tfoot>
+      {% else %}
+      <thead>
+        <tr>
+          <th scope="col" class="num">SNO</th>
+          <th scope="col">Code</th>
+          <th scope="col">Product Description</th>
+          <th scope="col" class="num">Pending Sale Ord</th>
+          <th scope="col" class="num" data-h-cur>Avg Curr. Sale</th>
+          <th scope="col" class="num" data-h-last>Avg Last Year Sale</th>
+          <th scope="col" class="num">Qty In Process</th>
+          <th scope="col" class="num">Closing Stock</th>
+          <th scope="col" class="num">Qty Reqd. To Be Produced</th>
+          <th scope="col" class="num">Man Hrs Reqd.</th>
+          <th scope="col" class="num">Man Hrs Per Unit</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+      <tfoot>
+        <tr class="pl-total"><td colspan="9">TOTAL MAN HOURS</td><td class="num" data-total-hrs>0.00</td><td></td></tr>
+      </tfoot>
+      {% endif %}
+    </table>
+    <p class="master-table__empty" data-empty hidden>No items need production for these dates.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"ps-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

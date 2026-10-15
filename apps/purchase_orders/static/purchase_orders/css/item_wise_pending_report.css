@@ -1,0 +1,68 @@
+/* Item-Wise Pending P.O. report — read-only report. Shared master / toolbar / table
+   styles come from static/css/components.css; only this screen's specifics live here. */
+
+.iwp-page .master-toolbar {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.iwp-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.8125rem;
+}
+
+.iwp-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.iwp-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iwp-item__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.iwp-item__name { width: 260px; }
+.iwp-item__code { width: 90px; text-transform: uppercase; }
+
+.iwp-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.iwp-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 130px;
+}
+
+.iwp-table { min-width: 900px; font-size: 0.8125rem; }
+.iwp-table th, .iwp-table td { padding: 4px 8px; white-space: nowrap; }
+.iwp-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.iwp-item-row td {
+  background: var(--bg-mint);
+  font-weight: 700;
+  border-top: 1px solid var(--border-mint);
+  border-bottom: 1px solid var(--border-mint);
+}

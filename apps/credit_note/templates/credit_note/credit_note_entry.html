@@ -1,0 +1,128 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}GST Credit Note · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'credit_note/css/credit_note.css' %}">
+  <script src="{% static 'credit_note/js/credit_note_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}GST Credit Note{% endblock %}
+{% block page_subtitle %}Invoice &rsaquo; Invoice &rsaquo; Credit Note{% endblock %}
+
+{% block content %}
+<section class="cn-page" data-ie
+         data-list-url="{% url 'credit_note:api_list' %}"
+         data-next-no-url="{% url 'credit_note:api_next_no' %}"
+         data-detail-url-template="{% url 'credit_note:api_detail' cn_no='__NO__' %}"
+         data-items-url="{% url 'credit_note:api_items' %}"
+         data-part-url="{% url 'credit_note:api_part' %}"
+         data-save-url="{% url 'credit_note:api_save' %}"
+         data-delete-url="{% url 'credit_note:api_delete' %}"
+         data-parties-url="{% url 'credit_note:api_parties' %}"
+         data-print-url-template="{% url 'credit_note:print' cn_no='__NO__' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="cn-toolbar master-toolbar">
+    <div class="cn-buttons">
+      <button type="button" class="btn btn--primary" data-action="add"{% if not can_edit %} disabled{% endif %}>ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+      <button type="button" class="btn btn--secondary" data-action="print" disabled>PRINT</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="cn-search">SEARCH <input class="form-control" type="text" data-search placeholder="Type party name..."></label>
+    <div class="cn-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="cn-alert" role="alert" data-alert hidden></div>
+
+  <div class="cn-grid">
+    <table>
+      <thead><tr><th>BILL</th><th>DATE</th><th>PARTY</th><th>CITY</th><th class="num">NET AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="5">No credit notes in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="cn-form-modal" data-form>
+  <form novalidate data-ie-form>
+    <header class="cn-titlebar">CREDIT NOTE <span class="cn-mode" data-mode-label>Add</span></header>
+    <div class="cn-body">
+      <div class="cn-alert" role="alert" data-form-alert hidden></div>
+      <div class="cn-fields">
+        <div class="cn-field-row">
+          <label class="cn-cnno">CN. NO <input data-field="cn_no" maxlength="10" tabindex="-1"></label>
+          <label class="cn-date">DATE <input data-field="cn_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label class="cn-gstbill">GST BILL <input data-field="gst_bill_no" maxlength="30"></label>
+          <label class="cn-gstdate">GST DATE <input data-field="gst_bill_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label class="cn-party">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+          <label class="cn-city">CITY <input data-field="city" readonly></label>
+        </div>
+        <div class="cn-field-row">
+          <label class="cn-half">G.R. NO. <input data-field="gr_no" maxlength="10"></label>
+          <label class="cn-grdate">G.R. DATE <input data-field="gr_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label>TRANSPORT <input data-field="transport" maxlength="30"></label>
+        </div>
+      </div>
+
+      <div class="cn-item-row">
+        <label class="cn-wide">PART NO / DESCRIPTION <input data-item-search placeholder="Type item code or name..." autocomplete="off"><input type="hidden" data-item-code></label>
+        <label>UNIT <input data-item-unit readonly></label>
+        <label>HSN NO <input data-item-hsn readonly></label>
+        <label>DIS <input class="num" data-item-dis value="0.00"></label>
+        <label>QTY <input class="num" data-item-qty></label>
+        <label>RATE <input class="num" data-item-rate></label>
+        <button type="button" class="btn btn--primary" data-item-add>OK</button>
+        <button type="button" class="btn btn--secondary" data-item-cancel hidden>Cancel edit</button>
+        <div class="cn-row-error" data-item-error></div>
+      </div>
+
+      <div class="cn-grid cn-items">
+        <table>
+          <thead><tr><th>#</th><th>SNO</th><th>CODE</th><th>ITEM DESCRIPTION</th><th>HSN CODE</th><th>UNT</th><th class="num">DIS%</th><th class="num">QTY</th><th class="num">RATE</th><th class="num">AMOUNT</th></tr></thead>
+          <tbody data-item-rows><tr class="empty"><td colspan="10">No items added. Press Space on a row to hold/restore it, double-click to edit.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="cn-remarks">
+        <label class="cn-wide">REMARKS <input data-field="remarks" maxlength="40"></label>
+      </div>
+
+      <div class="cn-summary">
+        <label>TOTAL AMOUNT <input class="num" data-total-amount readonly tabindex="-1" value="0.00"></label>
+        <label>GST AMT <input class="num" data-gst-amount readonly tabindex="-1" value="0.00"></label>
+        <input type="hidden" data-field="gst_pct" value="0.00">
+        <input type="hidden" data-field="freight" value="0.00">
+        <input type="hidden" data-field="freight_gst_pct" value="0.00">
+        <input type="hidden" data-freight-gst value="0.00">
+        <input type="hidden" data-field="adj_nar1"><input type="hidden" class="num" data-field="adj_amt1" value="0.00">
+        <input type="hidden" data-field="adj_nar2"><input type="hidden" class="num" data-field="adj_amt2" value="0.00">
+        <label>NET AMOUNT <input class="num" data-net-amount readonly tabindex="-1" value="0.00"></label>
+        <label>NET ROUNDED <input class="num" data-net-rounded readonly tabindex="-1" value="0"></label>
+      </div>
+
+      <div class="cn-footer">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="cn-confirm" data-delete-dialog>
+  <p>Are You Sure?</p>
+  <div class="cn-footer">
+    <button type="button" class="btn btn--danger" data-delete-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-delete-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

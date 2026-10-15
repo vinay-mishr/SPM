@@ -1,0 +1,65 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Raw Material Stock Ledger · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/stock_ledger.css' %}">
+  <script src="{% static 'mrn/js/stock_ledger.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Raw Material Stock Ledger{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Raw Material Stock Ledger{% endblock %}
+
+{% block content %}
+<section class="master-page sl-page" data-stock-ledger
+         data-data-url="{% url 'mrn:stock_ledger_data' %}"
+         data-export-url="{% url 'mrn:stock_ledger_export' %}"
+         data-print-url="{% url 'mrn:stock_ledger_print' %}"
+         data-exit-url="{% url 'mrn:entry' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar sl-toolbar" role="toolbar" aria-label="Stock ledger filters">
+    <fieldset class="sl-mode">
+      <legend class="visually-hidden">All / Single grade</legend>
+      <label><input type="radio" name="sl-mode" value="all" checked> All</label>
+      <label><input type="radio" name="sl-mode" value="single"> Single</label>
+    </fieldset>
+    <label class="sl-filter">Grade
+      <input class="form-control" type="text" maxlength="2" autocomplete="off" data-grade disabled>
+    </label>
+    <label class="sl-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="sl-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="sl-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>View</button>
+      <button class="btn btn--secondary" type="button" data-print>Print</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap sl-grid-wrap">
+    <table class="table master-table sl-table">
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Product Name</th>
+          <th scope="col" class="num">Cur. Stock</th>
+          <th scope="col" class="num">Value</th>
+          <th scope="col" class="num">Weight</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No parts for this selection.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"sl-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

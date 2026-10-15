@@ -1,0 +1,113 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Product Issue · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'job_card/css/job_card.css' %}">
+  <script src="{% static 'job_card/js/product_issue.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Product Issue{% endblock %}
+{% block page_subtitle %}Job Card &rsaquo; Product Issue{% endblock %}
+
+{% block content %}
+<section class="master-page jc-page" data-product-issue
+         data-list-url="{% url 'job_card:pi_list' %}"
+         data-open-jobs-url="{% url 'job_card:pi_open_jobs' %}"
+         data-preview-url="{% url 'job_card:pi_preview' %}"
+         data-detail-url-template="{% url 'job_card:pi_detail' serial='__SERIAL__' %}"
+         data-save-url="{% url 'job_card:pi_save' %}"
+         data-delete-url="{% url 'job_card:pi_delete' %}"
+         data-items-url="{% url 'job_card:api_items' %}"
+         data-reauth-url="{% url 'job_card:api_reauthenticate' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Product issue actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+    </div>
+    <div class="jc-filters">
+      <label class="jc-filter">Start Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="jc-filter">End Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+      <label class="jc-filter jc-filter--search">Search (serial / item)
+        <input class="form-control" type="text" autocomplete="off" placeholder="Type to search..." data-search>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-action="refresh"><span class="master-toolbar__key">R</span>efresh</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table jc-table">
+      <thead><tr><th>Serial No.</th><th>Serial Date</th><th>Item Name</th><th>Job Card</th></tr></thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No product issues in this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pi-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  <dialog class="modal jc-form-modal" id="pi-form-dialog" aria-labelledby="pi-form-title">
+    <form novalidate data-pi-form>
+      <header class="jc-head">
+        <span id="pi-form-title">PRODUCT ISSUE</span>
+        <span class="jc-mode" data-mode-label>Add</span>
+        <button class="jc-x" type="button" aria-label="Close" data-form-exit>&times;</button>
+      </header>
+      <div class="jc-body">
+        <div class="alert alert--error" role="alert" data-form-alert hidden></div>
+
+        <div class="jc-grid">
+          <label>SERIAL NO. <input data-field="serial_no" maxlength="9"></label>
+          <label>SERIAL DATE <input type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="date" data-date-mask></label>
+          <label class="jc-wide">ITEM NAME <input placeholder="Type item code or name..." data-item-search>
+            <input type="hidden" data-field="item_code"><span class="jc-name" data-item-name></span></label>
+          <label class="jc-wide">JOB CARD NO <select data-field="job_no" data-job-select><option value="">Select an open job card</option></select></label>
+          <label>JOB CARD DATE <input data-job-date readonly tabindex="-1"></label>
+          <label>QUANTITY <input class="num" data-job-qty readonly tabindex="-1"></label>
+        </div>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Code</th><th>Item Description</th><th class="num">Quantity</th></tr></thead>
+            <tbody data-line-rows><tr class="empty"><td colspan="4">Select a job card to list the components.</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="jc-actions">
+          <button class="btn-ok" type="button" data-form-save>Confirm</button>
+          <button class="btn-exit" type="button" data-form-exit>Exit</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal--sm" id="pi-reauth-dialog" aria-labelledby="pi-reauth-title">
+    <header class="modal__header"><h2 class="modal__title" id="pi-reauth-title">Confirm your password</h2></header>
+    <div class="modal__body">
+      <div class="alert alert--error" role="alert" data-reauth-alert hidden></div>
+      <label class="mform__label" for="pi-reauth-password">Your account password</label>
+      <input class="form-control" id="pi-reauth-password" type="password" autocomplete="current-password" data-reauth-password>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="button" data-reauth-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-reauth-cancel>Cancel</button>
+    </footer>
+  </dialog>
+{% endblock %}

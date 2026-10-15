@@ -1,0 +1,76 @@
+{# Shared ADD / MODIFY form (old VFP form BILLPY). previous_outstanding.js switches the mode. #}
+<dialog class="modal po-form-modal" id="po-form-dialog" aria-labelledby="po-form-title">
+  <form novalidate data-po-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="po-form-title">Previous Outstanding — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform po-form">
+        <label class="mform__label mform__label--required" for="po-div">Div</label>
+        <div class="mform__field">
+          <input class="form-control mform__input po-short" id="po-div" name="div" type="text" maxlength="2" autocomplete="off" data-field="div">
+          <p class="mform__error" data-error-for="div"></p>
+        </div>
+
+        <label class="mform__label mform__label--required" for="po-bill_no">Invoice No</label>
+        <div class="mform__field po-pair">
+          <div>
+            <input class="form-control mform__input po-mid" id="po-bill_no" name="bill_no" type="text" maxlength="5" autocomplete="off" data-field="bill_no">
+            <p class="mform__error" data-error-for="bill_no"></p>
+          </div>
+          <label class="mform__label mform__label--required po-inline-label" for="po-bill_date">Invoice Date</label>
+          <div>
+            <input class="form-control mform__input po-date" id="po-bill_date" name="bill_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-field="bill_date" data-date-mask>
+            <p class="mform__error" data-error-for="bill_date"></p>
+          </div>
+        </div>
+
+        <label class="mform__label mform__label--required" for="po-party_code">Party</label>
+        <div class="mform__field">
+          <div class="po-party">
+            <input class="form-control mform__input po-code" id="po-party_code" name="party_code" type="text" maxlength="4"
+                   list="po-party-list" autocomplete="off" placeholder="Code" data-field="party_code"
+                   aria-describedby="po-party-help">
+            <input class="form-control mform__input po-party-search" type="text" autocomplete="off"
+                   placeholder="Type party name to search…" list="po-party-list" data-party-search aria-label="Search party by name">
+          </div>
+          <datalist id="po-party-list" data-party-list></datalist>
+          <p class="po-party-name" id="po-party-help" data-party-name></p>
+          <p class="mform__error" data-error-for="party_code"></p>
+        </div>
+
+        <label class="mform__label mform__label--required" for="po-net_amount">Balance Amt</label>
+        <div class="mform__field po-pair">
+          <div>
+            <input class="form-control mform__input mform__input--num po-mid" id="po-net_amount" name="net_amount" type="text" inputmode="decimal" autocomplete="off" data-field="net_amount">
+            <p class="mform__error" data-error-for="net_amount"></p>
+          </div>
+          <label class="mform__label po-inline-label" for="po-cash_discount">Cash Dis</label>
+          <div>
+            <input class="form-control mform__input mform__input--num po-mid" id="po-cash_discount" name="cash_discount" type="text" inputmode="decimal" autocomplete="off" data-field="cash_discount">
+            <p class="mform__error" data-error-for="cash_discount"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-confirm-box hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="po-sure-title">
+      <p class="modal-discard__title" id="po-sure-title" data-confirm-text>Are you sure?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--primary" type="button" data-confirm-yes>Yes</button>
+        <button class="btn btn--secondary" type="button" data-confirm-no>No</button>
+      </div>
+    </div>
+  </div>
+</dialog>

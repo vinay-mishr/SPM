@@ -1,0 +1,65 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Rate Modification · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'rate_modification/css/rate_modification.css' %}">
+  <script src="{% static 'rate_modification/js/rate_modification.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Rate Modification{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Rate Modification (part purchase rates){% endblock %}
+
+{% block content %}
+<section class="rm" data-rate-modification
+         data-data-url="{% url 'rate_modification:api_data' %}"
+         data-save-url="{% url 'rate_modification:api_save' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  {% include "rate_modification/components/search_bar.html" %}
+
+  {% if not can_edit %}
+    <div class="alert alert--info" role="status">
+      View only: modifying rates needs the “Can modify item rates” permission{% if not request.user.is_superuser %} (ask your administrator){% endif %}.
+    </div>
+  {% endif %}
+
+  <div class="rm-grid master-table-wrap" data-grid-wrap>
+    <table class="table rm-table">
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Item Name</th>
+          <th scope="col" class="num">Rate</th>
+          <th scope="col" class="num">Op. Stk</th>
+          <th scope="col" class="num">Cur. Stk</th>
+          <th scope="col" class="num">GST%</th>
+          <th scope="col">Location</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No records found</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"rm-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+<dialog class="modal modal--sm" id="rm-exit-dialog" aria-labelledby="rm-exit-title">
+  <header class="modal__header">
+    <h2 class="modal__title" id="rm-exit-title">Rate Modification</h2>
+  </header>
+  <div class="modal__body">
+    <p class="modal-question">Unsaved changes exist. Do you want to exit?</p>
+  </div>
+  <footer class="modal__footer">
+    <button class="btn btn--primary" type="button" data-exit-yes>Yes</button>
+    <button class="btn btn--secondary" type="button" data-exit-no>No</button>
+  </footer>
+</dialog>
+{% endblock %}

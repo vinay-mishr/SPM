@@ -1,0 +1,7 @@
+.pl-toolbar { flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.pl-mode { display: flex; gap: 10px; border: 0; padding: 0; margin: 0; font-weight: 700; }
+.pl-filter { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+.pl-filter input { min-height: 34px; padding: 5px 10px; width: 150px; border: 2px solid #000; }
+.pl-filter--wide input { width: 260px; }
+.pl-part td { font-weight: 700; }
+.pl-total td { font-weight: 700; border-top: 2px solid #000; }

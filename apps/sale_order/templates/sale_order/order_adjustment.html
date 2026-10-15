@@ -1,0 +1,52 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pending Order Adjustment · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'sale_order/css/sale_order.css' %}">
+  <script src="{% static 'sale_order/js/order_adjustment.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Pending Order Adjustment{% endblock %}
+{% block page_subtitle %}Sale Order &rsaquo; Pending Order Adjustment{% endblock %}
+
+{% block content %}
+<section class="master-page so-page" data-adjustment
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-data-url="{% url 'sale_order:adjustment_data' %}"
+         data-save-url="{% url 'sale_order:adjustment_save' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+  <div class="master-toolbar so-toolbar" role="toolbar" aria-label="Order adjustment filters">
+    <div class="so-filters">
+      <label class="so-filter so-filter--search">PARTY NAME
+        <input class="form-control" placeholder="Type party name and press Enter" autocomplete="off" data-party-search>
+        <input type="hidden" data-party-code>
+      </label>
+      <label class="so-filter">RUN DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-run-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-show>SHOW</button>
+      <button class="btn btn--secondary" type="button" data-confirm{% if not can_edit %} disabled{% endif %}>CONFIRM</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table so-table">
+      <thead>
+        <tr><th>ADJ</th><th>ORDER NO</th><th>ORDER DATE</th><th>ITEM DESCRIPTION</th><th class="num">QTY ORDERED</th><th class="num">QTY ISSUE</th><th class="num">PENDING</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>Select a party and press SHOW.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"oa-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

@@ -1,0 +1,77 @@
+/* Item-Wise Rate List report — read-only report. Shared master / toolbar / table
+   styles come from static/css/components.css; only this screen's specifics live here. */
+
+.iwr-toolbar {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.iwr-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.8125rem;
+}
+
+.iwr-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.iwr-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iwr-item__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.iwr-item__name { width: 260px; }
+.iwr-item__code { width: 90px; text-transform: uppercase; }
+
+.iwr-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.iwr-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 130px;
+}
+
+.iwr-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.iwr-error[hidden] { display: none; }
+
+.iwr-table { min-width: 800px; font-size: 0.8125rem; }
+.iwr-table th, .iwr-table td { padding: 4px 8px; white-space: nowrap; }
+.iwr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.iwr-item-row td {
+  background: var(--bg-mint);
+  font-weight: 700;
+  border-top: 1px solid var(--border-mint);
+  border-bottom: 1px solid var(--border-mint);
+}

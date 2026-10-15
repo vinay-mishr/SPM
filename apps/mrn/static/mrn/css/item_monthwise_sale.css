@@ -1,0 +1,8 @@
+.iwms-toolbar { flex-wrap: wrap; width: 100%; }
+.iwms-filter { display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.iwms-filter input { min-height: 34px; padding: 5px 10px; font-size: 0.875rem; width: 140px; }
+.iwms-error { margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--danger); }
+.iwms-error[hidden] { display: none; }
+.iwms-table { min-width: 1200px; font-size: 0.9375rem; }
+.iwms-table th, .iwms-table td { padding: 2px 4px; white-space: nowrap; border: 1px solid #9ca3af; }
+.iwms-table .num { text-align: right; font-variant-numeric: tabular-nums; }

@@ -1,0 +1,68 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Critical Shortage · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/critical_shortage.css' %}">
+  <script src="{% static 'mrn/js/critical_shortage.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Critical Shortage{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Critical Shortage{% endblock %}
+
+{% block content %}
+<section class="master-page cr-page" data-critical-shortage
+         data-data-url="{% url 'mrn:critical_shortage_data' %}"
+         data-export-url="{% url 'mrn:critical_shortage_export' %}"
+         data-exit-url="{% url 'mrn:entry' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar cr-toolbar" role="toolbar" aria-label="Critical shortage filters">
+    <label class="cr-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="cr-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <label class="cr-filter">Last Year Days
+      <input class="form-control" type="number" min="1" max="366" data-days1 value="30">
+    </label>
+    <label class="cr-filter">Cur. Year Days
+      <input class="form-control" type="number" min="1" max="366" data-days2 value="30">
+    </label>
+    <p class="cr-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>View</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap cr-grid-wrap">
+    <table class="table master-table cr-table">
+      <thead>
+        <tr>
+          <th scope="col">Sno</th>
+          <th scope="col">Code</th>
+          <th scope="col">Item Description</th>
+          <th scope="col">Unit</th>
+          <th scope="col" class="num">Balance Qty</th>
+          <th scope="col" class="num">Balance Value</th>
+          <th scope="col" class="num">Cur. Yr Avg</th>
+          <th scope="col" class="num">Last Yr Avg</th>
+          <th scope="col" class="num">Planning Reqd</th>
+          <th scope="col" class="num">Shortage</th>
+          <th scope="col" class="num">Excess</th>
+          <th scope="col">Supplier 1</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No critical shortages for these settings.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"cr-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

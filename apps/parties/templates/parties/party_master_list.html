@@ -1,0 +1,71 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Customer Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'parties/css/party_master.css' %}">
+  <link rel="stylesheet" href="{% static 'parties/css/party_master_form.css' %}">
+  <script src="{% static 'parties/js/party_master_form.js' %}" defer></script>
+  <script src="{% static 'parties/js/party_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Customer Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Customer Master{% endblock %}
+
+{% block content %}
+<section class="master-page" data-party-master
+         data-list-url="{% url 'parties:api_list' %}"
+         data-create-url="{% url 'parties:api_create' %}"
+         data-next-code-url="{% url 'parties:api_next_code' %}"
+         data-update-url="{% url 'parties:api_update' pk=0 %}"
+         data-delete-url="{% url 'parties:api_delete' pk=0 %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Party actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+      <a class="btn btn--secondary" href="{% url 'parties:export' kind='debtors' %}" download title="Excel list of Sundry Debtors (customers)">Debtors</a>
+      <a class="btn btn--secondary" href="{% url 'parties:export' kind='creditors' %}" download title="Excel list of Sundry Creditors (suppliers)">Creditors</a>
+    </div>
+    <label class="master-search">
+      <span class="visually-hidden">Search parties</span>
+      <input class="form-control" type="search" placeholder="Search name, city, phone, code…" data-search autocomplete="off">
+    </label>
+  </div>
+
+  {% if read_only %}
+    <div class="alert alert--info" role="status">
+      Showing parties from the SP_MACHINE database (table <strong>cust_mst</strong>). Saving changes to that database is switched off until you approve it, so Confirm and Delete will show a message and nothing is changed.</div>
+  {% endif %}
+
+  <div class="master-table-wrap">
+    <table class="table master-table party-table">
+      <thead>
+        <tr>
+          <th scope="col">Customer Name</th>
+          <th scope="col">City</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Code</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No parties yet. Click <strong>Add</strong> to create the first one.</p>
+  </div>
+  <p class="master-count" data-count aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"party-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "parties/party_master_form.html" %}
+  {% include "parties/party_master_confirm_delete.html" %}
+{% endblock %}

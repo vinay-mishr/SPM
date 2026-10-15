@@ -1,0 +1,54 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pending MRN · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/pending_mrn_report.css' %}">
+  <script src="{% static 'mrn/js/pending_mrn_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Pending MRN{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Pending MRN{% endblock %}
+
+{% block content %}
+<section class="master-page pmrn-page" data-pending-mrn-report
+         data-data-url="{% url 'mrn:pending_mrn_report_data' %}"
+         data-export-url="{% url 'mrn:pending_mrn_report_export' %}"
+         data-exit-url="{% url 'mrn:entry' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar pmrn-toolbar" role="toolbar" aria-label="Pending MRN filters">
+    <label class="pmrn-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="pmrn-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="pmrn-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap pmrn-grid-wrap">
+    <table class="table master-table pmrn-table">
+      <thead>
+        <tr>
+          <th scope="col">Div</th>
+          <th scope="col">MRN Date</th>
+          <th scope="col">MRN No</th>
+          <th scope="col">Party Name</th>
+          <th scope="col">Party City</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No pending MRNs found for the selected date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pmrn-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

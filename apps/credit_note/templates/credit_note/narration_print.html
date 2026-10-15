@@ -1,0 +1,93 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GST Credit Note {{ note.cn_no }} &middot; {{ brand_name }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #000; margin: 12px 24px 24px; background: #fff; }
+    .cn-print .company-header { position: relative; text-align: center; margin-bottom: 6px; min-height: 100px; }
+    .cn-print .company-header img { position: absolute; left: 0; top: 0; height: 100px; width: auto; }
+    .cn-print h1 { font-size: 30px; margin: 0; }
+    .cn-print .company-address { font-size: 12px; color: #333; }
+    .cn-print .sub { text-align: center; font-weight: 700; margin-bottom: 14px; }
+    .cn-print .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin-bottom: 14px; font-size: 15px; }
+    .cn-print table { width: 100%; border-collapse: collapse; }
+    .cn-print th, .cn-print td { border: 1px solid #000; padding: 6px 8px; font-size: 14px; }
+    .cn-print th { background: #e5e7eb; text-align: left; }
+    .cn-print td.num, .cn-print th.num { text-align: right; }
+    .cn-print .totals { width: 50%; margin-left: auto; margin-top: 10px; }
+    .cn-print .totals td { border: 1px solid #000; }
+    .cn-print .words { margin-top: 12px; font-weight: 700; }
+    .cn-print .actions { margin-bottom: 14px; }
+    .cn-print .reason { margin-top: 12px; font-size: 13px; }
+    .cn-print .reason div { margin-bottom: 2px; }
+    @media print { .cn-print .actions { display: none; } body { margin: 10mm; } }
+  </style>
+</head>
+<body>
+<div class="cn-print">
+  <div class="actions"><button onclick="window.print()">PRINT</button> <button onclick="window.close()">CLOSE</button></div>
+  <div class="company-header">
+    <img src="{% static brand.logo_full %}" alt="{{ brand.name }}">
+    <h1>{{ brand_name }}</h1>
+    <div class="company-address">{{ brand.address_line1 }}</div>
+    <div class="company-address">{{ brand.address_line2 }}</div>
+    {% if brand.print_mobile %}<div class="company-address">Mobile No.: {{ brand.print_mobile }}</div>{% endif %}
+    {% if brand.email %}<div class="company-address">Email: {{ brand.email }}</div>{% endif %}
+    {% if brand.website %}<div class="company-address">Website: {{ brand.website }}</div>{% endif %}
+  </div>
+  <div class="sub">GST CREDIT NOTE (NARRATION)</div>
+
+  <div class="meta">
+    <div>
+      <div><strong>M/s.</strong> {{ note.party_name }}</div>
+      <div><strong>Invoice No.:</strong> {{ note.invoice_no }} <strong>Date:</strong> {{ note.invoice_date }}</div>
+      <div><strong>Place of Supply:</strong> {{ note.place_of_supply }}</div>
+    </div>
+    <div>
+      <div><strong>C.N. No.:</strong> {{ note.cn_no }}</div>
+      <div><strong>C.N. Date:</strong> {{ note.cn_date }}</div>
+      {% if note.pre_gst %}<div><strong>Pre GST:</strong> {{ note.pre_gst }}</div>{% endif %}
+    </div>
+  </div>
+
+  {% if note.nar1 or note.nar2 or note.nar3 or note.nar4 %}
+  <div class="reason">
+    <strong>Reason for Issuing Document:</strong>
+    {% if note.nar1 %}<div>{{ note.nar1 }}</div>{% endif %}
+    {% if note.nar2 %}<div>{{ note.nar2 }}</div>{% endif %}
+    {% if note.nar3 %}<div>{{ note.nar3 }}</div>{% endif %}
+    {% if note.nar4 %}<div>{{ note.nar4 }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <table style="margin-top: 12px">
+    <thead>
+      <tr>
+        <th></th><th class="num">Dis%</th><th class="num">Taxable Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Sale 0%</td><td class="num">{{ note.dis_pct.0 }}</td><td class="num">{{ note.taxable.0 }}</td></tr>
+      <tr><td>Sale 5%</td><td class="num">{{ note.dis_pct.5 }}</td><td class="num">{{ note.taxable.5 }}</td></tr>
+      <tr><td>Sale 12%</td><td class="num">{{ note.dis_pct.12 }}</td><td class="num">{{ note.taxable.12 }}</td></tr>
+      <tr><td>Sale 18%</td><td class="num">{{ note.dis_pct.18 }}</td><td class="num">{{ note.taxable.18 }}</td></tr>
+      <tr><td>Sale 28%</td><td class="num">{{ note.dis_pct.28 }}</td><td class="num">{{ note.taxable.28 }}</td></tr>
+    </tbody>
+  </table>
+
+  <table class="totals">
+    <tr><td>Amount</td><td class="num">{{ note.amount }}</td></tr>
+    <tr><td>GST Amount</td><td class="num">{{ note.gst_amt }}</td></tr>
+    <tr><td>Cess Amount</td><td class="num">{{ note.cess_amt }}</td></tr>
+    <tr><th>Net Amount</th><th class="num">{{ note.net }}</th></tr>
+  </table>
+
+  <div class="words">{{ in_words }}</div>
+</div>
+{% if not preview %}
+<script>window.addEventListener("load", function () { window.print(); });</script>
+{% endif %}
+</body>
+</html>

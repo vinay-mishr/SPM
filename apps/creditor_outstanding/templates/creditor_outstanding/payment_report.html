@@ -1,0 +1,48 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Payment Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'creditor_outstanding/js/payment_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Payment Report{% endblock %}
+{% block page_subtitle %}Creditor Outstanding &rsaquo; Payment Report{% endblock %}
+
+{% block content %}
+<section class="pe-page pe-full" data-pr
+         data-parties-url="{% url 'creditor_payment:parties' %}"
+         data-data-url="{% url 'creditor_payment:payment_report_data' %}"
+         data-export-url="{% url 'creditor_payment:payment_report_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-head pe-inline">
+    <div class="pe-mode-group"><span class="pe-mode">
+        <label class="pe-radio"><input type="radio" name="pr-mode" value="A" checked> All</label>
+        <label class="pe-radio"><input type="radio" name="pr-mode" value="S"> Single</label>
+      </span></div>
+    <label class="pe-wide">PARTY
+      <input data-party-search placeholder="Type party name and press Enter" autocomplete="off" disabled>
+      <input type="hidden" data-party-code>
+    </label>
+    <label>START DATE <input type="text" data-start-date inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+    <label>END DATE <input type="text" data-end-date inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+    <div class="pe-actions">
+      <button type="button" class="btn btn--primary" data-show>SHOW</button>
+      <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+      <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div class="pe-grid">
+    <table>
+      <thead><tr><th>DATE</th><th>VENDOR</th><th>PARTY NAME</th><th>CHQ/NEFT/RCPT NO</th><th class="num">BILLS</th><th class="num">C.DIS</th><th class="num">INTEREST</th><th class="num">AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="8">Press SHOW to view payments.</td></tr></tbody>
+      <tfoot><tr><th colspan="7" class="num">TOTAL</th><th class="num" data-total>0.00</th></tr></tfoot>
+    </table>
+  </div>
+</section>
+{% endblock %}

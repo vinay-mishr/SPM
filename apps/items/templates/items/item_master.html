@@ -1,0 +1,69 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Item Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'items/css/item_form.css' %}">
+  <script src="{% static 'items/js/item_form.js' %}" defer></script>
+  <script src="{% static 'items/js/item_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Item Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Item Master{% endblock %}
+
+{% block content %}
+<section class="master-page" data-item-master
+         data-list-url="{% url 'items:api_list' %}"
+         data-create-url="{% url 'items:api_create' %}"
+         data-update-url="{% url 'items:api_update' pk=0 %}"
+         data-delete-url="{% url 'items:api_delete' pk=0 %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Item actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+    <label class="master-search">
+      <span class="visually-hidden">Search items</span>
+      <input class="form-control" type="search" placeholder="Search code or description…" data-search autocomplete="off">
+    </label>
+  </div>
+
+  {% if read_only %}
+    <div class="alert alert--info" role="status">
+      Showing items from the SP_MACHINE database (table <strong>item</strong>). Saving changes to that database is switched off until you approve it, so Confirm and Delete will show a message and nothing is changed.</div>
+  {% endif %}
+
+  <div class="master-table-wrap">
+    <table class="table master-table item-table">
+      <thead>
+        <tr>
+          <th scope="col">Item Description</th>
+          <th scope="col">Description</th>
+          <th scope="col">Description2</th>
+          <th scope="col" class="num">Rate</th>
+          <th scope="col" class="num">GST %</th>
+          <th scope="col">Code</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No items yet. Click <strong>Add</strong> to create the first one.</p>
+  </div>
+  <p class="master-count" data-count aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"item-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "items/item_form.html" %}
+  {% include "items/item_delete.html" %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Stock Statement · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/stock_statement.css' %}">
+  <script src="{% static 'mrn/js/stock_statement.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Stock Statement{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Stock Statement{% endblock %}
+
+{% block content %}
+<section class="master-page ss-page" data-stock-statement
+         data-data-url="{% url 'mrn:stock_statement_data' %}"
+         data-export-url="{% url 'mrn:stock_statement_export' %}"
+         data-exit-url="{% url 'mrn:entry' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar ss-toolbar" role="toolbar" aria-label="Stock statement filters">
+    <label class="ss-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="ss-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="ss-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap ss-grid-wrap">
+    <table class="table master-table ss-table">
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Product Name</th>
+          <th scope="col">Unit</th>
+          <th scope="col" class="num">R.O.P.</th>
+          <th scope="col">Material</th>
+          <th scope="col" class="num">Wt./100</th>
+          <th scope="col" class="num">Opening</th>
+          <th scope="col" class="num">Received</th>
+          <th scope="col" class="num">Issued</th>
+          <th scope="col" class="num">Inv. Rate</th>
+          <th scope="col" class="num">Balance Qty</th>
+          <th scope="col" class="num">Balance Value</th>
+          <th scope="col" class="num">Weight</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No stock movements for this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"ss-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

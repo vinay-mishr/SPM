@@ -1,0 +1,18 @@
+{# Reusable All / Selective search bar — same pattern as Opening Balance Master. #}
+<form class="rm-search master-toolbar" role="search" data-search-form>
+  <fieldset class="rm-search__mode">
+    <legend class="rm-search__label">Search</legend>
+    <label><input type="radio" name="mode" value="all" checked> All</label>
+    <label><input type="radio" name="mode" value="selective"> Selective</label>
+  </fieldset>
+  <label class="rm-search__text">
+    <span class="visually-hidden">Search Text</span>
+    <input class="form-control" type="search" placeholder="Code or item name…" autocomplete="off" data-search-text>
+  </label>
+  <div class="rm-actions">
+    <button class="btn btn--primary" type="button" data-confirm{% if not can_edit %} disabled{% endif %}>Confirm</button>
+    <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+  </div>
+  <p class="rm-search__hint" data-search-hint aria-live="polite"></p>
+  <span class="rm-actions__changes" data-changes aria-live="polite"></span>
+</form>

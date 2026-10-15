@@ -1,0 +1,41 @@
+{# Shared Add / Modify / View form. material_master_form.js switches the mode. #}
+<dialog class="modal mat-form-modal" id="mat-form-dialog" aria-labelledby="mat-form-title">
+  <form novalidate data-mat-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="mat-form-title">Material Master — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform mat-form">
+        <label class="mform__label" for="mat-code">Code</label>
+        <div class="mform__field">
+          <input class="form-control mform__input mform__input--code mat-code" id="mat-code" type="text" readonly tabindex="-1" placeholder="Auto" data-field="code">
+        </div>
+
+        <label class="mform__label mform__label--required" for="mat-name">Name</label>
+        <div class="mform__field">
+          <input class="form-control mform__input" id="mat-name" name="name" type="text" maxlength="20" autocomplete="off" data-field="name">
+          <p class="mform__error" data-error-for="name"></p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-discard hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="mat-discard-title">
+      <p class="modal-discard__title" id="mat-discard-title">Discard unsaved changes?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--secondary" type="button" data-discard-cancel>Cancel</button>
+        <button class="btn btn--primary" type="button" data-discard-confirm>Exit</button>
+      </div>
+    </div>
+  </div>
+</dialog>

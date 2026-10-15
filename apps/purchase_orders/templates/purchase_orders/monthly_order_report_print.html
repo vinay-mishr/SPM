@@ -1,0 +1,67 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Order Report · {{ brand.name }}</title>
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/purchase_order_print.css' %}">
+  <style>
+    @page { size: landscape; margin: 10mm; }
+    .mor-print-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .mor-print-table th, .mor-print-table td { border: 1px solid #999; padding: 3px 6px; }
+    .mor-print-table th { background: #eee; text-align: left; }
+    .mor-print-table .num { text-align: right; }
+    .mor-print-table thead { display: table-header-group; }
+    .mor-print-negative { color: #b00020; }
+  </style>
+</head>
+<body>
+  <header class="pop-header">
+    <div class="pop-brand">
+      <img src="{% static brand.logo %}" alt="">
+      <div>
+        <h1>{{ brand.name }}</h1>
+        <p>{{ brand.tagline }}</p>
+      </div>
+    </div>
+    <div class="pop-title">
+      <h2>ORDER REPORT</h2>
+      <p>AS ON {{ start_date|date:"d-m-Y" }} TO {{ end_date|date:"d-m-Y" }}</p>
+    </div>
+  </header>
+
+  <table class="mor-print-table">
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Ord.No</th>
+        <th>Ord.Date</th>
+        <th>Party Name</th>
+        <th>City</th>
+        <th class="num">Ord.Qty</th>
+        <th class="num">Rec.Qty</th>
+        <th class="num">Bal.Qty</th>
+        <th>Des.Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in rows %}
+      <tr>
+        <td>{{ line.item_name }}</td>
+        <td>{{ line.ord_no }}</td>
+        <td>{{ line.ord_date }}</td>
+        <td>{{ line.party_name }}</td>
+        <td>{{ line.city }}</td>
+        <td class="num">{{ line.ord_qty }}</td>
+        <td class="num">{{ line.rec_qty }}</td>
+        <td class="num{% if line.bal_qty|slice:":1" == "-" %} mor-print-negative{% endif %}">{{ line.bal_qty }}</td>
+        <td>{{ line.despatch_date }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9">No orders found for the selected date range.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>window.addEventListener("load", function () { window.print(); });</script>
+</body>
+</html>

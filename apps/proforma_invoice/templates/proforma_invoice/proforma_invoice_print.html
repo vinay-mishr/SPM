@@ -1,0 +1,85 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proforma Invoice {{ note.bill_no }} &middot; {{ brand_name }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #000; margin: 12px 24px 24px; background: #fff; }
+    .pi-print .company-header { position: relative; text-align: center; margin-bottom: 6px; min-height: 100px; }
+    .pi-print .company-header img { position: absolute; left: 0; top: 0; height: 100px; width: auto; }
+    .pi-print h1 { font-size: 30px; margin: 0; }
+    .pi-print .company-address { font-size: 12px; color: #333; }
+    .pi-print .sub { text-align: center; font-weight: 700; margin-bottom: 4px; font-size: 18px; }
+    .pi-print .sub-note { text-align: center; font-size: 12px; color: #b91c1c; font-weight: 700; margin-bottom: 14px; }
+    .pi-print .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin-bottom: 14px; font-size: 15px; }
+    .pi-print table { width: 100%; border-collapse: collapse; }
+    .pi-print th, .pi-print td { border: 1px solid #000; padding: 6px 8px; font-size: 14px; }
+    .pi-print th { background: #e5e7eb; text-align: left; }
+    .pi-print td.num, .pi-print th.num { text-align: right; }
+    .pi-print .totals { width: 50%; margin-left: auto; margin-top: 10px; }
+    .pi-print .totals td { border: 1px solid #000; }
+    .pi-print .words { margin-top: 12px; font-weight: 700; }
+    .pi-print .actions { margin-bottom: 14px; }
+    @media print { .pi-print .actions { display: none; } body { margin: 10mm; } }
+  </style>
+</head>
+<body>
+<div class="pi-print">
+  <div class="actions"><button onclick="window.print()">PRINT</button> <button onclick="window.close()">CLOSE</button></div>
+  <div class="company-header">
+    <img src="{% static brand.logo_full %}" alt="{{ brand.name }}">
+    <h1>{{ brand_name }}</h1>
+    <div class="company-address">{{ brand.address_line1 }}</div>
+    <div class="company-address">{{ brand.address_line2 }}</div>
+    {% if brand.print_mobile %}<div class="company-address">Mobile No.: {{ brand.print_mobile }}</div>{% endif %}
+    {% if brand.email %}<div class="company-address">Email: {{ brand.email }}</div>{% endif %}
+    {% if brand.website %}<div class="company-address">Website: {{ brand.website }}</div>{% endif %}
+  </div>
+  <div class="sub">PROFORMA INVOICE</div>
+  <div class="sub-note">This is a quotation, not a tax invoice</div>
+
+  <div class="meta">
+    <div>
+      <div><strong>M/s.</strong> {{ note.party_name|default:note.cash_party_name }}</div>
+      <div>{{ note.city|default:note.cash_party_city }}</div>
+      <div><strong>GST No.:</strong> {{ note.gst_no }}</div>
+    </div>
+    <div>
+      <div><strong>Proforma No.:</strong> {{ note.bill_no }}</div>
+      <div><strong>Date:</strong> {{ note.date }}</div>
+      <div><strong>Supply:</strong> {% if note.supply_type == "I" %}Interstate{% else %}Within State{% endif %}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Code</th><th>Item Description</th><th>HSN</th><th>Curr</th>
+        <th class="num">Qty</th><th class="num">Rate</th><th class="num">GST%</th><th class="num">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in note.items %}
+      <tr>
+        <td>{{ forloop.counter }}</td><td>{{ l.item_code }}</td><td>{{ l.item_name }}</td><td>{{ l.hsn_code }}</td>
+        <td>{{ l.currency }}</td><td class="num">{{ l.qty }}</td><td class="num">{{ l.rate }}</td>
+        <td class="num">{{ l.gst_pct }}</td><td class="num">{{ l.amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if note.remarks %}<p><strong>Remarks:</strong> {{ note.remarks }}</p>{% endif %}
+
+  <table class="totals">
+    <tr><th>Net Amount</th><th class="num">{{ note.net_amount }}</th></tr>
+  </table>
+
+  <div class="words">{{ in_words }}</div>
+</div>
+{% if not preview %}
+<script>window.addEventListener("load", function () { window.print(); });</script>
+{% endif %}
+</body>
+</html>

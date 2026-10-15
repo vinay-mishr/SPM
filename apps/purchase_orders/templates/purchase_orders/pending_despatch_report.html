@@ -1,0 +1,73 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Party Wise Pending P.O. Despatch Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/pending_despatch_report.css' %}">
+  <script src="{% static 'purchase_orders/js/pending_despatch_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Party Wise Pending P.O. Despatch Report{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Party Wise Pending P.O. Despatch Report{% endblock %}
+
+{% block content %}
+<section class="master-page pdr-page" data-despatch-report
+         data-data-url="{% url 'purchase_orders:pending_despatch_report_data' %}"
+         data-export-url="{% url 'purchase_orders:pending_despatch_report_export' %}"
+         data-items-url="{% url 'purchase_orders:api_parts' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Pending despatch report filters">
+    <fieldset class="pdr-mode">
+      <legend class="visually-hidden">All / Single</legend>
+      <label><input type="radio" name="pdr-mode" value="all" checked> All</label>
+      <label><input type="radio" name="pdr-mode" value="single"> Single</label>
+    </fieldset>
+
+    <div class="pdr-party">
+      <span class="pdr-party__label">Item Name</span>
+      <input class="form-control pdr-party__name" type="text" autocomplete="off" placeholder="Type item name to search…" data-item-search disabled>
+      <input class="form-control pdr-party__code" type="text" maxlength="16" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+    </div>
+
+    <label class="pdr-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="pdr-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <label class="pdr-filter">Run Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-run-date data-date-mask>
+    </label>
+
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-search><span class="master-toolbar__key">S</span>earch</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap pdr-grid-wrap">
+    <table class="table master-table pdr-table">
+      <thead>
+        <tr>
+          <th scope="col">Ord. No</th>
+          <th scope="col">Ord. Date</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Item Name</th>
+          <th scope="col" class="num">Qty</th>
+          <th scope="col">Des. Date</th>
+          <th scope="col" class="num">Delay Days</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No pending despatches found.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pdr-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

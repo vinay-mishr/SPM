@@ -1,0 +1,36 @@
+/* Pending MRN report — read-only report. Shared master / toolbar / table styles
+   come from static/css/components.css; only this screen's specifics live here. */
+
+.pmrn-toolbar {
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.pmrn-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pmrn-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 140px;
+}
+
+.pmrn-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.pmrn-error[hidden] { display: none; }
+
+.pmrn-table { min-width: 700px; font-size: 0.8125rem; }
+.pmrn-table th, .pmrn-table td { padding: 4px 8px; white-space: nowrap; }

@@ -1,0 +1,45 @@
+/* Single Issue Report — read-only report. Shared master / toolbar / table styles
+   come from static/css/components.css; only this screen's specifics live here. */
+
+.srr-toolbar {
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.srr-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.srr-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 140px;
+}
+
+.srr-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.srr-error[hidden] { display: none; }
+
+.srr-table { min-width: 700px; font-size: 0.8125rem; }
+.srr-table th, .srr-table td { padding: 4px 8px; white-space: nowrap; }
+.srr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.srr-page fieldset.srr-filter { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 2px 8px; }
+.srr-page fieldset.srr-filter legend { font-size: 12px; font-weight: 700; }
+.srr-page fieldset.srr-filter label { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.srr-page fieldset.srr-filter input[type=radio] { width: 14px; height: 14px; margin: 0; }
+.srr-page .sl-part table { border-collapse: collapse; width: 100%; }
+.srr-page .sl-part th, .srr-page .sl-part td { border: 1px solid #000; padding: 2px 6px; font-size: 0.95rem; }
+.srr-page .sl-part th { background: #bfe0c9; }
+.srr-page .sl-part p { margin: 2px 0; font-size: 1rem; }

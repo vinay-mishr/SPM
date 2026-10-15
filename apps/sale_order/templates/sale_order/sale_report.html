@@ -1,0 +1,51 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Sale Order Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'sale_order/css/sale_order.css' %}">
+  <script src="{% static 'sale_order/js/sale_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Sale Order Report{% endblock %}
+{% block page_subtitle %}Sale Order &rsaquo; Sale Order Report{% endblock %}
+
+{% block content %}
+<section class="master-page so-page" data-sale-report
+         data-data-url="{% url 'sale_order:report_data' %}"
+         data-export-url="{% url 'sale_order:report_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar so-toolbar" role="toolbar" aria-label="Sale order report filters">
+    <div class="so-filters">
+      <label class="so-filter">START DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="so-filter">END DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table so-table">
+      <thead>
+        <tr><th>ORDER NO</th><th>DATE</th><th>PARTY NAME</th><th>PARTY CITY</th><th class="num">ORDER VALUE</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+      <tfoot>
+        <tr class="pl-total"><td colspan="4">Total</td><td class="num" data-total>0.00</td></tr>
+      </tfoot>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No sale orders for this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"sr-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

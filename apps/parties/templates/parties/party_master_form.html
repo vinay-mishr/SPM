@@ -1,0 +1,207 @@
+{# Shared Add / Modify / View form. party_master_form.js switches the mode. #}
+<dialog class="modal party-form-modal" id="party-form-dialog" aria-labelledby="party-form-title">
+  <form class="party-form" novalidate data-party-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="party-form-title">Customer Master — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="pform">
+        {# ---------------- Left column ---------------- #}
+        <div class="mform pform__col">
+          <label class="mform__label" for="p-party_code">Party Code</label>
+          <div class="mform__field">
+            <input class="form-control mform__input mform__input--code" id="p-party_code" type="text" readonly tabindex="-1" placeholder="Auto" data-field="party_code">
+          </div>
+
+          <label class="mform__label mform__label--required" for="p-name">Name</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-name" name="name" type="text" maxlength="40" autocomplete="off" required data-field="name">
+            <p class="mform__error" data-error-for="name"></p>
+          </div>
+
+          <label class="mform__label" for="p-address_1">Address 1</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-address_1" name="address_1" type="text" maxlength="50" autocomplete="off" data-field="address_1">
+            <p class="mform__error" data-error-for="address_1"></p>
+          </div>
+
+          <label class="mform__label" for="p-address_2">Address 2</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-address_2" name="address_2" type="text" maxlength="50" autocomplete="off" data-field="address_2">
+            <p class="mform__error" data-error-for="address_2"></p>
+          </div>
+
+          <label class="mform__label" for="p-address_3">Address 3</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-address_3" name="address_3" type="text" maxlength="50" autocomplete="off" data-field="address_3">
+            <p class="mform__error" data-error-for="address_3"></p>
+          </div>
+
+          <label class="mform__label" for="p-city">City</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-city" name="city" type="text" maxlength="50" autocomplete="off" data-field="city">
+            <p class="mform__error" data-error-for="city"></p>
+          </div>
+
+          <label class="mform__label" for="p-pin">PIN</label>
+          <div class="mform__field">
+            <input class="form-control mform__input pform__short" id="p-pin" name="pin" type="text" inputmode="numeric" maxlength="6" autocomplete="off" data-field="pin">
+            <p class="mform__error" data-error-for="pin"></p>
+          </div>
+
+          <label class="mform__label" for="p-gst_no">GST No.</label>
+          <div class="mform__field">
+            <input class="form-control mform__input pform__upper" id="p-gst_no" name="gst_no" type="text" maxlength="15" autocomplete="off" placeholder="e.g. 03ABCDE1234F1Z5" data-field="gst_no">
+            <p class="mform__error" data-error-for="gst_no"></p>
+          </div>
+
+          <label class="mform__label" for="p-gst_category">GST Category</label>
+          <div class="mform__field">
+            <select class="form-control mform__input" id="p-gst_category" name="gst_category" data-field="gst_category">
+              <option value="">—</option>
+              {% for value, label in gst_categories %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+            </select>
+            <p class="mform__error" data-error-for="gst_category"></p>
+          </div>
+
+          <label class="mform__label" for="p-state_code">State</label>
+          <div class="mform__field pform__state">
+            <input class="form-control mform__input mform__input--code pform__short" id="p-state_code_display" type="text" readonly tabindex="-1" data-state-code-display>
+            <select class="form-control mform__input" id="p-state_code" name="state_code" data-field="state_code">
+              <option value="">— Select state —</option>
+              {% for s in states %}<option value="{{ s.gcode }}" data-gst="{{ s.gst_code }}">{% if s.gst_code %}{{ s.gst_code }} {% endif %}{{ s.name }}</option>{% endfor %}
+            </select>
+            <p class="mform__error" data-error-for="state_code"></p>
+          </div>
+
+          <label class="mform__label" for="p-mkt_manager">Mkt Manager</label>
+          <div class="mform__field">
+            <select class="form-control mform__input" id="p-mkt_manager" name="mkt_manager" data-field="mkt_manager">
+              <option value="">— None —</option>
+              {% for code, label in mkt_managers %}<option value="{{ code }}">{{ code }} – {{ label }}</option>{% endfor %}
+            </select>
+            <p class="mform__error" data-error-for="mkt_manager"></p>
+          </div>
+
+          <label class="mform__label" for="p-rep_code">Rep Code</label>
+          <div class="mform__field">
+            <select class="form-control mform__input" id="p-rep_code" name="rep_code" data-field="rep_code">
+              <option value="">— None —</option>
+              {% for code, label in reps %}<option value="{{ code }}">{{ code }} – {{ label }}</option>{% endfor %}
+            </select>
+            <p class="mform__error" data-error-for="rep_code"></p>
+          </div>
+        </div>
+
+        {# ---------------- Right column ---------------- #}
+        <div class="mform pform__col">
+          <label class="mform__label" for="p-contact_person_1">Con. Person 1</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-contact_person_1" name="contact_person_1" type="text" maxlength="20" autocomplete="off" data-field="contact_person_1">
+            <p class="mform__error" data-error-for="contact_person_1"></p>
+          </div>
+
+          <label class="mform__label" for="p-mobile_1">Mobile 1</label>
+          <div class="mform__field">
+            <input class="form-control mform__input pform__short" id="p-mobile_1" name="mobile_1" type="tel" inputmode="tel" maxlength="20" autocomplete="off" data-field="mobile_1">
+            <p class="mform__error" data-error-for="mobile_1"></p>
+          </div>
+
+          <label class="mform__label" for="p-contact_person_2">Con. Person 2</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-contact_person_2" name="contact_person_2" type="text" maxlength="20" autocomplete="off" data-field="contact_person_2">
+            <p class="mform__error" data-error-for="contact_person_2"></p>
+          </div>
+
+          <label class="mform__label" for="p-mobile_2">Mobile 2</label>
+          <div class="mform__field">
+            <input class="form-control mform__input pform__short" id="p-mobile_2" name="mobile_2" type="tel" inputmode="tel" maxlength="20" autocomplete="off" data-field="mobile_2">
+            <p class="mform__error" data-error-for="mobile_2"></p>
+          </div>
+
+          <label class="mform__label" for="p-email">Email</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-email" name="email" type="text" inputmode="email" maxlength="30" autocomplete="off" data-field="email">
+            <p class="mform__error" data-error-for="email"></p>
+          </div>
+
+          <label class="mform__label" for="p-transport">Transport</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-transport" name="transport" type="text" maxlength="25" list="party-transport-list" autocomplete="off" data-field="transport">
+            <p class="mform__error" data-error-for="transport"></p>
+          </div>
+
+          <label class="mform__label" for="p-credit_days">Cr Days</label>
+          <div class="mform__field">
+            <input class="form-control mform__input mform__input--num pform__short" id="p-credit_days" name="credit_days" type="number" inputmode="numeric" min="0" step="1" data-field="credit_days">
+            <p class="mform__error" data-error-for="credit_days"></p>
+          </div>
+
+          <label class="mform__label" for="p-is_active">Active</label>
+          <div class="mform__field">
+            <select class="form-control mform__input pform__short" id="p-is_active" name="is_active" data-field="is_active">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+
+          <label class="mform__label" for="p-association">Association</label>
+          <div class="mform__field">
+            <input class="form-control mform__input" id="p-association" name="association" type="text" maxlength="4" list="party-association-list" autocomplete="off" data-field="association">
+            <p class="mform__error" data-error-for="association"></p>
+          </div>
+
+          <label class="mform__label" for="p-supply_type">W / I</label>
+          <div class="mform__field">
+            <select class="form-control mform__input" id="p-supply_type" name="supply_type" data-field="supply_type">
+              <option value="">—</option>
+              {% for value, label in supply_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+            </select>
+            <p class="mform__error" data-error-for="supply_type"></p>
+          </div>
+
+          <label class="mform__label" for="p-permit">Permit</label>
+          <div class="mform__field">
+            <select class="form-control mform__input pform__short" id="p-permit" name="permit" data-field="permit">
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {# Type-ahead suggestions from values already used on other parties. #}
+      {% for field, values in suggestions.items %}
+        <datalist id="party-{{ field }}-list" data-suggestions="{{ field }}">
+          {% for value in values %}<option value="{{ value }}">{% endfor %}
+        </datalist>
+      {% endfor %}
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        Confirm
+      </button>
+      <button class="btn btn--secondary" type="button" data-form-exit>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        Exit
+      </button>
+    </footer>
+  </form>
+
+  {# "Discard unsaved changes?" prompt, shown inside the form dialog. #}
+  <div class="modal-discard" data-discard hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="party-discard-title">
+      <p class="modal-discard__title" id="party-discard-title">Discard unsaved changes?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--secondary" type="button" data-discard-cancel>Cancel</button>
+        <button class="btn btn--primary" type="button" data-discard-confirm>Exit</button>
+      </div>
+    </div>
+  </div>
+</dialog>

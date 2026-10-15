@@ -1,0 +1,160 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quotation {{ q.quot_no }} · {{ brand_name }}</title>
+  <style>
+    @page { size: A4; margin: 12mm 12mm 14mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #000; background: #e9ecef; }
+    .sheet { max-width: 210mm; margin: 0 auto; padding: 12mm; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.15); }
+    .toolbar { max-width: 210mm; margin: 0 auto 12px; display: flex; gap: 8px; justify-content: flex-end; }
+    .toolbar button, .toolbar a { padding: 8px 16px; font: 600 14px Arial, sans-serif; border: 1px solid #333; border-radius: 6px; background: #fff; color: #000; cursor: pointer; text-decoration: none; }
+    .toolbar button:focus-visible, .toolbar a:focus-visible { outline: 3px solid #6fa982; outline-offset: 2px; }
+    .toolbar .primary { background: #000; color: #fff; }
+    .company { display: grid; grid-template-columns: 90px 1fr 90px; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 2px solid #000; }
+    .company img { width: 90px; height: auto; }
+    .company__text { text-align: center; }
+    .company h1 { margin: 0; font-size: 24px; letter-spacing: .04em; }
+    .company p { margin: 1px 0; font-size: 11px; }
+    .doc-title { margin: 10px 0 8px; text-align: center; font-size: 16px; font-weight: 700; letter-spacing: .2em; }
+    .meta { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-bottom: 10px; }
+    .box { padding: 8px 10px; border: 1px solid #000; }
+    .box p { margin: 2px 0; }
+    .label { display: inline-block; min-width: 92px; font-weight: 700; }
+    .subject { margin: 0 0 8px; }
+    table.items { width: 100%; border-collapse: collapse; }
+    table.items th, table.items td { padding: 5px 6px; border: 1px solid #000; vertical-align: top; }
+    table.items th { background: #e5e7eb; font-size: 11px; text-align: left; }
+    table.items thead { display: table-header-group; }
+    table.items tr { page-break-inside: avoid; break-inside: avoid; }
+    .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .particular { margin-top: 3px; font-size: 11px; white-space: pre-line; }
+    .lower { display: grid; grid-template-columns: 1fr 260px; gap: 12px; margin-top: 10px; page-break-inside: avoid; break-inside: avoid; }
+    table.totals { width: 100%; border-collapse: collapse; }
+    table.totals td { padding: 5px 8px; border: 1px solid #000; }
+    table.totals tr.net td { font-weight: 700; font-size: 13px; background: #f3f4f6; }
+    .section { margin-top: 10px; page-break-inside: avoid; break-inside: avoid; }
+    .section h2 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    .section p { margin: 1px 0; }
+    .remarks { white-space: pre-line; }
+    .sign { display: flex; justify-content: flex-end; margin-top: 28px; page-break-inside: avoid; break-inside: avoid; }
+    .sign div { min-width: 220px; text-align: center; }
+    .sign .space { height: 48px; }
+    .note { font-size: 11px; font-style: italic; }
+    @media print {
+      body { padding: 0; background: #fff; }
+      .sheet { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+      .toolbar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar" role="toolbar" aria-label="Print actions">
+    <button class="primary" type="button" onclick="window.print()">Print</button>
+    <a href="{% url 'quotations:pdf' q.quot_no %}" target="_blank" rel="noopener">Download PDF</a>
+    <button type="button" onclick="window.close()">Close</button>
+  </div>
+
+  <main class="sheet">
+    <header class="company">
+      <img src="{% static brand.logo_full %}" alt="{{ brand.name }} logo">
+      <div class="company__text">
+        <h1>{{ brand_name }}</h1>
+        {% if brand.address_line1 %}<p>{{ brand.address_line1 }}</p>{% endif %}
+        {% if brand.address_line2 %}<p>{{ brand.address_line2 }}</p>{% endif %}
+        <p>{% if brand.print_mobile %}Mobile: {{ brand.print_mobile }}{% endif %}{% if brand.email %} · Email: {{ brand.email }}{% endif %}</p>
+        <p>{% if brand.gstin %}GSTIN: {{ brand.gstin }}{% endif %}{% if brand.website %} · {{ brand.website }}{% endif %}</p>
+      </div>
+      <span></span>
+    </header>
+
+    <div class="doc-title">QUOTATION</div>
+
+    <section class="meta">
+      <div class="box">
+        <p><strong>To,</strong></p>
+        <p><strong>M/s. {{ q.party_name }}</strong></p>
+        {% for line in q.party_address %}<p>{% if forloop.first %}<span class="label">Address:</span>{% else %}<span class="label"></span>{% endif %}{{ line }}</p>{% empty %}{% if q.city %}<p>{{ q.city }}</p>{% endif %}{% endfor %}
+        {% if q.phone and q.phone != "." %}<p><span class="label">Phone:</span>{{ q.phone }}</p>{% endif %}
+        {% if q.party_gstin %}<p><span class="label">GSTIN:</span>{{ q.party_gstin }}</p>{% endif %}
+        {% for k in q.kind_attention %}{% if k %}<p>{% if forloop.first %}<span class="label">Kind Attn.:</span>{% else %}<span class="label"></span>{% endif %}{{ k }}</p>{% endif %}{% endfor %}
+      </div>
+      <div class="box">
+        <p><span class="label">Quotation No.</span>{{ q.quot_no }}</p>
+        <p><span class="label">Date</span>{{ q.quot_date|slice:"8:10" }}/{{ q.quot_date|slice:"5:7" }}/{{ q.quot_date|slice:"0:4" }}</p>
+        {% if q.ref_no %}<p><span class="label">Ref. No.</span>{{ q.ref_no }}</p>{% endif %}
+        {% if q.ref_date %}<p><span class="label">Ref. Date</span>{{ q.ref_date|slice:"8:10" }}/{{ q.ref_date|slice:"5:7" }}/{{ q.ref_date|slice:"0:4" }}</p>{% endif %}
+        <p><span class="label">GST</span>{% if q.gst_applicable == "Y" %}Applicable{% else %}Not applicable{% endif %}</p>
+      </div>
+    </section>
+
+    {% if q.subject %}<p class="subject"><strong>Subject:</strong> {{ q.subject }}</p>{% endif %}
+    <p>Dear Sir / Madam, we are pleased to quote our best rates as under:</p>
+
+    <table class="items">
+      <thead>
+        <tr>
+          <th>S.No</th><th>Code</th><th>Description</th><th>HSN Code</th><th>Curr</th>
+          <th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th>
+          <th class="num">Disc %</th><th class="num">Disc Amt</th><th class="num">GST %</th><th class="num">GST Amt</th><th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in q.items %}
+          <tr>
+            <td>{{ l.sno }}</td>
+            <td>{{ l.item_code }}</td>
+            <td><strong>{{ l.item_name }}</strong>{% if l.particular %}<div class="particular">{{ l.particular }}</div>{% endif %}</td>
+            <td>{{ l.hsn_code }}</td>
+            <td>{{ l.currency }}</td>
+            <td class="num">{{ l.qty }}{% if l.unit %} {{ l.unit }}{% endif %}</td>
+            <td class="num">{{ l.rate }}</td>
+            <td class="num">{{ l.amount }}</td>
+            <td class="num">{{ l.disc_pct_effective }}</td>
+            <td class="num">{{ l.disc_amt }}</td>
+            <td class="num">{{ l.gst_pct }}</td>
+            <td class="num">{{ l.gst_amt }}</td>
+            <td class="num">{{ l.line_total }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="lower">
+      <div>
+        {% if q.remarks %}
+          <div class="section"><h2>Remarks</h2><p class="remarks">{{ q.remarks }}</p></div>
+        {% endif %}
+        {% if not q.currency %}<p class="note">Items are quoted in more than one currency.</p>{% endif %}
+      </div>
+      <table class="totals" aria-label="Totals">
+        <tr><td>Total Amount{% if q.currency %} ({{ q.currency }}){% endif %}</td><td class="num">{{ q.total_amount }}</td></tr>
+        <tr><td>Discount</td><td class="num">{{ q.discount_amount }}</td></tr>
+        <tr><td>GST Amount</td><td class="num">{{ q.gst_amount }}</td></tr>
+        <tr class="net"><td>Net Amount</td><td class="num">{{ q.net_amount }}</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Terms &amp; Conditions</h2>
+      {% for t in q.terms %}{% if t %}<p>{{ t }}</p>{% endif %}{% endfor %}
+    </div>
+
+    <div class="section">
+      <h2>Bank Details</h2>
+      {% for b in q.bank %}{% if b %}<p>{{ b }}</p>{% endif %}{% endfor %}
+    </div>
+
+    <div class="sign">
+      <div>
+        <p><strong>For {{ brand_name }}</strong></p>
+        <div class="space"></div>
+        <p>Authorised Signatory</p>
+      </div>
+    </div>
+  </main>
+  {% if autoprint %}<script>window.addEventListener("load", function () { window.print(); });</script>{% endif %}
+</body>
+</html>

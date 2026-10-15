@@ -1,0 +1,87 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Opening Balance Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'parties/css/opening_balance.css' %}">
+  <script src="{% static 'parties/js/opening_balance.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Opening Balance Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Opening Balance Master (party ledger opening balances){% endblock %}
+
+{% block content %}
+<section class="ob" data-opening-balance
+         data-data-url="{% url 'parties:opening_balance_data' %}"
+         data-save-url="{% url 'parties:opening_balance_save' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <form class="ob-search master-toolbar" role="search" data-search-form>
+    <fieldset class="ob-search__mode">
+      <legend class="ob-search__label">Search</legend>
+      <label><input type="radio" name="mode" value="all" checked> All</label>
+      <label><input type="radio" name="mode" value="selective"> Selective</label>
+    </fieldset>
+    <label class="ob-search__text">
+      <span class="visually-hidden">Search Text</span>
+      <input class="form-control" type="search" placeholder="Code, ledger description or GST no." autocomplete="off" data-search-text>
+    </label>
+    <p class="ob-search__hint" data-search-hint aria-live="polite"></p>
+    <div class="ob-actions">
+      <button class="btn btn--primary" type="button" data-confirm{% if not can_edit %} disabled{% endif %}>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </form>
+
+  {% if not can_edit %}
+    <div class="alert alert--info" role="status">
+      View only: changing opening balances needs the “Can change opening balance” permission{% if not request.user.is_superuser %} (ask your administrator){% endif %}.
+    </div>
+  {% endif %}
+
+  <div class="ob-grid master-table-wrap" data-grid-wrap>
+    <table class="table ob-table">
+      <thead>
+        <tr>
+          <th scope="col" class="num ob-col-sno">Sno</th>
+          <th scope="col" class="ob-col-code">Code</th>
+          <th scope="col">Ledger Description</th>
+          <th scope="col" class="num ob-col-amt">Debit</th>
+          <th scope="col" class="num ob-col-amt">Credit</th>
+          <th scope="col" class="ob-col-gst">GST No.</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+      <tfoot>
+        <tr class="ob-total">
+          <th scope="row" colspan="3">Total (all parties)</th>
+          <td class="num" data-total-debit>0.00</td>
+          <td class="num" data-total-credit>0.00</td>
+          <td class="ob-total__changes" data-changes></td>
+        </tr>
+      </tfoot>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No records found</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"ob-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+<dialog class="modal modal--sm" id="ob-exit-dialog" aria-labelledby="ob-exit-title">
+  <header class="modal__header">
+    <h2 class="modal__title" id="ob-exit-title">Opening Balance Master</h2>
+  </header>
+  <div class="modal__body">
+    <p class="modal-question">Unsaved changes exist. Do you want to exit?</p>
+  </div>
+  <footer class="modal__footer">
+    <button class="btn btn--primary" type="button" data-exit-yes>Yes</button>
+    <button class="btn btn--secondary" type="button" data-exit-no>No</button>
+  </footer>
+</dialog>
+{% endblock %}

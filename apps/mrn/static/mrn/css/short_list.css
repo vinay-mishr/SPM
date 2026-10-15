@@ -1,0 +1,12 @@
+.sl-filters { display: flex; gap: 14px; align-items: flex-end; }
+.sl-filter { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 700; }
+.sl-filter input, .sl-filter select { min-height: 34px; padding: 5px 10px; width: 170px; border: 2px solid #000; }
+.master-page[data-layout] .sl-heading { font-size: 1.35rem; }
+.master-page[data-layout] .master-table,
+.master-page[data-layout] .master-table th,
+.master-page[data-layout] .master-table td { font-size: 1.35rem; }
+.master-page[data-layout] .master-table th,
+.master-page[data-layout] .master-table td { padding: 2px 5px; line-height: 1.2; }
+.master-page[data-layout] .master-table { width: 100%; table-layout: auto; }
+.master-page[data-layout] .master-table td { font-weight: 700; font-size: 16px; color: #000; }
+.master-page[data-layout] .master-table td { white-space: normal; }

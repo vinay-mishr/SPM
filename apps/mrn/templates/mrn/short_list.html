@@ -1,0 +1,51 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{% if vfp %}Short List{% else %}Short List New{% endif %} · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/short_list.css' %}">
+  <script src="{% static 'mrn/js/short_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}{% if vfp %}Short List{% else %}Short List New{% endif %}{% endblock %}
+{% block page_subtitle %}MRN &rsaquo; {% if vfp %}Short List{% else %}Short List New{% endif %}{% endblock %}
+
+{% block content %}
+<section class="master-page" data-short-list data-layout="{% if vfp %}vfp{% else %}new{% endif %}"
+         data-data-url="{% url 'mrn:short_list_data' %}"
+         data-export-url="{% url 'mrn:short_list_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar" role="toolbar" aria-label="Short list actions">
+    <div class="sl-filters">
+      <label class="sl-filter">RUN DATE
+        <input class="form-control" value="{{ run_date }}" readonly tabindex="-1">
+      </label>
+      {% if not vfp %}
+      <label class="sl-filter">A-ALL / P-PENDING PO
+        <select class="form-control" data-mode>
+          <option value="A" selected>A - All</option>
+          <option value="P">P - Pending PO</option>
+        </select>
+      </label>
+      {% endif %}
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-show>Show</button>
+      <button class="btn btn--secondary" type="button" data-excel>Excel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+  <div class="master-table-wrap">
+    <table class="table master-table">
+      {% if vfp %}
+      <thead><tr><th>Code</th><th>Item Name</th><th>Unit</th><th class="num">Cur.Stk.</th><th class="num">Reorder Level</th><th class="num">Short Qty</th><th class="num">Qty On Order</th></tr></thead>
+      {% else %}
+      <thead><tr><th>Code</th><th>Product Name</th><th>Unit</th><th class="num">Re-Ord Qty</th><th class="num">Current Stock</th><th class="num">Pending Sale Ord</th><th class="num">Short Qty</th><th class="num">Qty On Ordered</th></tr></thead>
+      {% endif %}
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No parts are below their reorder level.</p>
+  </div>
+</section>
+{% endblock %}

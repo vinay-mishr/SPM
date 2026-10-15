@@ -1,0 +1,225 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tax Invoice {{ note.bill_no }} &middot; {{ brand_name }}</title>
+  <style>
+    @page { size: A4; margin: 8mm; }
+    html, body { height: 100%; }
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #000; margin: 6px; background: #fff; }
+    .gi-print { border: 1.5px solid #000; display: flex; flex-direction: column; min-height: calc(100vh - 12px); width: 99%; margin: 0 auto; }
+    .gi-print .doc-title { text-align: center; font-size: 20px; font-weight: 700; padding: 6px; border-bottom: 1px solid #000; position: relative; }
+    .gi-print .doc-title .copy-label { position: absolute; right: 10px; top: 8px; font-size: 11px; font-weight: 400; }
+    .gi-print .company-header { position: relative; text-align: center; padding: 8px; border-bottom: 1px solid #000; min-height: 90px; }
+    .gi-print .company-header img { position: absolute; left: 10px; top: 8px; height: 80px; width: auto; }
+    .gi-print h1 { font-size: 26px; margin: 0; color: #000; }
+    .gi-print .company-address { font-size: 11px; color: #333; margin: 1px 0; }
+    .gi-print .strip { display: flex; border-bottom: 1px solid #000; }
+    .gi-print .strip > div { flex: 1; padding: 4px 10px; font-size: 12px; }
+    .gi-print .strip > div:first-child { border-right: 1px solid #000; }
+    .gi-print .meta { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #000; }
+    .gi-print .meta > div { padding: 4px 10px; }
+    .gi-print .meta > div:first-child { border-right: 1px solid #000; }
+    .gi-print .meta p { margin: 1px 0; }
+    .gi-print .boxes { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #000; }
+    .gi-print .boxes > div { padding: 6px 10px; }
+    .gi-print .boxes > div:first-child { border-right: 1px solid #000; }
+    .gi-print .boxes h3 { margin: 0 0 3px; font-size: 11px; text-transform: uppercase; text-decoration: underline; }
+    .gi-print .boxes p { margin: 1px 0; }
+    .gi-print .refs { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid #000; }
+    .gi-print .refs > div { padding: 4px 10px; border-right: 1px solid #000; }
+    .gi-print .refs > div:last-child { border-right: none; }
+    /* Items grid style matches apps.purchase_orders' own print table (purchase_order_print.css):
+       thin left/right column dividers (no per-cell top/bottom border), bold text, top-align,
+       header border only above/below the header rows -- same look, same column set as before. */
+    /* flex: 1 1 auto makes the table itself grow to fill whatever vertical
+       space the flex column (.gi-print) has left -- pure CSS, resolved by the
+       browser's own layout engine at layout time, so (unlike a JS-measured
+       spacer row) it can't go stale between on-screen preview and the actual
+       print pass. */
+    table.items { width: 100%; border-collapse: collapse; flex: 1 1 auto; }
+    table.items th, table.items td { padding: 3px 5px; font-size: 10.5px; font-weight: 700; vertical-align: top; border-left: 1px solid #000; border-right: 1px solid #000; }
+    table.items tr > *:first-child { border-left: none; }
+    table.items tr > *:last-child { border-right: none; }
+    table.items thead th { border-top: 1px solid #000; border-bottom: 1px solid #000; background: #fff; text-align: center; }
+    table.items td.num, table.items th.num { text-align: right; white-space: nowrap; }
+    table.items td.desc { font-weight: 400; }
+    /* table.items has flex: 1 1 auto (see above) so it fills the flex column's
+       remaining space -- Chrome distributes that extra row height proportionally
+       among EVERY row without its own specified height, which without this would
+       mean the real data rows get stretched apart too, not just the blank filler
+       ones. Giving data rows a (content-overridden) explicit height excludes them
+       from that redistribution, so only the unconstrained fill-rows absorb it. */
+    table.items tbody tr:not(.fill-row) { height: 1px; }
+    table.items .fill-row td { height: auto; }
+    .gi-print .lower { display: grid; grid-template-columns: 1fr 230px; border-top: 1px solid #000; }
+    .gi-print .lower-left { border-right: 1px solid #000; padding: 6px 10px; display: flex; flex-direction: column; gap: 2px; }
+    .gi-print .bank-row { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 10px; }
+    .gi-print .rate-breakdown { flex: none; text-align: right; white-space: nowrap; }
+    .gi-print .words p { margin: 2px 0; }
+    .gi-print .rate-line { margin: 2px 0; }
+    .gi-print .lower-left h3 { margin: 6px 0 2px; font-size: 11px; text-transform: uppercase; }
+    .gi-print .lower-left .bank p { margin: 1px 0; }
+    table.totals { width: 100%; border-collapse: collapse; }
+    table.totals td { padding: 3px 8px; font-size: 11px; border-bottom: 1px solid #000; }
+    table.totals td.num { text-align: right; white-space: nowrap; }
+    table.totals tr.net td { font-weight: 700; font-size: 13px; border-top: 1px solid #000; border-bottom: none; }
+    .gi-print .terms-sign { display: grid; grid-template-columns: 1fr 230px; border-top: 1px solid #000; }
+    .gi-print .terms-sign > div { padding: 6px 10px; }
+    .gi-print .terms-sign > div:first-child { border-right: 1px solid #000; }
+    .gi-print .terms-sign ol { margin: 2px 0 0; padding-left: 16px; }
+    .gi-print .sign-box { display: flex; flex-direction: column; justify-content: space-between; height: 100%; text-align: center; }
+    @media print { body { margin: 0; } .gi-print { min-height: 277mm; } }
+  </style>
+</head>
+<body>
+<div class="gi-print">
+  <div class="doc-title">TAX INVOICE<span class="copy-label">Original For Recipient</span></div>
+
+  <div class="company-header">
+    {% if brand.logo_full %}<img src="{% static brand.logo_full %}" alt="{{ brand.name }}">{% endif %}
+    <h1>{{ brand_name }}</h1>
+    {% if brand.address_line1 %}<div class="company-address">{{ brand.address_line1 }}</div>{% endif %}
+    {% if brand.address_line2 %}<div class="company-address">{{ brand.address_line2 }}</div>{% endif %}
+    {% if brand.print_mobile %}<div class="company-address">Mobile No: {{ brand.print_mobile }}</div>{% endif %}
+    <div class="company-address">
+      {% if brand.email %}Email: {{ brand.email }}{% endif %}{% if brand.website %} &middot; Website: {{ brand.website }}{% endif %}
+    </div>
+  </div>
+
+  <div class="strip">
+    <div><strong>GSTIN:</strong> {{ brand.gstin }}<br>
+      <strong>Invoice Serial Number:</strong> {{ note.bill_no }}<br>
+      <strong>Invoice Date:</strong> {{ note.date }}<br>
+      <strong>Tax Is Payable on Reverse Charge:</strong> {% if note.reverse_charge %}Yes{% else %}No{% endif %}</div>
+    <div><strong>Transportation Mode:</strong> {{ note.transport }}<br><strong>Veh. No.:</strong> {{ note.vehicle_no }}<br>
+      <strong>Date &amp; Time of Supply:</strong> {{ note.date_of_supply|default:"-" }} {{ note.time_of_supply }}<br>
+      <strong>Place Of Supply:</strong> {{ note.place_of_supply|default:"-" }}</div>
+  </div>
+
+  <div class="boxes">
+    <div>
+      <h3>Details of Receiver (Billed to)</h3>
+      <p><strong>Name:</strong> {{ note.party_name|default:note.cash_party_name }}</p>
+      <p><strong>Address:</strong> {{ note.party_address }}</p>
+      {% if note.city %}<p>{{ note.city }}</p>{% endif %}
+      <p><strong>State Code:</strong> {{ note.party_state_code }} {{ note.party_state_name }}</p>
+      <p><strong>GSTIN:</strong> {{ note.gst_no }}</p>
+    </div>
+    <div>
+      <h3>Details of Consignee (Shipped to)</h3>
+      <p><strong>Name:</strong> {{ note.consignee_name }}</p>
+      <p><strong>Address:</strong> {{ note.consignee_address }}</p>
+    </div>
+  </div>
+
+  <div class="refs">
+    <div><strong>Order No.:</strong> {{ note.order_no }}<br><strong>Order Date:</strong> {{ note.order_date|default:"-" }}</div>
+    <div><strong>G.R.No.:</strong> {{ note.gr_no }}<br><strong>G.R.Date:</strong> {{ note.gr_date|default:"-" }}</div>
+    <div><strong>E-Way No.:</strong> {{ note.eway_no }}<br><strong>E-Way Date:</strong> {{ note.eway_date|default:"-" }}</div>
+  </div>
+
+  <table class="items">
+    <thead>
+      <tr>
+        <th rowspan="2">S.<br>NO</th>
+        <th rowspan="2">Description of Goods</th>
+        <th rowspan="2">HSN<br>Code</th>
+        <th rowspan="2">Qty</th>
+        <th rowspan="2">Unit</th>
+        <th rowspan="2">Rate</th>
+        <th rowspan="2">Taxable<br>Value</th>
+        <th colspan="2">CGST</th>
+        <th colspan="2">SGST</th>
+        <th colspan="2">IGST</th>
+      </tr>
+      <tr>
+        <th class="num">Rate</th><th class="num">Amount<br>&#8377;</th>
+        <th class="num">Rate</th><th class="num">Amount<br>&#8377;</th>
+        <th class="num">Rate</th><th class="num">Amount<br>&#8377;</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in note.items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td class="desc">{{ l.item_name }}</td>
+          <td>{{ l.hsn_code }}</td>
+          <td class="num">{{ l.qty }}</td>
+          <td>{{ l.unit }}</td>
+          <td class="num">{{ l.rate }}</td>
+          <td class="num">{{ l.amount }}</td>
+          <td class="num">{{ l.cgst_rate }}</td><td class="num">{{ l.cgst_amt }}</td>
+          <td class="num">{{ l.sgst_rate }}</td><td class="num">{{ l.sgst_amt }}</td>
+          <td class="num">{{ l.igst_rate }}</td><td class="num">{{ l.igst_amt }}</td>
+        </tr>
+      {% endfor %}
+      {% for _ in fill_rows %}
+        <tr class="fill-row">
+          <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+          <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="bottom-block">
+    <div class="lower">
+      <div class="lower-left">
+        <div class="words">
+          <p><strong>Invoice Value (In Words):</strong> {{ in_words }}</p>
+        </div>
+        {% if note.remarks %}<p><strong>Remarks:</strong> {{ note.remarks }}</p>{% endif %}
+        <div class="bank-row">
+          <div class="bank">
+            <h3>Bank Details</h3>
+            <p>Bank Name : {{ bank.name }}</p>
+            <p>A/C No : {{ bank.account_no }}</p>
+            <p>IFSC Code : {{ bank.ifsc }}</p>
+            <p>Branch : {{ bank.branch }}</p>
+          </div>
+          <div class="rate-breakdown">
+            {% for r in note.rate_breakdown %}
+              <p class="rate-line">{{ r.label }} @{{ r.rate }}%&emsp;&#8377; {{ r.amount }}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <table class="totals" aria-label="Totals">
+        <tr><td>Total</td><td class="num">&#8377; {{ note.amount }}</td></tr>
+        <tr><td>Add: CGST</td><td class="num">&#8377; {{ note.cgst_total }}</td></tr>
+        <tr><td>Add: SGST</td><td class="num">&#8377; {{ note.sgst_total }}</td></tr>
+        <tr><td>Add: IGST</td><td class="num">&#8377; {{ note.igst_total }}</td></tr>
+        <tr><td>Freight</td><td class="num">&#8377; {{ note.freight }}</td></tr>
+        <tr><td>GST on Freight</td><td class="num">&#8377; {{ note.freight_gst }}</td></tr>
+        {% for a in note.adjustments %}
+          <tr><td>{% if a.sign == "A" %}Add{% else %}Less{% endif %}: {{ a.name }}</td><td class="num">&#8377; {{ a.amount }}</td></tr>
+        {% endfor %}
+        <tr class="net"><td>Invoice Total</td><td class="num">&#8377; {{ note.net_amount }}</td></tr>
+      </table>
+    </div>
+
+    <div class="terms-sign">
+      <div>
+        <h3>Terms &amp; Conditions</h3>
+        <ol>
+          <li>All disputes are subjects to Mohali Jurisdiction only.</li>
+          <li>Goods are dispatched at consignee's risk.</li>
+          <li>Interest @18% will be charged if the bill is not paid within 15 days.</li>
+        </ol>
+        <p style="margin-top:8px;">E.&amp;O.E.</p>
+      </div>
+      <div class="sign-box">
+        <p><strong>For {{ brand_name }}</strong></p>
+        <p style="margin-top:50px;">Authorised Signatory</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% if not preview %}
+<script>window.addEventListener("load", function () { window.print(); });</script>
+{% endif %}
+</body>
+</html>

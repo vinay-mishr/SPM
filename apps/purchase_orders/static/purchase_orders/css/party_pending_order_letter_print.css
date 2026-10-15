@@ -1,0 +1,93 @@
+/* Party Pending Order Letter — print view. Standalone page (no app shell), styled as a
+   business letter rather than a generic tabular report. */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 32px 40px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #111;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.pol-print-header {
+  position: relative; /* .pol-print-logo below is positioned against this */
+  text-align: center;
+  margin-bottom: 16px;
+}
+.pol-print-copy-type { position: absolute; top: 0; right: 0; margin: 0; font-size: 11px; font-weight: bold; }
+
+/* Top-left of the printed letter, same file as the Purchase Order print. */
+.pol-print-logo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2in;
+  height: auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.pol-print-header h1 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+.pol-print-company strong { font-size: 22px; }
+.pol-print-company p { margin: 2px 0; font-size: 13px; color: #444; }
+
+.pol-print-party { margin: 70px 0 16px; }
+.pol-print-party__line { display: flex; justify-content: space-between; margin: 0 0 4px; }
+.pol-print-party p { margin: 2px 0; }
+.pol-print-date { font-weight: normal; }
+
+.pol-print-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.pol-print-table th, .pol-print-table td { border: 1px solid #999; padding: 5px 8px; font-size: 12px; }
+.pol-print-table th { background: #eee; text-align: left; }
+.pol-print-table .num { text-align: right; }
+
+.pol-print-note { margin-top: 16px; }
+.pol-print-signoff { margin-top: 24px; }
+
+.pol-public-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  background: #f0f8f2;
+  border: 1px solid #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+}
+.pol-public-bar button {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pol-public-bar button:hover { background: #eee; }
+.pol-public-bar__pdf-link {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.pol-public-bar__pdf-link:hover { background: #eee; }
+
+@media print {
+  body { padding: 0; }
+  thead { display: table-header-group; }
+  .pol-public-bar { display: none; }
+}

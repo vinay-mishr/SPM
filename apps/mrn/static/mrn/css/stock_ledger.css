@@ -1,0 +1,11 @@
+.sl-toolbar { flex-wrap: wrap; width: 100%; }
+.sl-mode { display: flex; gap: 10px; margin: 0; padding: 0; border: 0; font-size: 0.8125rem; }
+.sl-mode label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.sl-filter { display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.sl-filter input { min-height: 34px; padding: 5px 10px; font-size: 0.875rem; width: 130px; }
+.sl-error { margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--danger); }
+.sl-error[hidden] { display: none; }
+.sl-table { min-width: 700px; font-size: 0.8125rem; }
+.sl-table th, .sl-table td { padding: 2px 6px; white-space: nowrap; }
+.sl-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.sl-table td { font-size: 16px; }

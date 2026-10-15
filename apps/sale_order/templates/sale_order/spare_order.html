@@ -1,0 +1,128 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Spare Sale Order Entry · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'sale_order/css/sale_order.css' %}">
+  <script src="{% static 'sale_order/js/spare_order.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Spare Sale Order Entry{% endblock %}
+{% block page_subtitle %}Spare Sale Order &rsaquo; Entry{% endblock %}
+
+{% block content %}
+<section class="master-page so-page" data-spare
+         data-list-url="{% url 'sale_order:spare_api_list' %}"
+         data-next-no-url="{% url 'sale_order:spare_api_next_no' %}"
+         data-detail-url-template="{% url 'sale_order:spare_api_detail' order_no='__NO__' %}"
+         data-save-url="{% url 'sale_order:spare_api_save' %}"
+         data-item-url="{% url 'sale_order:spare_api_item' %}"
+         data-party-url="{% url 'sale_order:api_party' %}"
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-parts-url="{% url 'purchase_orders:api_parts' %}"
+         data-print-url-template="{% url 'sale_order:spare_print' order_no='__NO__' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+  <div class="master-toolbar so-toolbar" role="toolbar" aria-label="Spare sale order actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"{% if not can_edit %} disabled{% endif %}>ADD</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled>MODIFY</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled>DELETE</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-action="print" disabled>PRINT</button>
+    </div>
+    <div class="so-filters">
+      <label class="so-filter">START DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="so-filter">END DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+      <label class="so-filter so-filter--search">SEARCH (PARTY)
+        <input class="form-control" type="text" autocomplete="off" placeholder="Type party name..." data-search>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-action="refresh">REFRESH</button>
+      <button class="btn btn--danger" type="button" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table so-table">
+      <thead>
+        <tr><th>ORD NO</th><th>DATE</th><th>PARTY NAME</th><th>CITY</th><th class="num">AMOUNT</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No spare sale orders for this date range.</p>
+  </div>
+</section>
+
+<dialog class="so-form-modal" data-form>
+  <form novalidate data-spare-form>
+    <header class="so-head">
+      <span>SPARE SALE ORDER</span>
+      <span class="so-mode" data-mode-label>Add</span>
+      <button class="modal__close" type="button" aria-label="Close" data-cancel>&times;</button>
+    </header>
+    <div class="so-body">
+      <div class="alert alert--error" role="alert" data-form-alert hidden></div>
+
+      <div class="so-head-grid">
+        <label class="so-ors">ORDER NO <input data-field="order_no" maxlength="10"></label>
+        <label class="so-party">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+        <label class="so-date">DATE <input data-field="order_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="so-city">CITY <input data-field="city" readonly tabindex="-1"></label>
+        <label class="so-pono">PO NO <input data-field="po_no" maxlength="20"></label>
+        <label class="so-podate">PO DATE <input data-field="po_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="so-repcod">REP COD <input data-field="rep_code" readonly tabindex="-1"></label>
+        <label class="so-repname">REP NAME <input data-field="rep_name" readonly tabindex="-1"></label>
+      </div>
+
+      <div class="so-item-row">
+        <label class="so-wide">ITEM DESCRIPTION / CODE <input data-item-search placeholder="Type item code or name..." autocomplete="off"><input type="hidden" data-item-code></label>
+        <label>DIS% <input class="num" data-item-dis value="0.00"></label>
+        <label>ADDL.DIS% <input class="num" data-addl-dis-pct value="0.00"></label>
+        <label>QTY <input class="num" data-item-qty value="0.000"></label>
+        <label>RATE <input class="num" data-item-rate value="0.00"></label>
+        <label>S.RATE <input class="num" data-item-srate readonly tabindex="-1" value="0.00"></label>
+        <button type="button" class="btn btn--primary" data-item-ok>OK</button>
+        <div class="so-row-error" data-item-error></div>
+      </div>
+
+      <div class="so-grid">
+        <table>
+          <thead>
+            <tr><th>#</th><th>CODE</th><th>ITEM DESCRIPTION</th><th class="num">DISCOUNT</th><th class="num">ADDL. DIS</th><th class="num">QTY</th><th class="num">RATE</th><th class="num">AMOUNT</th></tr>
+          </thead>
+          <tbody data-grid-rows></tbody>
+        </table>
+      </div>
+
+      <div class="so-footer">
+        <div class="so-terms">
+          <label>REMARKS <input data-field="remarks" maxlength="40"></label>
+          <label>REMARKS 2 <input data-field="remarks1" maxlength="40"></label>
+        </div>
+        <div class="so-totals">
+          <label>TOTAL AMOUNT <input class="num" data-total readonly tabindex="-1" value="0.00"></label>
+          <label>DISCOUNT <input class="num" data-discount readonly tabindex="-1" value="0.00"></label>
+          <label>ADD. DISCOUNT <input class="num" data-add-discount readonly tabindex="-1" value="0.00"></label>
+          <label>NET AMOUNT <input class="num" data-net readonly tabindex="-1" value="0.00"></label>
+        </div>
+      </div>
+
+      <div class="so-actions">
+        <button class="btn btn--primary" type="button" data-confirm>CONFIRM</button>
+        <button class="btn btn--danger" type="button" data-cancel>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+{{ initial_data|json_script:"sp-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

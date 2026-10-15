@@ -1,0 +1,146 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Purchase Order Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/purchase_order_master.css' %}">
+  <script src="{% static 'purchase_orders/js/purchase_order_master.js' %}" defer></script>
+  <script src="{% static 'purchase_orders/js/purchase_order_form.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Purchase Order Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Purchase Order Master{% endblock %}
+
+{% block content %}
+<section class="master-page" data-po-master
+         data-list-url="{% url 'purchase_orders:api_list' %}"
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-parts-url="{% url 'purchase_orders:api_parts' %}"
+         data-part-reference-url="{% url 'purchase_orders:api_part_reference' %}"
+         data-previous-info-url-template="{% url 'purchase_orders:api_previous_info' part_code='__CODE__' %}"
+         data-detail-url-template="{% url 'purchase_orders:api_detail' div='__DIV__' po_no='__PONO__' %}"
+         data-print-url-template="{% url 'purchase_orders:print' div='__DIV__' po_no='__PONO__' %}"
+         data-share-url-template="{% url 'purchase_orders:share_link' div='__DIV__' po_no='__PONO__' %}"
+         data-pdf-url-template="{% url 'purchase_orders:pdf' div='__DIV__' po_no='__PONO__' %}"
+         data-save-url="{% url 'purchase_orders:api_save' %}"
+         data-delete-url="{% url 'purchase_orders:api_delete' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Purchase order actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <button class="btn btn--secondary" type="button" data-action="print" disabled><span class="master-toolbar__key">P</span>rint</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+    <div class="po-filters">
+      <label class="po-filters__date">Start Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="po-filters__date">End Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+      <fieldset class="po-filters__mode">
+        <label><input type="radio" name="po-status" value="all" checked> All Orders</label>
+        <label><input type="radio" name="po-status" value="pending"> Pending Orders</label>
+        <label><input type="radio" name="po-status" value="completed"> Completed Orders</label>
+      </fieldset>
+      <label class="master-search">
+        <span class="visually-hidden">Search</span>
+        <input class="form-control" type="search" placeholder="Search PO no., party…" data-search autocomplete="off">
+      </label>
+    </div>
+  </div>
+
+  {% if not can_edit %}
+    <div class="alert alert--info" role="status">View only: changing purchase orders needs the “Can change purchase order” permission.</div>
+  {% endif %}
+
+  <div class="master-table-wrap">
+    <table class="table master-table po-table">
+      <thead>
+        <tr>
+          <th scope="col">PO. No</th>
+          <th scope="col">Date</th>
+          <th scope="col">Party Name</th>
+          <th scope="col">City</th>
+          <th scope="col" class="num">PO Amount</th>
+          <th scope="col">User</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No purchase orders found</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"po-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "purchase_orders/purchase_order_form.html" %}
+  {% include "purchase_orders/previous_info_dialog.html" %}
+
+  <dialog class="modal modal--sm" id="po-delete-dialog" aria-labelledby="po-delete-title">
+    <header class="modal__header">
+      <h2 class="modal__title" id="po-delete-title">Purchase Order Master — Delete</h2>
+    </header>
+    <div class="modal__body">
+      <dl class="detail-list" data-delete-details></dl>
+      <p class="modal-question">Are you sure you want to delete this purchase order?</p>
+      <div class="alert alert--error" role="alert" data-delete-alert hidden></div>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--danger" type="button" data-delete-yes>Yes</button>
+      <button class="btn btn--secondary" type="button" data-delete-no>No</button>
+    </footer>
+  </dialog>
+
+  <dialog class="modal modal--sm print-options-dialog" id="po-print-options-dialog" aria-labelledby="po-print-options-title">
+    <header class="print-options__header">
+      <h2 class="print-options__title" id="po-print-options-title">PRINT PURCHASE ORDER</h2>
+    </header>
+    <div class="print-options__body">
+      <div class="print-options__fields">
+        <label><span>PO NO</span><input type="text" readonly tabindex="-1" data-print-po-no></label>
+        <label><span>PO AMOUNT</span><input type="text" readonly tabindex="-1" data-print-po-amount></label>
+      </div>
+      <div class="print-options__copies">
+        <label><input type="checkbox" name="po-copy-type" value="Original For Consignee" checked> Original For Consignee</label>
+        <label><input type="checkbox" name="po-copy-type" value="Duplicate For Transporter"> Duplicate For Transporter</label>
+        <label><input type="checkbox" name="po-copy-type" value="Triplicate For Consignor"> Triplicate For Consignor</label>
+      </div>
+      <div class="print-options__grid">
+        <button type="button" data-print-action="preview">VIEW</button>
+        <button type="button" data-print-action="print">PRINT</button>
+        <button type="button" data-print-action="pdf">PRINT PDF</button>
+        <button type="button" data-print-action="whatsapp" class="print-options__whatsapp">WHATSAPP</button>
+        <button type="button" data-print-action="exit" class="print-options__exit">EXIT</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal modal--sm" id="po-whatsapp-dialog" aria-labelledby="po-whatsapp-title">
+    <header class="modal__header">
+      <h2 class="modal__title" id="po-whatsapp-title">WhatsApp</h2>
+    </header>
+    <div class="modal__body">
+      <div class="alert alert--error" role="alert" data-whatsapp-alert hidden></div>
+
+      <label class="mform__label" for="po-whatsapp-party">Party Name</label>
+      <input class="form-control" id="po-whatsapp-party" type="text" readonly tabindex="-1" data-whatsapp-party>
+
+      <label class="mform__label" for="po-whatsapp-mobile">Mobile Number</label>
+      <input class="form-control" id="po-whatsapp-mobile" type="text" inputmode="tel" autocomplete="off" data-whatsapp-mobile>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="button" data-whatsapp-send>Send on WhatsApp</button>
+      <button class="btn btn--secondary" type="button" data-whatsapp-back>Back</button>
+    </footer>
+  </dialog>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Payment Made · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'creditor_outstanding/js/payment_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Payment Made{% endblock %}
+{% block page_subtitle %}Creditor Outstanding &rsaquo; Payment Made{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-pe
+         data-list-url="{% url 'creditor_payment:list' %}"
+         data-detail-url="{% url 'creditor_payment:detail' %}"
+         data-bills-url="{% url 'creditor_payment:bills' %}"
+         data-parties-url="{% url 'creditor_payment:parties' %}"
+         data-banks-url="{% url 'creditor_payment:banks' %}"
+         data-save-url="{% url 'creditor_payment:save' %}"
+         data-delete-url="{% url 'creditor_payment:delete' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+  <div class="pe-toolbar master-toolbar" data-main-toolbar>
+    <button type="button" class="btn btn--secondary" data-add>ADD</button>
+    <button type="button" class="btn btn--secondary" data-modify>MODIFY</button>
+    <button type="button" class="btn btn--secondary" data-delete>DELETE</button>
+    <button type="button" class="btn btn--secondary" data-view>VIEW</button>
+    <button type="button" class="btn btn--secondary" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-list" data-list>
+    <div class="pe-grid">
+      <table>
+        <thead><tr><th>DATE</th><th>VENDOR</th><th>NAME</th><th>CHQ/NEFT/RCPT NO</th><th class="num">AMOUNT</th></tr></thead>
+        <tbody data-list-rows></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="pe-form" data-form hidden>
+  <header class="pe-titlebar">PAYMENT MADE <span class="pe-mode">Add</span></header>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div class="pe-head">
+    <label class="pe-wide">VENDOR NAME
+      <input data-party-search placeholder="Type vendor name and press Enter" autocomplete="off">
+      <input type="hidden" data-party-code>
+    </label>
+    <label>CODE <input data-party-display readonly tabindex="-1"></label>
+    <label>CITY <input data-party-city readonly tabindex="-1"></label>
+    <label>CHQ/DD/RCPT DT <input type="text" data-date inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+
+    <label>NE-NEFT/CA/CH
+      <select data-mode><option value="NE">NE - NEFT</option><option value="CH">CH - Cheque</option><option value="CA">CA - Cash</option></select>
+    </label>
+    <label>CHQ/NEFT/RCPT NO <input data-chq-no maxlength="20"></label>
+    <label>AMOUNT PAID <input class="num" data-amount-paid value="0.00"></label>
+    <label>TOTAL AMOUNT <input class="num" data-total readonly tabindex="-1" value="0.00"></label>
+
+    <label>BANK CHARGES <input class="num" data-bank-charges value="0.00"></label>
+    <label>PREVIOUS ADV. <input class="num" data-prev-adv readonly tabindex="-1" value="0.00"></label>
+
+    <label class="pe-wide">BANK NAME
+      <input data-bank-search placeholder="Type bank name and press Enter" autocomplete="off">
+      <input type="hidden" data-bank-code>
+    </label>
+    <label class="pe-wide">REMARKS <input data-remarks maxlength="40"></label>
+  </div>
+
+  <div class="pe-bills">
+    <table>
+      <thead><tr><th>DIV</th><th>BILL NO</th><th>BILL DATE</th><th class="num">BILL AMOUNT</th><th class="num">BAL. AMOUNT</th></tr></thead>
+      <tbody data-bills></tbody>
+    </table>
+  </div>
+
+  <div class="pe-adjust">
+    <label>CASH DIS. <input class="num" data-cash-dis value="0.00"></label>
+    <label>INTEREST AMT. <input class="num" data-interest value="0.00"></label>
+    <label>AMT. ADJUSTED <input class="num" data-adjusted value="0.00"></label>
+    <button type="button" class="btn btn--primary" data-ok>OK</button>
+  </div>
+
+  <div class="pe-grid">
+    <table>
+      <thead><tr><th>#</th><th>DIV</th><th>INV.NO.</th><th>INV. DATE</th><th class="num">INV. AMOUNT</th><th class="num">BALANCE AMT</th><th class="num">CASH DIS.</th><th class="num">INTEREST AMT</th><th class="num">AMOUNT ADJ</th><th class="num">BALANCE</th></tr></thead>
+      <tbody data-lines><tr class="empty"><td colspan="10">Select a vendor, pick a bill and press OK.</td></tr></tbody>
+    </table>
+  </div>
+  <div class="pe-footer">
+    <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+    <button type="button" class="btn btn--danger" data-back>EXIT</button>
+  </div>
+  </div>
+</section>
+{% endblock %}

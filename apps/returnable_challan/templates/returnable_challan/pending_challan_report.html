@@ -1,0 +1,61 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pending Challan Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'returnable_challan/css/pending_challan_report.css' %}">
+  <script src="{% static 'returnable_challan/js/pending_challan_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Pending Challan Report{% endblock %}
+{% block page_subtitle %}Returnable Challan &rsaquo; Pending Challan Report{% endblock %}
+
+{% block content %}
+<section class="master-page pc-page" data-pending-challan
+         data-data-url="{% url 'returnable_challan:pending_report_data' %}"
+         data-export-url="{% url 'returnable_challan:pending_report_export' %}"
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar pc-toolbar" role="toolbar" aria-label="Pending challan filters">
+    <div class="pc-party">
+      <span class="pc-party__label">Party</span>
+      <input class="form-control pc-party__name" type="text" autocomplete="off" placeholder="Type party name to search..." data-party-search>
+      <input class="form-control pc-party__code" type="text" maxlength="4" placeholder="Code" data-party-code readonly tabindex="-1">
+    </div>
+    <label class="pc-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="pc-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="pc-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>View</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap pc-grid-wrap">
+    <table class="table master-table pc-table">
+      <thead>
+        <tr>
+          <th scope="col">Ch. No</th>
+          <th scope="col">Ch. Date</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Item Name</th>
+          <th scope="col" class="num">Qty</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>Select a party to see its pending challans.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pc-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

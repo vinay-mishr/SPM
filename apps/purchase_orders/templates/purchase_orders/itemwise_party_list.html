@@ -1,0 +1,55 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Itemwise Party List · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/itemwise_party_list.css' %}">
+  <script src="{% static 'purchase_orders/js/itemwise_party_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Itemwise Party List{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Itemwise Party List{% endblock %}
+
+{% block content %}
+<section class="master-page ipl-page" data-itemwise-party-list
+         data-data-url="{% url 'purchase_orders:itemwise_party_list_data' %}"
+         data-export-url="{% url 'purchase_orders:itemwise_party_list_export' %}"
+         data-print-url="{% url 'purchase_orders:itemwise_party_list_print' %}"
+         data-parts-url="{% url 'purchase_orders:api_parts' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar ipl-toolbar" role="toolbar" aria-label="Itemwise party list filters">
+    <div class="ipl-item">
+      <span class="ipl-item__label">Item Name</span>
+      <input class="form-control ipl-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search>
+      <input class="form-control ipl-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+    </div>
+
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-print><span class="master-toolbar__key">P</span>rint</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap ipl-grid-wrap">
+    <table class="table master-table ipl-table">
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Vendor Name</th>
+          <th scope="col">City</th>
+          <th scope="col">Grade</th>
+          <th scope="col" class="num">Rate</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty>Select an item to see its parties.</p>
+  </div>
+</section>
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

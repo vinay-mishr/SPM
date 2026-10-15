@@ -1,0 +1,16 @@
+/* Vendor Master — grid screen. Shared toolbar/table/button styles come from
+   static/css/components.css (this file only holds Vendor-specific tweaks). */
+
+.vendor-table th,
+.vendor-table td {
+  white-space: nowrap;
+}
+
+.vendor-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.vendor-table tbody tr.is-inactive {
+  color: var(--text-secondary);
+}

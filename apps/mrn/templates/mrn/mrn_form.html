@@ -1,0 +1,121 @@
+{% comment %}
+Shared ADD / MODIFY / VIEW form, matching the supplied reference layout exactly
+(grid-based header row, compact item-entry row, grid, footer totals).
+{% endcomment %}
+<dialog class="modal mrn-form-modal" id="mrn-form-dialog" aria-labelledby="mrn-form-title">
+  <form novalidate data-mrn-form>
+    <header class="mrn-head">
+      <span id="mrn-form-title">MRN ENTRY — <span data-mode-label>ADD</span></span>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="mrn-body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <!-- HEADER -->
+      <div class="hdr">
+        <label>MRN NO</label>      <input id="mrn-mrn_no" readonly tabindex="-1" data-field="mrn_no">
+        <label class="r">DATE</label> <input id="mrn-mrn_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="mrn_date" data-date-mask>
+        <span></span>
+        <label>CHALLAN NO</label>  <input id="mrn-challan_no" maxlength="8" data-field="challan_no">
+        <label class="r">DATE</label> <input id="mrn-challan_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="challan_date" data-date-mask>
+
+        <label class="mform__label--required">PARTY</label>
+        <input class="party" id="mrn-party_search" placeholder="Type party name to search…" data-party-search>
+        <span></span>
+        <label>INVOICE NO</label>  <input id="mrn-bill_no" maxlength="8" data-field="bill_no">
+        <label class="r">DATE</label> <input id="mrn-bill_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="bill_date" data-date-mask>
+
+        <span></span>
+        <div class="party-sub"><input id="mrn-party_name" readonly tabindex="-1"><input id="mrn-party_code" placeholder="CODE" readonly tabindex="-1" data-field="party_code"></div>
+        <span></span>
+        <label>G.R. NO</label>     <input id="mrn-gr_no" maxlength="15" data-field="gr_no">
+        <label class="r">G.R.DATE</label> <input id="mrn-gr_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="gr_date" data-date-mask>
+
+        <span></span><span></span><span></span><span></span><span></span>
+        <label>TRANSPORT</label>   <input class="transport" id="mrn-transport" maxlength="20" data-field="transport">
+        <label class="r">CHECK PO Y/N</label>
+        <select id="mrn-check_po" data-field="check_po"><option value="Y">Y</option><option value="N">N</option></select>
+      </div>
+      <p class="mform__error" data-error-for="party_code"></p>
+      <p class="mform__error" data-error-for="mrn_date"></p>
+
+      <!-- ITEM ENTRY -->
+      <fieldset class="item" data-line-fieldset>
+        <span class="hl">ITEM DESCRIPTION</span><span class="hl">P.O. NO</span><span class="hl">UNIT</span>
+        <span></span><span></span><span></span><span></span>
+        <span class="hl">RATE</span><span class="hl">DISC %</span><span class="hl">DIS AMT</span><span></span>
+
+        <input id="mrn-row-item-desc" placeholder="Type part code or name to search…" data-row-part-search>
+        <input id="mrn-row-po-no" readonly tabindex="-1" data-row-po-no>
+        <input id="mrn-row-unit" data-row-unit>
+        <label class="r">INV QTY</label><input id="mrn-row-bill-qty" class="num" data-row-invoice-qty>
+        <label class="r">QTY ACPT</label><input id="mrn-row-qty-acpt" class="num" data-row-qty-accepted>
+        <input id="mrn-row-rate" class="num" data-row-rate>
+        <input id="mrn-row-disc" class="num" data-row-discount>
+        <input id="mrn-row-dis-amt" class="num" readonly tabindex="-1" data-row-dis-amt>
+        <input type="hidden" data-row-gst>
+        <button class="ok" type="button" data-row-add>OK</button>
+
+        <div class="sizebox"><label>SIZE</label><input id="mrn-row-size" readonly tabindex="-1" data-row-size><label class="podt">PO.DT</label></div>
+        <input id="mrn-row-po-date" readonly tabindex="-1" data-row-po-date>
+        <span></span>
+        <label class="r">QTY RECD</label><input id="mrn-row-qty-recd" class="num" data-row-qty-received>
+        <label class="r">QTY REJ</label><input id="mrn-row-qty-rej" class="num" data-row-qty-rejected>
+        <span></span><span></span><span></span><span></span>
+
+        <label class="r">PENDING QTY</label><input id="mrn-row-pending-qty" class="num" readonly tabindex="-1" data-row-pending-qty>
+        <p class="mform__error" data-row-error></p>
+      </fieldset>
+
+      <!-- GRID -->
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Code</th><th style="width:30%">Item Description</th><th>P.O. No</th>
+              <th class="num">Inv Qty</th><th class="num">Qty Recd</th><th class="num">Qty Acpt</th><th class="num">Qty Rej</th>
+              <th class="num">Rate</th><th class="num">Disc %</th><th class="num">Dis Amt</th><th class="num">Amount</th>
+            </tr>
+          </thead>
+          <tbody data-grid-rows><tr class="empty" data-grid-empty><td colspan="12">No items added yet. Press Space on a row to remove it, double-click to edit.</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="ftr">
+        <div class="ftr-left">
+          <label>REMARKS</label><input id="mrn-remarks" data-field="remarks">
+          <label>LAST RATE</label><input id="mrn-last-rate" class="num lastrate" value="0.00" readonly tabindex="-1">
+          <div class="links">
+            <a href="{% url 'parts:master' %}" target="_blank" rel="noopener">NEW ITEM</a>
+            <a href="{% url 'parties:master' %}" target="_blank" rel="noopener">NEW PARTY</a>
+          </div>
+        </div>
+        <div class="totals">
+          <label class="r">TOTAL AMOUNT</label><input id="mrn-total-amount" class="num" value="0.00" readonly tabindex="-1">
+          <label class="r">DISCOUNT AMT</label><input id="mrn-total-discount" class="num" value="0.00" readonly tabindex="-1">
+          <label class="r">GST AMOUNT</label><input id="mrn-total-gst" class="num" value="0.00" readonly tabindex="-1">
+          <input class="oc-label" readonly tabindex="-1" value="OTHER CHARGES"><input id="mrn-oc1" class="num" value="0.00" data-field="other_charge_1">
+          <input class="oc-label" readonly tabindex="-1" value="OTHER CHARGES"><input id="mrn-oc2" class="num" value="0.00" data-field="other_charge_2">
+          <label class="r">NET AMOUNT</label><input id="mrn-total-net" class="num" value="0.00" readonly tabindex="-1">
+        </div>
+      </div>
+    </div>
+
+    <footer class="btns">
+      <button class="btn-ok" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn-exit" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-confirm-box hidden>
+    <div class="modal-discard__box" role="alertdialog">
+      <p class="modal-discard__title" data-confirm-text>Are you sure?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--primary" type="button" data-form-confirm-yes>Yes</button>
+        <button class="btn btn--secondary" type="button" data-confirm-no>No</button>
+      </div>
+    </div>
+  </div>
+</dialog>

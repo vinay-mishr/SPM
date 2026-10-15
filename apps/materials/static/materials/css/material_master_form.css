@@ -1,0 +1,26 @@
+/* Material Master — compact Add / Modify / View form. Field and modal styles come from
+   static/css/components.css. */
+
+.mat-form-modal {
+  width: min(420px, calc(100vw - 32px));
+}
+
+.mat-form {
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 10px 12px;
+}
+
+.mat-form .mform__input.form-control {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.mat-code {
+  max-width: 70px;
+}
+
+@media (max-width: 767px) {
+  .mat-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

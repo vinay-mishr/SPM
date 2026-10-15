@@ -1,0 +1,112 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Quotation · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'quotations/css/quotations.css' %}">
+  <script src="{% static 'quotations/js/quotation_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Quotation{% endblock %}
+
+{% block content %}
+<section class="master-page quot-list" data-quot-list
+         data-add-url="{% url 'quotations:add' %}"
+         data-edit-url="{% url 'quotations:edit' quot_no='__NO__' %}"
+         data-view-url="{% url 'quotations:view' quot_no='__NO__' %}"
+         data-print-url="{% url 'quotations:print' quot_no='__NO__' %}"
+         data-delete-url="{% url 'quotations:delete' quot_no='__NO__' %}"
+         data-selected="{{ selected }}">
+
+  <form class="master-toolbar quot-toolbar" method="get" action="{% url 'quotations:list' %}" role="search" aria-label="Quotation actions and filters">
+    <div class="master-toolbar__actions" role="toolbar" aria-label="Quotation actions">
+      <button class="btn btn--primary" type="button" data-action="add"{% if not perms_q.add %} disabled{% endif %}>Add</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" data-needs-row{% if not perms_q.change %} data-no-perm{% endif %} disabled>Modify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" data-needs-row{% if not perms_q.delete %} data-no-perm{% endif %} disabled>Delete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" data-needs-row disabled>View</button>
+      <button class="btn btn--secondary" type="button" data-action="print" data-needs-row disabled>Print</button>
+    </div>
+    <div class="quot-filters">
+      <label class="quot-filter">
+        <span>Start date</span>
+        <input class="form-control" type="text" name="start_date" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10"
+               value="{{ start_date|date:'d/m/Y' }}" data-date-mask required>
+      </label>
+      <label class="quot-filter">
+        <span>End date</span>
+        <input class="form-control" type="text" name="end_date" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10"
+               value="{{ end_date|date:'d/m/Y' }}" data-date-mask required>
+      </label>
+      <label class="quot-filter quot-filter--search">
+        <span>Search</span>
+        <input class="form-control" type="search" name="q" value="{{ search }}" placeholder="Quotation no. or party" autocomplete="off" maxlength="50">
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="submit" data-action="refresh">Refresh</button>
+      <a class="btn" href="{% url 'dashboard:home' %}" data-action="exit">Exit</a>
+    </div>
+  </form>
+
+  {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert--error{% else %}alert--success{% endif %}" role="status">{{ message }}</div>
+  {% endfor %}
+  {% if filter_error %}<div class="alert alert--error" role="alert">{{ filter_error }}</div>{% endif %}
+
+  <div class="master-table-wrap quot-table-wrap">
+    <table class="table master-table quot-table" aria-label="Quotations">
+      <thead>
+        <tr>
+          <th scope="col" class="num">Quot No</th>
+          <th scope="col">Date</th>
+          <th scope="col">Party</th>
+          <th scope="col">Quotation</th>
+          <th scope="col" class="num">Net Amount</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody data-rows>
+        {% for row in rows %}
+          <tr tabindex="0" data-no="{{ row.quot_no }}" aria-selected="false">
+            <td class="num">{{ row.quot_no }}</td>
+            <td>{{ row.date|slice:"8:10" }}/{{ row.date|slice:"5:7" }}/{{ row.date|slice:"0:4" }}</td>
+            <td>{{ row.party }}</td>
+            <td class="quot-table__desc">{{ row.description }}</td>
+            <td class="num">{{ row.net_amount }}</td>
+            <td>{% if row.confirmed %}<span class="quot-badge quot-badge--ok">Confirmed</span>{% else %}<span class="quot-badge">Saved</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if not rows %}
+      <p class="master-table__empty">No quotations between {{ start_date|date:'d/m/Y' }} and {{ end_date|date:'d/m/Y' }}{% if search %} matching “{{ search }}”{% endif %}. Change the dates or click <strong>Add</strong>.</p>
+    {% endif %}
+  </div>
+
+  <div class="quot-pager">
+    <p class="master-count" aria-live="polite">{{ page.paginator.count }} quotation{{ page.paginator.count|pluralize }}{% if page.paginator.num_pages > 1 %} · page {{ page.number }} of {{ page.paginator.num_pages }}{% endif %}</p>
+    {% if page.has_other_pages %}
+      <nav class="quot-pager__links" aria-label="Pages">
+        {% if page.has_previous %}<a class="btn btn--secondary" href="?start_date={{ start_date|date:'d/m/Y' }}&end_date={{ end_date|date:'d/m/Y' }}&q={{ search|urlencode }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
+        {% if page.has_next %}<a class="btn btn--secondary" href="?start_date={{ start_date|date:'d/m/Y' }}&end_date={{ end_date|date:'d/m/Y' }}&q={{ search|urlencode }}&page={{ page.next_page_number }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block modals %}
+<dialog class="modal modal--sm quot-dialog" data-delete-dialog aria-labelledby="quot-delete-title">
+  <form method="post" data-delete-form>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <div class="modal__header"><h2 class="modal__title" id="quot-delete-title">Delete quotation</h2></div>
+    <div class="modal__body"><p>Delete quotation <strong data-delete-no></strong> and all its items? This can't be undone.</p></div>
+    <div class="modal__footer">
+      <button class="btn btn--danger" type="submit">Delete</button>
+      <button class="btn btn--secondary" type="button" data-delete-cancel>Cancel</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

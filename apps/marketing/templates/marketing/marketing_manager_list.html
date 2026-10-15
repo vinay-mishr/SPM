@@ -1,0 +1,78 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Marketing Manager · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing_manager.css' %}">
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing_manager_form.css' %}">
+  <script src="{% static 'marketing/js/marketing_manager_form.js' %}" defer></script>
+  <script src="{% static 'marketing/js/marketing_manager.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Marketing Manager{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Marketing Manager{% endblock %}
+
+{% block content %}
+<section class="master-page" data-mm-master
+         data-list-url="{% url 'marketing:api_list' %}"
+         data-next-code-url="{% url 'marketing:api_next_code' %}"
+         data-create-url="{% url 'marketing:api_create' %}"
+         data-update-url="{% url 'marketing:api_update' code='00' %}"
+         data-delete-url="{% url 'marketing:api_delete' code='00' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Marketing manager actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+    <label class="master-search">
+      <span class="visually-hidden">Search managers</span>
+      <input class="form-control" type="search" placeholder="Search name, city, mobile, code…" data-search autocomplete="off">
+    </label>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table mm-table">
+      <thead>
+        <tr>
+          <th scope="col">Manager Name</th>
+          <th scope="col">Mobile</th>
+          <th scope="col">Code</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No records found</p>
+  </div>
+  <p class="master-count" data-count aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"mm-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "marketing/marketing_manager_form.html" %}
+
+  <dialog class="modal modal--sm" id="mm-delete-dialog" aria-labelledby="mm-delete-title">
+    <header class="modal__header">
+      <h2 class="modal__title" id="mm-delete-title">Marketing Manager — Delete</h2>
+      <button class="modal__close" type="button" aria-label="Close" data-delete-cancel>&times;</button>
+    </header>
+    <div class="modal__body">
+      <dl class="detail-list" data-delete-details></dl>
+      <p class="modal-question">Are you sure you want to delete this marketing manager?</p>
+      <div class="alert alert--error" role="alert" data-delete-alert hidden></div>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--danger" type="button" data-delete-confirm>Delete</button>
+      <button class="btn btn--secondary" type="button" data-delete-cancel>Exit</button>
+    </footer>
+  </dialog>
+{% endblock %}

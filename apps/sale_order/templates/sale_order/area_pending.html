@@ -1,0 +1,55 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Area Wise Pending Order · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'sale_order/css/sale_order.css' %}">
+  <script src="{% static 'sale_order/js/area_pending.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Area Wise Pending Order{% endblock %}
+{% block page_subtitle %}Sale Order &rsaquo; Area Wise Pending Order{% endblock %}
+
+{% block content %}
+<section class="master-page so-page" data-area-pending
+         data-areas-url="{% url 'sale_order:area_list' %}"
+         data-data-url="{% url 'sale_order:area_pending_data' %}"
+         data-export-url="{% url 'sale_order:area_pending_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar so-toolbar" role="toolbar" aria-label="Area wise pending order filters">
+    <div class="so-filters">
+      <label class="so-filter"><span><input type="radio" name="ap-scope" value="all" checked data-scope> ALL AREA</span></label>
+      <label class="so-filter"><span><input type="radio" name="ap-scope" value="single" data-scope> SINGLE AREA</span></label>
+      <label class="so-filter so-filter--search">AREA NAME
+        <input class="form-control" placeholder="Type area name and press Enter" autocomplete="off" disabled data-area-search>
+        <input type="hidden" data-area-code>
+      </label>
+      <label class="so-filter">AS ON DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-as-on data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table so-table">
+      <thead>
+        <tr><th>ORD.NO</th><th>ORD.DATE</th><th>ITEM CODE</th><th>ITEM NAME</th><th class="num">QTY</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+      <tfoot>
+        <tr class="pl-total"><td colspan="4">GRAND TOTAL</td><td class="num" data-grand>0.000</td></tr>
+      </tfoot>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No pending orders as on this date.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"ap-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

@@ -1,0 +1,68 @@
+/* Vendor Master — Add / Modify / View form (two/three columns on desktop, one on small screens).
+   Field, label, error and modal styles come from static/css/components.css. */
+
+.vendor-form-modal {
+  width: min(1040px, calc(100vw - 32px));
+}
+
+.vform {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 28px;
+  align-items: start;
+}
+
+.vform__col {
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 8px 12px;
+}
+
+.vform__col .mform__label {
+  white-space: nowrap;
+}
+
+.vform .mform__input.form-control {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.vform .vform__short {
+  max-width: 180px;
+}
+
+.vform__upper {
+  text-transform: uppercase;
+}
+
+/* State row: narrow code box + the state name dropdown, side by side. */
+.vform__state {
+  display: flex;
+  gap: 8px;
+}
+
+.vform__state .vform__short {
+  flex: 0 0 70px;
+  max-width: 70px;
+}
+
+.vform__state select {
+  flex: 1;
+}
+
+/* Credit days: type left-to-right like the text fields, not right-aligned. */
+.vform #v-credit_days {
+  text-align: left;
+}
+
+@media (max-width: 860px) {
+  .vform {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 767px) {
+  .vform .vform__short {
+    max-width: none;
+  }
+}

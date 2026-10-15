@@ -1,0 +1,28 @@
+{% load static %}
+{% extends "app_base.html" %}
+
+{% block title %}Spare Sale Order Printing · {{ brand.name }}{% endblock %}
+
+{% block page_title %}Spare Sale Order Printing{% endblock %}
+{% block page_subtitle %}Spare Sale Order &rsaquo; Printing{% endblock %}
+
+{% block extra_head %}
+  <script src="{% static 'sale_order/js/spare_printing.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<section class="master-page so-page" data-spare-printing data-print-url-template="{% url 'sale_order:spare_print' order_no='__NO__' %}" data-exit-url="{% url 'dashboard:home' %}">
+  <div class="so-graphical">
+    <div class="so-graphical__fields">
+      <label>ORDER NO <input data-order-no maxlength="10" value="{{ next_no }}"></label>
+    </div>
+    <div class="so-graphical__actions">
+      <button class="btn btn--primary" type="button" data-print>PRINT</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+    <p class="so-graphical__error" data-error hidden></p>
+  </div>
+</section>
+{% endblock %}
+
+{% endblock %}

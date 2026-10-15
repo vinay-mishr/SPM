@@ -1,0 +1,68 @@
+/* Party Wise Pending P.O. Despatch Report — read-only report. Shared master / toolbar /
+   table styles come from static/css/components.css; only this screen's specifics live here. */
+
+.pdr-page .master-toolbar {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.pdr-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.8125rem;
+}
+
+.pdr-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.pdr-party {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdr-party__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pdr-party__name { width: 220px; }
+.pdr-party__code { width: 70px; text-transform: uppercase; }
+
+.pdr-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pdr-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 130px;
+}
+
+.pdr-table { min-width: 900px; font-size: 0.8125rem; }
+.pdr-table th, .pdr-table td { padding: 4px 8px; white-space: nowrap; }
+.pdr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.pdr-party-row td {
+  background: var(--bg-mint);
+  font-weight: 700;
+  border-top: 1px solid var(--border-mint);
+  border-bottom: 1px solid var(--border-mint);
+}

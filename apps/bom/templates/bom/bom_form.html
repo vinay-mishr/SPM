@@ -1,0 +1,88 @@
+{# Shared ADD / MODIFY / VIEW form (old VFP "BILL OF MATERIAL MASTER" window). bom_master.js switches the mode. #}
+<dialog class="modal bom-form-modal" id="bom-form-dialog" aria-labelledby="bom-form-title">
+  <form novalidate data-bom-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="bom-form-title">Bill of Material Master SA — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform bom-parent">
+        <label class="mform__label mform__label--required" for="bom-part_code">Item Name</label>
+        <div class="mform__field">
+          <div class="bom-search-row">
+            <input class="form-control mform__input bom-code" id="bom-part_code" type="text" maxlength="10"
+                   list="bom-parent-part-list" autocomplete="off" placeholder="Code" data-field="part_code">
+            <input class="form-control mform__input bom-search" type="text" autocomplete="off"
+                   placeholder="Type part code or description to search…" list="bom-parent-part-list" data-part-search aria-label="Search part by code or description">
+          </div>
+          <datalist id="bom-parent-part-list" data-part-list></datalist>
+          <p class="mform__error" data-error-for="part_code"></p>
+        </div>
+      </div>
+
+      <div class="mform bom-parent">
+        <label class="mform__label" for="bom-parent-unit">Unit</label>
+        <div class="mform__field">
+          <input class="form-control mform__input bom-unit" id="bom-parent-unit" type="text" readonly tabindex="-1" data-parent-unit>
+        </div>
+      </div>
+
+      <fieldset class="bom-add-row">
+        <legend class="mform__label">Part Description</legend>
+        <div class="bom-add-row__fields">
+          <div class="bom-search-row bom-add-row__desc">
+            <input class="form-control bom-code" type="text" maxlength="10" list="bom-item-list"
+                   autocomplete="off" placeholder="Code" data-row-item-code>
+            <input class="form-control bom-search" type="text" autocomplete="off"
+                   placeholder="Type part code or description to search…" list="bom-item-list" data-row-item-search aria-label="Search component part by code or description">
+          </div>
+          <datalist id="bom-item-list" data-item-list></datalist>
+          <label class="bom-add-row__qty">
+            <span>QTY</span>
+            <input class="form-control mform__input--num" type="text" inputmode="decimal" autocomplete="off" data-row-qty>
+          </label>
+          <label class="bom-add-row__unit">
+            <span>UNIT</span>
+            <input class="form-control" type="text" maxlength="3" autocomplete="off" data-row-unit>
+          </label>
+          <button class="btn btn--secondary" type="button" data-row-add>OK</button>
+        </div>
+        <p class="mform__error" data-row-error></p>
+      </fieldset>
+
+      <div class="master-table-wrap bom-grid-wrap">
+        <table class="table master-table bom-grid-table">
+          <thead>
+            <tr>
+              <th scope="col" class="num">#</th>
+              <th scope="col">Code</th>
+              <th scope="col">Part Description</th>
+              <th scope="col" class="num">Quantity</th>
+              <th scope="col">Unit</th>
+            </tr>
+          </thead>
+          <tbody data-grid-rows></tbody>
+        </table>
+        <p class="master-table__empty" data-grid-empty hidden>No components added yet.</p>
+      </div>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-confirm-box hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="bom-sure-title">
+      <p class="modal-discard__title" id="bom-sure-title" data-confirm-text>Are you sure?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--primary" type="button" data-confirm-yes>Yes</button>
+        <button class="btn btn--secondary" type="button" data-confirm-no>No</button>
+      </div>
+    </div>
+  </div>
+</dialog>

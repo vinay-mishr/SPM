@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %}
+  Page frame for logged-in screens: sidebar + top bar + content.
+  Child templates fill page_title, content and (optionally) header_actions and modals.
+{% endcomment %}
+
+{% block body %}
+<div class="app">
+  {% include "includes/sidebar.html" %}
+
+  <div class="app-body">
+    <header class="app-header">
+      <div>
+        <h1 class="app-header__title">{% block page_title %}{% endblock %}</h1>
+      </div>
+      {% block header_actions %}{% endblock %}
+    </header>
+
+    <main class="app-main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+{% block modals %}{% endblock %}
+<script src="{% static 'js/sidebar.js' %}" defer></script>
+{% endblock %}

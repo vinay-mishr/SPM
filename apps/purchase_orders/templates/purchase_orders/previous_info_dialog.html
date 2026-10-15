@@ -1,0 +1,24 @@
+{# Read-only "PREVIOUS INFO" popup: past purchase history for the selected part (old VFP: DO FORM previnfo2). #}
+<dialog class="modal po-previnfo-modal" id="po-previnfo-dialog" aria-labelledby="po-previnfo-title">
+  <header class="modal__header">
+    <h2 class="modal__title" id="po-previnfo-title">Previous Info — <span data-previnfo-part></span></h2>
+    <button class="modal__close" type="button" aria-label="Close" data-previnfo-close>&times;</button>
+  </header>
+  <div class="modal__body">
+    <table class="table po-previnfo-table">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Party</th>
+          <th scope="col" class="num">Qty</th>
+          <th scope="col" class="num">Rate</th>
+        </tr>
+      </thead>
+      <tbody data-previnfo-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-previnfo-empty hidden>No previous purchase history for this part.</p>
+  </div>
+  <footer class="modal__footer">
+    <button class="btn btn--secondary" type="button" data-previnfo-close>Close</button>
+  </footer>
+</dialog>

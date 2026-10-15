@@ -1,0 +1,194 @@
+{# Shared Add / Modify / View form. part_master_form.js switches the mode. #}
+<dialog class="modal part-form-modal" id="part-form-dialog" aria-labelledby="part-form-title">
+  <form novalidate data-part-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="part-form-title">Part Master — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform pform">
+        <label class="mform__label mform__label--required" for="pt-part_number">Part No</label>
+        <div class="mform__field pform__partno">
+          <input class="form-control mform__input" id="pt-part_number" name="part_number" type="text" maxlength="10" autocomplete="off" data-field="part_number">
+          <p class="mform__error" data-error-for="part_number"></p>
+        </div>
+
+        <label class="mform__label" for="pt-description_1">Part Description1</label>
+        <div class="mform__field mform__field--wide">
+          <input class="form-control mform__input" id="pt-description_1" name="description_1" type="text" maxlength="35" autocomplete="off" data-field="description_1">
+          <p class="mform__error" data-error-for="description_1"></p>
+        </div>
+
+        <label class="mform__label" for="pt-description_2">Part Description2</label>
+        <div class="mform__field mform__field--wide">
+          <input class="form-control mform__input" id="pt-description_2" name="description_2" type="text" maxlength="35" autocomplete="off" data-field="description_2">
+          <p class="mform__error" data-error-for="description_2"></p>
+        </div>
+      </div>
+
+      <div class="mform pform pform--two">
+        <label class="mform__label" for="pt-drawing_no">Drawing No</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input" id="pt-drawing_no" name="drawing_no" type="text" maxlength="10" autocomplete="off" data-field="drawing_no">
+          <p class="mform__error" data-error-for="drawing_no"></p>
+        </div>
+
+        <label class="mform__label" for="pt-gauge">Gauge</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input" id="pt-gauge" name="gauge" type="text" maxlength="10" autocomplete="off" data-field="gauge">
+        </div>
+
+        <label class="mform__label" for="pt-packing">Packing</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-packing" name="packing" type="number" inputmode="numeric" min="0" step="1" data-field="packing">
+          <p class="mform__error" data-error-for="packing"></p>
+        </div>
+
+        <label class="mform__label" for="pt-grade">Grade</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input" id="pt-grade" name="grade" type="text" maxlength="2" autocomplete="off" data-field="grade">
+        </div>
+
+        <label class="mform__label" for="pt-gross_weight">Gross Weight</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-gross_weight" name="gross_weight" type="text" inputmode="decimal" data-field="gross_weight" data-decimal="4">
+          <p class="mform__error" data-error-for="gross_weight"></p>
+        </div>
+
+        <label class="mform__label" for="pt-quantity_in_order">Qty in Order</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-quantity_in_order" name="quantity_in_order" type="text" inputmode="decimal" data-field="quantity_in_order" data-decimal="2">
+          <p class="mform__error" data-error-for="quantity_in_order"></p>
+        </div>
+      </div>
+
+      <h3 class="section-bar">Price / Stock Details</h3>
+      <div class="mform pform pform--three">
+        <label class="mform__label" for="pt-purchase_rate">Pur. Rate</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-purchase_rate" name="purchase_rate" type="text" inputmode="decimal" data-field="purchase_rate" data-decimal="2">
+          <p class="mform__error" data-error-for="purchase_rate"></p>
+        </div>
+
+        <label class="mform__label" for="pt-sale_rate">Sale Rate</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-sale_rate" name="sale_rate" type="text" inputmode="decimal" data-field="sale_rate" data-decimal="2">
+          <p class="mform__error" data-error-for="sale_rate"></p>
+        </div>
+
+        <label class="mform__label" for="pt-gst_percent">GST %</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-gst_percent" name="gst_percent" type="text" inputmode="decimal" data-field="gst_percent" data-decimal="2">
+          <p class="mform__error" data-error-for="gst_percent"></p>
+        </div>
+
+        <label class="mform__label" for="pt-opening_stock">Opening Stock</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-opening_stock" name="opening_stock" type="text" inputmode="decimal" data-field="opening_stock" data-decimal="3">
+          <p class="mform__error" data-error-for="opening_stock"></p>
+        </div>
+
+        <label class="mform__label" for="pt-reorder_qty">Reorder Qty</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-reorder_qty" name="reorder_qty" type="text" inputmode="decimal" data-field="reorder_qty" data-decimal="3">
+          <p class="mform__error" data-error-for="reorder_qty"></p>
+        </div>
+
+        <label class="mform__label" for="pt-current_stock">Current Stock</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-current_stock" name="current_stock" type="text" inputmode="decimal" data-field="current_stock" data-decimal="0">
+          <p class="mform__error" data-error-for="current_stock"></p>
+        </div>
+
+        <label class="mform__label" for="pt-weight_by_100">Weight/100</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-weight_by_100" name="weight_by_100" type="text" inputmode="decimal" data-field="weight_by_100" data-decimal="3">
+          <p class="mform__error" data-error-for="weight_by_100"></p>
+        </div>
+
+        <label class="mform__label" for="pt-material">Material</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input" id="pt-material" name="material" type="text" maxlength="15" list="part-material-list" autocomplete="off" data-field="material">
+        </div>
+
+        <label class="mform__label" for="pt-location">Location</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input" id="pt-location" name="location" type="text" maxlength="10" autocomplete="off" data-field="location">
+        </div>
+
+        <label class="mform__label" for="pt-unit">Unit</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input" id="pt-unit" name="unit" type="text" maxlength="3" list="part-unit-list" autocomplete="off" data-field="unit">
+          <datalist id="part-unit-list">
+            <option value="NUM"><option value="UNT"><option value="SET"><option value="PCS"><option value="KG">
+            <option value="MTR"><option value="LIT"><option value="PKT"><option value="BOX"><option value="DAY"><option value="MIL">
+          </datalist>
+        </div>
+
+        <label class="mform__label" for="pt-hsn_code">HSN Code</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input" id="pt-hsn_code" name="hsn_code" type="text" maxlength="8" autocomplete="off" data-field="hsn_code">
+        </div>
+      </div>
+
+      <div class="mform pform pform--two">
+        <label class="mform__label" for="pt-part_type">Part Type</label>
+        <div class="mform__field pform__short">
+          <select class="form-control mform__input" id="pt-part_type" name="part_type" data-field="part_type">
+            <option value="">—</option>
+            <option value="R">Raw Material (RM)</option>
+            <option value="C">Component (CP)</option>
+            <option value="S">Consumable (CS)</option>
+          </select>
+        </div>
+
+        <label class="mform__label" for="pt-sub_assembly">Sub Assembly</label>
+        <div class="mform__field">
+          <label class="checkbox">
+            <input type="checkbox" id="pt-sub_assembly" name="sub_assembly" data-field="sub_assembly">
+            <span class="checkbox__box" aria-hidden="true"></span>
+            This part is a sub-assembly
+          </label>
+        </div>
+      </div>
+
+      <h3 class="section-bar">Supplier Details</h3>
+      <div class="mform pform pform--suppliers">
+        {% for n in "1234" %}
+        <label class="mform__label" for="pt-supplier_{{ n }}">Supplier {{ n }}</label>
+        <div class="mform__field pform__supplier">
+          <input class="form-control mform__input pform__code" id="pt-supplier_{{ n }}" name="supplier_{{ n }}" type="text" maxlength="4"
+                 list="part-party-list" autocomplete="off" placeholder="Code" data-field="supplier_{{ n }}">
+          <input class="form-control mform__input pform__party-search" type="text" autocomplete="off"
+                 placeholder="Search party by name…" list="part-party-list" data-party-search="{{ n }}" aria-label="Search supplier {{ n }} by name">
+          <p class="mform__error" data-error-for="supplier_{{ n }}"></p>
+        </div>
+        <label class="mform__label" for="pt-rate_{{ n }}">Rate {{ n }}</label>
+        <div class="mform__field pform__short">
+          <input class="form-control mform__input mform__input--num" id="pt-rate_{{ n }}" name="rate_{{ n }}" type="text" inputmode="decimal" data-field="rate_{{ n }}" data-decimal="2">
+          <p class="mform__error" data-error-for="rate_{{ n }}"></p>
+        </div>
+        {% endfor %}
+      </div>
+      <datalist id="part-party-list" data-party-list></datalist>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-discard hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="part-discard-title">
+      <p class="modal-discard__title" id="part-discard-title">Discard unsaved changes?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--secondary" type="button" data-discard-cancel>Cancel</button>
+        <button class="btn btn--primary" type="button" data-discard-confirm>Exit</button>
+      </div>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,83 @@
+{# Shared ADD / MODIFY / VIEW form (old VFP "BILL OF MATERIAL MASTER" window, plain/Item-wise). bom_item_master.js switches the mode. #}
+<dialog class="modal bom-form-modal" id="bomi-form-dialog" aria-labelledby="bomi-form-title">
+  <form novalidate data-bomi-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="bomi-form-title">Bill of Material Master — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform bom-parent">
+        <label class="mform__label mform__label--required" for="bomi-item_code">Item Name</label>
+        <div class="mform__field">
+          <div class="bom-search-row">
+            <input class="form-control mform__input bom-code bomi-item-code" id="bomi-item_code" type="text" maxlength="10"
+                   list="bomi-item-list" autocomplete="off" placeholder="Code" data-field="item_code">
+            <input class="form-control mform__input bom-search bomi-item-search" type="text" autocomplete="off"
+                   placeholder="Type item code or name to search…" list="bomi-item-list" data-item-search aria-label="Search item by code or name">
+            <input class="form-control mform__input bom-unit bomi-item-unit" type="text" readonly tabindex="-1"
+                   placeholder="Unit" data-parent-unit aria-label="Item unit">
+          </div>
+          <datalist id="bomi-item-list" data-item-list></datalist>
+          <p class="mform__error" data-error-for="item_code"></p>
+        </div>
+      </div>
+
+      <fieldset class="bom-add-row">
+        <legend class="mform__label">Part Description</legend>
+        <div class="bom-add-row__fields">
+          <div class="bom-search-row bom-add-row__desc">
+            <input class="form-control bom-code" type="text" maxlength="10" list="bomi-part-list"
+                   autocomplete="off" placeholder="Code" data-row-part-code>
+            <input class="form-control bom-search" type="text" autocomplete="off"
+                   placeholder="Type part code or description to search…" list="bomi-part-list" data-row-part-search aria-label="Search part by code or description">
+          </div>
+          <datalist id="bomi-part-list" data-part-list></datalist>
+          <label class="bom-add-row__qty">
+            <span>QTY</span>
+            <input class="form-control mform__input--num" type="text" inputmode="decimal" autocomplete="off" data-row-qty>
+          </label>
+          <label class="bom-add-row__unit">
+            <span>UNIT</span>
+            <input class="form-control" type="text" maxlength="3" autocomplete="off" data-row-unit>
+          </label>
+          <button class="btn btn--secondary" type="button" data-row-add>OK</button>
+        </div>
+        <p class="mform__error" data-row-error></p>
+      </fieldset>
+
+      <div class="master-table-wrap bom-grid-wrap">
+        <table class="table master-table bom-grid-table">
+          <thead>
+            <tr>
+              <th scope="col" class="num">#</th>
+              <th scope="col">Code</th>
+              <th scope="col">Part Description</th>
+              <th scope="col" class="num">Quantity</th>
+              <th scope="col">Unit</th>
+            </tr>
+          </thead>
+          <tbody data-grid-rows></tbody>
+        </table>
+        <p class="master-table__empty" data-grid-empty hidden>No components added yet.</p>
+      </div>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-confirm-box hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="bomi-sure-title">
+      <p class="modal-discard__title" id="bomi-sure-title" data-confirm-text>Are you sure?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--primary" type="button" data-confirm-yes>Yes</button>
+        <button class="btn btn--secondary" type="button" data-confirm-no>No</button>
+      </div>
+    </div>
+  </div>
+</dialog>

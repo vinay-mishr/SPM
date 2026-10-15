@@ -1,0 +1,86 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Part Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'parts/css/part_master.css' %}">
+  <link rel="stylesheet" href="{% static 'parts/css/part_master_form.css' %}">
+  <script src="{% static 'parts/js/part_master_form.js' %}" defer></script>
+  <script src="{% static 'parts/js/part_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Part Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Part Master (raw material / component / consumable / sub-assembly){% endblock %}
+
+{% block content %}
+<section class="master-page" data-part-master
+         data-list-url="{% url 'parts:api_list' %}"
+         data-parties-url="{% url 'parts:api_parties' %}"
+         data-create-url="{% url 'parts:api_create' %}"
+         data-update-url="{% url 'parts:api_update' code='0' %}"
+         data-delete-url="{% url 'parts:api_delete' code='0' %}"
+         data-export-url="{% url 'parts:export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Part actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <a class="btn btn--secondary" href="{% url 'parts:export' %}" download title="Export the Part Master list to Excel"><span class="master-toolbar__key">E</span>xcel</a>
+      <button class="btn btn--secondary" type="button" data-action="exit">E<span class="master-toolbar__key">x</span>it</button>
+    </div>
+    <label class="master-search">
+      <span class="visually-hidden">Search parts</span>
+      <input class="form-control" type="search" placeholder="Search part no, description, drawing no, HSN…" data-search autocomplete="off">
+    </label>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table part-table">
+      <thead>
+        <tr>
+          <th scope="col">Part No</th>
+          <th scope="col">Item Description</th>
+          <th scope="col">Drawing No</th>
+          <th scope="col">HSN</th>
+          <th scope="col">Unit</th>
+          <th scope="col" class="num">GST%</th>
+          <th scope="col" class="num">P.Rate</th>
+          <th scope="col" class="num">S.Rate</th>
+          <th scope="col" class="part-table__sa">S.A</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No records found</p>
+  </div>
+  <p class="master-count" data-count aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"part-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "parts/part_master_form.html" %}
+
+  <dialog class="modal modal--sm" id="part-delete-dialog" aria-labelledby="part-delete-title">
+    <header class="modal__header">
+      <h2 class="modal__title" id="part-delete-title">Part Master — Delete</h2>
+      <button class="modal__close" type="button" aria-label="Close" data-delete-cancel>&times;</button>
+    </header>
+    <div class="modal__body">
+      <dl class="detail-list" data-delete-details></dl>
+      <p class="modal-question">Are you sure you want to delete this part?</p>
+      <div class="alert alert--error" role="alert" data-delete-alert hidden></div>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--danger" type="button" data-delete-confirm>Delete</button>
+      <button class="btn btn--secondary" type="button" data-delete-cancel>Exit</button>
+    </footer>
+  </dialog>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Bill of Material Master With Value · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'bom/css/consumption_master.css' %}">
+  <script src="{% static 'bom/js/consumption_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Bill of Material Master With Value{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Bill of Material Master With Value{% endblock %}
+
+{% block content %}
+<section class="master-page cm-page" data-consumption-master
+         data-data-url="{% url 'bom:consumption_master_data' %}"
+         data-export-url="{% url 'bom:consumption_master_export' %}"
+         data-items-url="{% url 'bom:api_items' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar cm-toolbar" role="toolbar" aria-label="Consumption master actions">
+    <div class="cm-item">
+      <span class="cm-item__label">Item Name</span>
+      <input class="form-control cm-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search>
+      <input class="form-control cm-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel disabled><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="alert alert--error" role="alert" data-error hidden></div>
+
+  <div class="cm-report" data-report hidden>
+    <div class="master-table-wrap cm-grid-wrap">
+      <table class="table master-table cm-table">
+        <thead>
+          <tr>
+            <th scope="col" class="num">Sno</th>
+            <th scope="col">Code</th>
+            <th scope="col">Item Description</th>
+            <th scope="col">Unit</th>
+            <th scope="col" class="num">Qty</th>
+            <th scope="col">Material</th>
+            <th scope="col" class="num">Wt/100</th>
+            <th scope="col">Gauge</th>
+            <th scope="col">Drawing No</th>
+            <th scope="col" class="num">Value(in Rs)</th>
+          </tr>
+        </thead>
+        <tbody data-rows></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="8" class="cm-total-label">Total</td>
+            <td class="num" data-report-total></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <p class="master-table__empty" data-empty hidden>This item has no Bill of Material components.</p>
+  <p class="master-table__empty" data-placeholder>Search for an item above to see its consumption master.</p>
+</section>
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

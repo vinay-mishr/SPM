@@ -1,0 +1,34 @@
+/* Rep Master — compact Add / Modify / View form. Field and modal styles come from
+   static/css/components.css. */
+
+.rep-form-modal {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.rep-form {
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 10px 12px;
+}
+
+.rep-form .mform__input.form-control {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.rep-code {
+  max-width: 70px;
+}
+
+.rep-mid {
+  max-width: 240px;
+}
+
+@media (max-width: 767px) {
+  .rep-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rep-mid {
+    max-width: none;
+  }
+}

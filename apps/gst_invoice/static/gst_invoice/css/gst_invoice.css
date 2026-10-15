@@ -1,0 +1,135 @@
+.gi-page {
+  --gi-green: #bfe0c9;
+  --gi-border: #9ca3af;
+  background: #f2faf5;
+  border: 1px solid var(--gi-border);
+  border-radius: 6px;
+  padding: 14px;
+  min-height: calc(100vh - 150px);
+  font-size: 13px;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+}
+.gi-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
+.gi-toolbar label, .gi-fields label, .gi-totals label {
+  display: flex; flex-direction: column; gap: 2px; font-weight: 700; font-size: 12px; text-transform: uppercase;
+}
+.gi-toolbar input { height: 28px; width: 150px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; }
+.gi-search input { width: 220px; }
+.gi-buttons { display: flex; gap: 8px; }
+.gi-buttons .btn { height: 28px; padding: 0 12px; font-size: 12px; }
+.gi-alert { margin-bottom: 10px; padding: 8px 12px; border-radius: 4px; background: #dc2626; color: #fff; font-weight: 700; }
+.gi-grid { flex: 1; background: #fff; border: 1px solid var(--gi-border); border-radius: 4px; overflow: auto; }
+.gi-grid table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.gi-grid th { position: sticky; top: 0; background: var(--gi-green); padding: 6px 8px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--gi-border); }
+.gi-grid td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-weight: 700; white-space: nowrap; }
+.gi-grid tbody tr.is-selected td { background: #fef9c3; }
+.gi-grid tbody tr.empty td { text-align: center; color: #6b7280; font-weight: 400; }
+.gi-grid .num { text-align: right; }
+.gi-grid .gi-code { font-weight: 700; }
+
+.gi-form-modal {
+  width: min(1340px, 84vw);
+  max-height: calc(100vh - 12px);
+  margin: auto 0 auto 16vw;
+  padding: 0;
+  border: 1px solid var(--gi-border);
+  border-radius: 6px;
+  background: #f2faf5;
+}
+.gi-form-modal[open] { display: flex; flex-direction: column; }
+.gi-form-modal::backdrop { background: rgba(0, 0, 0, 0.35); }
+.gi-titlebar { flex: none; padding: 5px 14px; background: #8fc4a2; font-weight: 700; font-size: 15px; }
+.gi-mode { color: #b91c1c; font-style: italic; margin-left: 10px; }
+.gi-body { flex: 1; min-height: 0; padding: 6px 14px; display: flex; flex-direction: column; gap: 4px; overflow: auto; }
+.gi-fields { display: flex; flex-direction: column; gap: 4px; flex: none; }
+.gi-field-row { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: end; }
+.gi-fields input, .gi-totals input, .gi-rate input, .gi-fields select {
+  height: 28px; padding: 2px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 15px; font-weight: 400; text-transform: none;
+}
+.gi-fields input[readonly] { background: #e5e7eb; }
+.gi-fields input { width: 210px; }
+.gi-fields input[type="radio"] { width: auto; }
+.gi-fields select { width: 90px; padding: 2px 4px; }
+.gi-wide input { width: 340px; }
+.gi-narrow input { width: 147px; }
+.gi-compact input { width: 126px; }
+.gi-compact2 input { width: 110px; }
+.gi-compact-wide input { width: 204px; }
+
+/* Four-column GST invoice layout: Invoice details | Party & Consignee | Transport | Order & Supply. */
+.gi-columns { display: flex; flex-wrap: wrap; align-items: start; gap: 10px 24px; width: fit-content; }
+.gi-column { display: flex; flex-direction: column; gap: 2px; flex: 0 0 auto; min-width: 0; }
+.gi-column--invoice { width: 115px; }
+.gi-column--party { width: 360px; }
+.gi-column--other { width: 260px; }
+.gi-column--supply { width: 270px; }
+.gi-column input, .gi-column select { width: 100%; }
+.gi-column input[type="radio"] { width: auto; }
+@media (max-width: 1060px) {
+  .gi-columns { flex-direction: column; }
+  .gi-column--invoice, .gi-column--party, .gi-column--other, .gi-column--supply { width: 100%; max-width: 420px; flex-basis: auto; }
+}
+
+.gi-check { flex-direction: row; align-items: center; gap: 6px; }
+.gi-check input { height: auto; }
+.gi-narration { margin-top: 8px; flex: none; }
+.gi-narration-title { font-weight: 700; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+.gi-narration textarea { width: 100%; max-width: 600px; border: 2px solid #000; border-radius: 4px; padding: 6px 8px; font-size: 13px; resize: vertical; }
+.gi-rates { margin-top: 8px; border: 1px solid var(--gi-border); border-radius: 4px; background: #fff; flex: none; }
+.gi-rate-head, .gi-rate { display: grid; grid-template-columns: 110px 170px 150px 150px 150px; gap: 6px; align-items: center; padding: 4px 8px; }
+.gi-rate-head { background: var(--gi-green); font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.gi-rate span { font-weight: 700; text-align: right; }
+.gi-rate span:first-child { text-align: left; }
+.gi-rate input { text-align: right; }
+.gi-footer { flex: none; display: flex; justify-content: center; gap: 10px; margin-top: -22px; }
+.gi-footer .btn { height: 30px; min-width: 100px; padding: 0 14px; font-size: 13px; }
+/* Still used by spare_invoice/proforma_invoice/proforma_spearpart's own gi-confirm dialog. */
+.gi-confirm { border: 1px solid var(--gi-border); border-radius: 6px; padding: 16px; width: min(320px, 90vw); margin: auto; background: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+.gi-confirm::backdrop { background: rgba(0, 0, 0, 0.45); }
+.gi-confirm p { font-weight: 700; margin: 0 0 12px; font-size: 16px; }
+.gi-item-row { flex: none; width: fit-content; display: grid; grid-template-columns: 340px 75px 106px 100px 90px 100px 135px auto; gap: 8px; align-items: end; margin: 2px 0; }
+.gi-item-row label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 13px; text-transform: uppercase; }
+.gi-item-row input { height: 28px; padding: 2px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 15px; font-weight: 400; }
+.gi-item-row .gi-wide { grid-column: auto; }
+.gi-item-row .gi-wide input { width: 100%; }
+.gi-item-row .gi-row-error { grid-column: 1 / -1; color: #dc2626; font-size: 12px; }
+.gi-items { flex: none; min-height: 90px; max-height: 460px; border: 1px solid #000; overflow: auto; }
+.gi-items table { width: 100%; border-collapse: collapse; }
+.gi-items th, .gi-items td { border: 1px solid #000; padding: 1px 8px; font-size: 1.05rem; }
+.gi-items th { background: #bfe0c9; font-weight: 700; text-transform: uppercase; position: sticky; top: 0; }
+.gi-items td.num, .gi-items th.num { text-align: right; }
+.gi-items tbody td { border-bottom: 1px solid #000; }
+.gi-summary { flex: none; display: grid; grid-template-columns: max-content; gap: 4px; justify-content: end; margin-top: 4px; margin-right: 60px; }
+.gi-summary label { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; width: 340px; font-weight: 700; font-size: 13px; text-transform: uppercase; }
+.gi-summary input { height: 25px; width: 170px; padding: 2px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
+.gi-summary input[readonly] { background: #e5e7eb; }
+.gi-form-modal input, .gi-form-modal select { font-weight: 700; }
+.gi-item-row .btn[data-item-add] { height: 26px; min-width: 56px; padding: 0 12px; font-size: 12px; align-self: end; }
+.gi-form-modal label { font-size: 13px; }
+.gi-form-modal input, .gi-form-modal select { font-size: 14px; }
+.gi-grid table { font-size: 15px; }
+.gi-grid th { font-size: 14px; }
+.gi-grid td { font-size: 15px; }
+.gi-grid th, .gi-grid td { padding: 2px 6px; }
+.gi-page .btn { font-size: 15px; height: 40px; padding: 0 14px; }
+.gi-page label { font-size: 14px; }
+.gi-page input { font-size: 16px; height: 40px; }
+.gi-grid table { font-size: 17px; }
+.gi-grid th { font-size: 15px; }
+.gi-grid td { font-size: 17px; }
+.gi-grid th, .gi-grid td { padding: 4px 8px; }
+
+.gi-radio { flex-direction: row !important; align-items: center; gap: 10px; }
+.gi-radio label { flex-direction: row; align-items: center; gap: 4px; font-weight: 700; text-transform: none; }
+
+.gi-summary-adj-row { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 300px; justify-self: end; }
+.gi-summary-adj-row select {
+  height: 21px; width: 50px; padding: 1px 2px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 11px; font-weight: 700;
+}
+.gi-summary-adj-row input[data-adj-code] {
+  height: 21px; width: 66px; padding: 1px 4px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: left; text-transform: uppercase; font-weight: 400;
+}
+.gi-summary-adj-row input[data-adj-amount] { height: 21px; width: 150px; padding: 1px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
+.gi-summary-adj-row input[data-adj-amount]:disabled { background: #e5e7eb; color: #9ca3af; }

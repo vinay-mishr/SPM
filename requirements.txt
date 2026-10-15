@@ -1,0 +1,15 @@
+Django>=5.2,<6.0
+
+# Microsoft SQL Server (DB_ENGINE=mssql). Also needs "ODBC Driver 18 for SQL Server" installed.
+mssql-django>=1.6
+pyodbc>=5.0
+
+# Excel exports (Item / Party lists).
+openpyxl>=3.1
+
+# Real downloadable PDF for a Purchase Order's public WhatsApp share link.
+xhtml2pdf>=0.2.17
+
+# Uncomment the driver if you use one of these databases instead:
+# psycopg[binary]>=3.2      # PostgreSQL
+# mysqlclient>=2.2          # MySQL / MariaDB

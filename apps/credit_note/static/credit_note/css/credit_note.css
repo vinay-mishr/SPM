@@ -1,0 +1,142 @@
+.cn-page {
+  --cn-green: #bfe0c9;
+  --cn-border: #9ca3af;
+  background: #f2faf5;
+  border: 1px solid var(--cn-border);
+  border-radius: 6px;
+  padding: 14px;
+  min-height: calc(100vh - 150px);
+  font-size: 13px;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+}
+.cn-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
+.cn-toolbar label, .cn-fields label, .cn-totals label {
+  display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 12px; text-transform: uppercase;
+}
+.cn-toolbar input { height: 28px; width: 150px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; }
+.cn-search input { width: 220px; }
+.cn-buttons { display: flex; gap: 8px; }
+.cn-buttons .btn { height: 28px; padding: 0 12px; font-size: 12px; }
+.cn-alert { margin-bottom: 10px; padding: 8px 12px; border-radius: 4px; background: #dc2626; color: #fff; font-weight: 700; }
+.cn-grid { flex: 1; background: #fff; border: 1px solid var(--cn-border); border-radius: 4px; overflow: auto; }
+.cn-grid table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cn-grid th { position: sticky; top: 0; background: var(--cn-green); padding: 6px 8px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--cn-border); }
+.cn-grid td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-weight: 700; white-space: nowrap; }
+.cn-grid tbody tr.is-selected td { background: #fef9c3; }
+.cn-grid tbody tr.empty td { text-align: center; color: #6b7280; font-weight: 400; }
+.cn-grid .num { text-align: right; }
+.cn-grid .cn-code { font-weight: 700; }
+
+.cn-form-modal { width: min(1200px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--cn-border); border-radius: 6px; background: #f2faf5; }
+.cn-titlebar { padding: 10px 14px; background: #8fc4a2; font-weight: 700; font-size: 15px; }
+.cn-mode { color: #b91c1c; font-style: italic; margin-left: 10px; }
+.cn-body { padding: 14px; }
+.cn-fields { display: flex; flex-direction: column; gap: 8px; }
+.cn-field-row { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 16px; }
+.cn-fields input, .cn-totals input, .cn-rate input {
+  height: 28px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 13px; font-weight: 400; text-transform: none;
+}
+.cn-fields input[readonly] { background: #e5e7eb; }
+.cn-fields input { width: 200px; }
+/* CN. NO reduced ~65% (200px -> 70px); DATE / G.R. NO / G.R. DATE reduced 50% (200px -> 100px). */
+.cn-cnno input { width: 70px; }
+.cn-half input { width: 100px; }
+.cn-wide { flex: 0 0 auto; }
+.cn-wide input { width: 340px; }
+.cn-date input { width: 110px; }
+.cn-gstbill input { width: 130px; }
+.cn-gstdate input { width: 110px; }
+.cn-grdate input { width: 110px; }
+.cn-city input { width: 140px; }
+/* Party sits on row 1 alongside CN NO / dates / GST bill / city and takes the remaining width. */
+.cn-party { flex: 1 1 200px; }
+.cn-party input:first-of-type { width: 100%; min-width: 160px; }
+/* Narration form: CN No/Date/Pre-GST in one column, Invoice + Party/City/Place of Supply in another. */
+.nar-columns { display: flex; flex-wrap: wrap; align-items: start; gap: 10px 32px; }
+.nar-column { display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; }
+.nar-column--cn { width: 200px; }
+.nar-column--invoice { width: 360px; }
+.nar-column--reason { width: 320px; margin: 0; }
+.nar-column label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.nar-column input, .nar-column select { width: 100%; font-weight: 700; }
+.nar-party-group { display: flex; }
+.nar-party-group input[data-party-search] { flex: 1 1 auto; min-width: 0; border-radius: 4px 0 0 4px; }
+.nar-party-group input.nar-city { flex: 0 0 110px; width: 110px; border-left: none; border-radius: 0 4px 4px 0; text-align: left; }
+@media (max-width: 1060px) {
+  .nar-columns { flex-direction: column; }
+  .nar-column--cn, .nar-column--invoice, .nar-column--reason { width: 100%; max-width: 420px; }
+}
+
+.cn-check { flex-direction: row; align-items: center; gap: 6px; }
+.cn-check input { height: auto; }
+.cn-narration { margin-top: 12px; }
+.cn-narration-title { font-weight: 700; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+.cn-narration textarea { width: 100%; max-width: 600px; border: 2px solid #000; border-radius: 4px; padding: 6px 8px; font-size: 13px; resize: vertical; }
+.cn-rates { margin-top: 12px; border: 1px solid var(--cn-border); border-radius: 4px; background: #fff; }
+.cn-rate-head, .cn-rate { display: grid; grid-template-columns: 110px 170px 150px 150px 150px; gap: 6px; align-items: center; padding: 4px 8px; }
+.cn-rate-head { background: var(--cn-green); font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.cn-rate span { font-weight: 700; text-align: right; }
+.cn-rate span:first-child { text-align: left; }
+.cn-rate input { text-align: right; }
+.cn-totals { display: grid; grid-template-columns: repeat(3, max-content); gap: 12px; justify-content: end; padding: 8px; border-top: 1px solid var(--cn-border); }
+.cn-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+.cn-footer .btn { min-width: 110px; }
+.cn-confirm { border: 1px solid var(--cn-border); border-radius: 6px; padding: 16px; }
+.cn-confirm p { font-weight: 700; margin: 0 0 12px; }
+.cn-item-row { display: grid; width: fit-content; grid-template-columns: 340px 90px 110px 90px 100px 110px auto; gap: 8px; align-items: end; margin: 12px 0; }
+.cn-item-row label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.cn-item-row input { height: 28px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 13px; font-weight: 400; }
+.cn-item-row .cn-wide { grid-column: auto; }
+.cn-item-row .cn-row-error { grid-column: 1 / -1; color: #dc2626; font-size: 12px; }
+.cn-items { height: 220px; }
+.cn-summary { display: grid; grid-template-columns: repeat(3, max-content); gap: 8px 16px; justify-content: end; margin-top: 10px; }
+.cn-summary label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.cn-summary input { height: 26px; width: 150px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
+.cn-summary input[readonly] { background: #e5e7eb; }
+.cn-items table { width: 100%; border-collapse: collapse; }
+.cn-items th, .cn-items td { border: 1px solid #000; padding: 2px 6px; font-size: 0.95rem; }
+.cn-items th { background: #bfe0c9; font-weight: 700; text-transform: uppercase; }
+.cn-items td.num, .cn-items th.num { text-align: right; }
+.cn-summary { grid-template-columns: max-content; gap: 4px; }
+.cn-summary label { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; width: 420px; }
+.cn-summary label input:first-of-type:not(:last-of-type) { width: 180px; text-align: left; }
+.cn-summary label input:last-of-type { width: 110px; }
+.cn-remarks { margin-top: 10px; }
+.cn-remarks input { width: 100%; height: 28px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; }
+.cn-items { flex: none; height: 200px; border: 1px solid #000; overflow: auto; }
+.cn-items tbody td { border-bottom: 1px solid #000; }
+.cn-items tbody tr[data-index] { cursor: pointer; }
+.cn-items tbody tr.is-selected td { background: #e4f0ff; }
+.cn-items tbody tr.is-editing td { background: #FFF3B0; }
+.cn-items tbody tr.is-held td { color: #6b7280; text-decoration: line-through; background: #f3f4f6; }
+.cn-footer { display: flex; justify-content: center; gap: 10px; }
+.cn-footer .btn { height: 26px; min-width: 84px; padding: 0 14px; font-size: 12px; }
+.cn-footer { margin-top: -24px; }
+.cn-footer { margin-top: -60px; }
+.cn-form-modal input, .cn-form-modal select { font-weight: 700; }
+.cn-item-row .btn[data-item-add] { height: 26px; min-width: 56px; padding: 0 12px; font-size: 12px; align-self: end; }
+.cn-form-modal label { font-size: 14px; }
+.cn-form-modal input, .cn-form-modal select { font-size: 15px; }
+.cn-grid table { font-size: 15px; }
+.cn-grid th { font-size: 14px; }
+.cn-grid td { font-size: 15px; }
+.cn-grid th, .cn-grid td { padding: 2px 6px; }
+.cn-page .btn { font-size: 15px; height: 40px; padding: 0 14px; }
+.cn-page label { font-size: 14px; }
+.cn-page input { font-size: 16px; height: 40px; }
+.cn-grid table { font-size: 17px; }
+.cn-grid th { font-size: 15px; }
+.cn-grid td { font-size: 17px; }
+.cn-grid th, .cn-grid td { padding: 4px 8px; }
+
+.nar-reason-title { font-weight: 700; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+.nar-reason input { display: block; width: 100%; max-width: 600px; height: 28px; margin-bottom: 4px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; }
+.nar-rates { flex: none; margin: 10px 0; }
+.nar-rates table { width: auto; min-width: 100%; table-layout: fixed; }
+.nar-rates th, .nar-rates td { padding: 3px 8px; }
+.nar-rates th:first-child, .nar-rates td:first-child { width: 110px; }
+.nar-rates th:nth-child(2), .nar-rates td:nth-child(2) { width: 90px; }
+.nar-rates th:nth-child(n+3), .nar-rates td:nth-child(n+3) { width: 130px; }
+.nar-rates input { width: 100%; height: 26px; padding: 2px 6px; border: 2px solid #000; border-radius: 4px; text-align: right; box-sizing: border-box; }

@@ -1,0 +1,231 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Challan Entry · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'returnable_challan/css/challan_entry.css' %}">
+  <script src="{% static 'returnable_challan/js/challan_entry.js' %}" defer></script>
+  <script src="{% static 'returnable_challan/js/challan_form.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Challan Entry{% endblock %}
+{% block page_subtitle %}Invoice &rsaquo; Challan Entry{% endblock %}
+
+{% block content %}
+<section class="master-page ch-page" data-challan-entry
+         data-list-url="{% url 'returnable_challan:api_list' %}"
+         data-next-no-url="{% url 'returnable_challan:api_next_no' %}"
+         data-reauth-url="{% url 'returnable_challan:api_reauthenticate' %}"
+         data-detail-url-template="{% url 'returnable_challan:api_detail' chl_no='__CHLNO__' %}"
+         data-save-url="{% url 'returnable_challan:api_save' %}"
+         data-delete-url="{% url 'returnable_challan:api_delete' %}"
+         data-parties-url="{% url 'returnable_challan:api_parties' %}"
+         data-parts-url="{% url 'purchase_orders:api_parts' %}"
+         data-part-reference-url="{% url 'purchase_orders:api_part_reference' %}"
+         data-print-url-template="{% url 'returnable_challan:print' chl_no='__CHLNO__' %}"
+         data-pdf-url-template="{% url 'returnable_challan:pdf' chl_no='__CHLNO__' %}"
+         data-share-url-template="{% url 'returnable_challan:share_link' chl_no='__CHLNO__' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Challan actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <button class="btn btn--secondary" type="button" data-action="print" disabled><span class="master-toolbar__key">P</span>rint</button>
+    </div>
+    <div class="ch-filters">
+      <label class="ch-filter">Start Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="ch-filter">End Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+      <label class="ch-filter">Search
+        <input class="form-control" type="text" placeholder="Type party name..." autocomplete="off" data-search>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-action="refresh"><span class="master-toolbar__key">R</span>efresh</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table ch-table">
+      <thead>
+        <tr>
+          <th scope="col">Chl No.</th>
+          <th scope="col">Date</th>
+          <th scope="col">Party</th>
+          <th scope="col">City</th>
+          <th scope="col">Adjusted</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No challans found for this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"ch-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  <dialog class="modal ch-form-modal" id="ch-form-dialog" aria-labelledby="ch-form-title">
+    <form novalidate data-ch-form>
+      <header class="ch-head">
+        <span id="ch-form-title">CHALLAN ENTRY</span>
+        <span class="ch-mode" data-mode-label>Add</span>
+        <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+      </header>
+      <div class="ch-body">
+        <div class="alert alert--error" role="alert" data-form-alert hidden></div>
+
+        <div class="ch-top">
+          <div class="ch-col">
+            <label>CHALLAN NO <input id="ch-chl_no" data-field="chl_no" maxlength="6"></label>
+            <label>DATE <input id="ch-chl_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="chl_date" data-date-mask></label>
+          </div>
+          <div class="ch-col ch-col--wide">
+            <label>PARTY NAME <input id="ch-party_name" placeholder="Type party name to search..." data-party-search data-party-name></label>
+            <label>CITY <span class="ch-city-row"><input id="ch-party_city" readonly data-party-city><input id="ch-party_code" class="ch-code" readonly tabindex="-1" data-field="party_code"></span></label>
+            <label>PHONE NO. <input id="ch-phone" data-field="phone" maxlength="20"></label>
+          </div>
+          <input type="hidden" id="ch-ord_no" data-field="ord_no">
+          <input type="hidden" id="ch-ord_date" data-field="ord_date">
+          <input type="hidden" id="ch-mode" data-field="mode">
+          <input type="hidden" id="ch-check_order" data-field="check_order" value="N">
+        </div>
+        <p class="mform__error" data-error-for="party_code"></p>
+
+        <div class="ch-item" data-line-fieldset>
+          <span class="hl">ITEM NAME</span><span class="hl">HSN CODE</span><span class="hl">UNIT</span><span class="hl">QTY</span><span class="hl">RATE</span><span></span>
+          <input id="ch-row-item" placeholder="Type part code or name to search..." data-row-part-search>
+          <input id="ch-row-hsn" data-row-hsn maxlength="8">
+          <input id="ch-row-unit" data-row-unit readonly>
+          <input id="ch-row-qty" class="num" data-row-qty>
+          <input id="ch-row-rate" class="num" data-row-rate>
+          <button class="ok" type="button" data-row-add>OK</button>
+          <input type="hidden" id="ch-row-particular" data-row-particular>
+          <p class="mform__error" data-row-error></p>
+        </div>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>CODE</th><th>ITEM DESCRIPTION</th><th>HSN</th><th class="num">QTY</th><th>UNIT</th><th class="num">RATE</th><th class="num">AMOUNT</th><th class="num">GST%</th></tr>
+            </thead>
+            <tbody data-grid-rows><tr class="empty"><td colspan="9">No items added yet. Press Space on a row to remove it, double-click to edit.</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="ch-net-row">
+          <div class="ch-totals">
+            <span>AMOUNT</span><input id="ch-amount" class="num" readonly tabindex="-1" value="0.00">
+            <span>GST AMT</span><input id="ch-gst-amt" class="num" readonly tabindex="-1" value="0.00">
+            <span>NET AMOUNT</span><input id="ch-net" class="num" readonly tabindex="-1" value="0.00">
+            <span>NET ROUNDED</span><input id="ch-net-rounded" class="num" readonly tabindex="-1" value="0">
+          </div>
+        </div>
+
+        <div class="ch-bottom">
+          <div class="ch-supply">
+            <label class="ch-remarks">REMARKS <input id="ch-remarks" data-field="remarks" maxlength="100"></label>
+            <label>VEHICLE NO. <input id="ch-vehicle" data-field="vehicle_no" maxlength="20"></label>
+            <label>DATE OF SUPPLY <input id="ch-supply_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="supply_date" data-date-mask></label>
+            <label>TIME OF SUPPLY <input id="ch-supply_time" data-field="supply_time" maxlength="30"></label>
+            <label>PLACE OF SUPPLY <input id="ch-place" data-field="place_of_supply" maxlength="20"></label>
+          </div>
+          <div class="ch-actions">
+            <button class="btn-ok" type="button" data-form-confirm>Confirm</button>
+            <button class="btn-exit" type="button" data-form-exit>Exit</button>
+          </div>
+        </div>
+
+        <div class="modal-discard" data-confirm-box hidden>
+          <div class="modal-discard__box">
+            <p class="modal-discard__title" data-confirm-text>Are you sure?</p>
+            <div class="modal-discard__actions">
+              <button class="btn btn--primary" type="button" data-confirm-yes>Yes</button>
+              <button class="btn btn--secondary" type="button" data-confirm-no>No</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal--sm" id="ch-reauth-dialog" aria-labelledby="ch-reauth-title">
+    <header class="modal__header"><h2 class="modal__title" id="ch-reauth-title">Confirm your password</h2></header>
+    <div class="modal__body">
+      <div class="alert alert--error" role="alert" data-reauth-alert hidden></div>
+      <label class="mform__label" for="ch-reauth-password">Your account password</label>
+      <input class="form-control" id="ch-reauth-password" type="password" autocomplete="current-password" data-reauth-password>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="button" data-reauth-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-reauth-cancel>Cancel</button>
+    </footer>
+  </dialog>
+
+  <dialog class="modal modal--sm print-options-dialog" id="ch-print-options-dialog" aria-labelledby="ch-print-options-title">
+    <header class="print-options__header">
+      <h2 class="print-options__title" id="ch-print-options-title">PRINT RETURNABLE CHALLAN</h2>
+    </header>
+    <div class="print-options__body">
+      <div class="print-options__fields">
+        <label><span>CHALLAN NO</span><input type="text" readonly tabindex="-1" data-print-chl-no></label>
+        <label><span>CHALLAN AMOUNT</span><input type="text" readonly tabindex="-1" data-print-chl-amount></label>
+      </div>
+      <div class="print-options__copies">
+        <label><input type="checkbox" name="ch-copy-type" value="Original For Consignee" checked> Original For Consignee</label>
+        <label><input type="checkbox" name="ch-copy-type" value="Duplicate For Transporter"> Duplicate For Transporter</label>
+        <label><input type="checkbox" name="ch-copy-type" value="Triplicate For Consignor"> Triplicate For Consignor</label>
+      </div>
+      <div class="print-options__grid">
+        <button type="button" data-print-action="preview">VIEW</button>
+        <button type="button" data-print-action="print">PRINT</button>
+        <button type="button" data-print-action="pdf">PRINT PDF</button>
+        <button type="button" data-print-action="whatsapp" class="print-options__whatsapp">WHATSAPP</button>
+        <button type="button" data-print-action="exit" class="print-options__exit">EXIT</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal modal--sm" id="ch-whatsapp-dialog" aria-labelledby="ch-whatsapp-title">
+    <header class="modal__header">
+      <h2 class="modal__title" id="ch-whatsapp-title">WhatsApp</h2>
+    </header>
+    <div class="modal__body">
+      <div class="alert alert--error" role="alert" data-whatsapp-alert hidden></div>
+
+      <label class="mform__label" for="ch-whatsapp-party">Party Name</label>
+      <input class="form-control" id="ch-whatsapp-party" type="text" readonly tabindex="-1" data-whatsapp-party>
+
+      <label class="mform__label" for="ch-whatsapp-mobile">Mobile Number</label>
+      <input class="form-control" id="ch-whatsapp-mobile" type="text" inputmode="tel" autocomplete="off" data-whatsapp-mobile>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="button" data-whatsapp-send>Send on WhatsApp</button>
+      <button class="btn btn--secondary" type="button" data-whatsapp-back>Back</button>
+    </footer>
+  </dialog>
+
+  <dialog class="modal modal--sm" id="ch-delete-dialog" aria-labelledby="ch-delete-title">
+    <header class="modal__header"><h2 class="modal__title" id="ch-delete-title">Delete challan</h2></header>
+    <div class="modal__body">
+      <p class="modal-question">Are you sure you want to delete this challan?</p>
+      <div class="alert alert--error" role="alert" data-delete-alert hidden></div>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--danger" type="button" data-delete-yes>Yes</button>
+      <button class="btn btn--secondary" type="button" data-delete-no>No</button>
+    </footer>
+  </dialog>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Quotation (Spare Part) {% if mode == "add" %}(new){% else %}{{ quotation.quot_no }}{% endif %} · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'quotation_spearpart/css/quotation_spearpart.css' %}">
+  <script src="{% static 'quotation_spearpart/js/quotation_spearpart_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Quotation Head (Spare Part){% endblock %}
+
+{% block header_actions %}
+  <span class="qsp-mode qsp-mode--{{ mode }}" data-mode-label>{% if mode == "add" %}Add{% elif mode == "edit" %}Modify{% else %}View{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<form class="qsp-entry{% if mode == 'view' %} is-readonly{% endif %}" data-qsp-form novalidate autocomplete="off">
+  {% csrf_token %}
+  <div class="alert" role="alert" data-alert hidden></div>
+  <p class="qsp-confirmed" data-confirmed-note hidden></p>
+
+  <fieldset class="qsp-card qsp-head">
+    <legend class="visually-hidden">Quotation details</legend>
+    <div class="qsp-head__col">
+      <div class="qsp-field" data-field-wrap="quot_no">
+        <label for="q-no">Quotation no</label>
+        <input class="form-control qsp-input qsp-input--short" id="q-no" data-f="quot_no" inputmode="numeric" maxlength="6" required>
+        <p class="qsp-error" data-error-for="quot_no"></p>
+      </div>
+      <div class="qsp-field" data-field-wrap="quot_date">
+        <label for="q-date">Quotation date</label>
+        <input class="form-control qsp-input qsp-input--date" id="q-date" data-f="quot_date" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask required>
+        <p class="qsp-error" data-error-for="quot_date"></p>
+      </div>
+      <div class="qsp-field" data-field-wrap="ref_no">
+        <label for="q-ref">Ref. no</label>
+        <input class="form-control qsp-input" id="q-ref" data-f="ref_no" maxlength="10">
+        <p class="qsp-error" data-error-for="ref_no"></p>
+      </div>
+      <div class="qsp-field" data-field-wrap="ref_date">
+        <label for="q-refdt">Ref. date</label>
+        <input class="form-control qsp-input qsp-input--date" id="q-refdt" data-f="ref_date" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask>
+        <p class="qsp-error" data-error-for="ref_date"></p>
+      </div>
+      <div class="qsp-field" data-field-wrap="gst_applicable">
+        <label for="q-gst">GST (Y/N)</label>
+        <select class="form-control qsp-input qsp-input--short" id="q-gst" data-f="gst_applicable">
+          <option value="Y">Y</option>
+          <option value="N">N</option>
+        </select>
+        <p class="qsp-error" data-error-for="gst_applicable"></p>
+      </div>
+    </div>
+
+    <div class="qsp-head__col qsp-head__col--wide">
+      <div class="qsp-field" data-field-wrap="party_code">
+        <label for="q-party">Party</label>
+        <div class="qsp-inline">
+          <input class="form-control qsp-input" id="q-party" data-party-search placeholder="Name or code + Enter" aria-describedby="q-party-hint">
+          <input type="hidden" data-f="party_code">
+          <p class="qsp-hint" id="q-party-hint" data-party-code-label></p>
+        </div>
+        <p class="qsp-error" data-error-for="party_code"></p>
+      </div>
+      <div class="qsp-grid-2">
+        <div class="qsp-field" data-field-wrap="city">
+          <label for="q-city">City</label>
+          <input class="form-control qsp-input" id="q-city" data-f="city" maxlength="30">
+          <p class="qsp-error" data-error-for="city"></p>
+        </div>
+        <div class="qsp-field" data-field-wrap="phone">
+          <label for="q-phone">Phone no</label>
+          <input class="form-control qsp-input" id="q-phone" data-f="phone" maxlength="20">
+          <p class="qsp-error" data-error-for="phone"></p>
+        </div>
+      </div>
+      <div class="qsp-field" data-field-wrap="kind_attention">
+        <label for="q-kind1">Kind atten.</label>
+        <div class="qsp-stack">
+          <input class="form-control qsp-input" id="q-kind1" data-kind="0" maxlength="50" aria-label="Kind attention line 1">
+          <input class="form-control qsp-input" data-kind="1" maxlength="50" aria-label="Kind attention line 2">
+          <input class="form-control qsp-input" data-kind="2" maxlength="50" aria-label="Kind attention line 3">
+        </div>
+        <p class="qsp-error" data-error-for="kind_attention"></p>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="qsp-card qsp-items" data-field-wrap="items">
+    <legend class="qsp-card__title">Spare parts</legend>
+    <div class="qsp-item-entry" data-item-entry data-edit-only>
+      <div class="qsp-ie qsp-ie--item">
+        <label for="q-item">Part no.</label>
+        <div class="qsp-inline">
+          <input class="form-control qsp-input" id="q-item" data-item-search placeholder="Code or name + Enter">
+        </div>
+        <p class="qsp-hint" data-item-label></p>
+      </div>
+      <div class="qsp-ie">
+        <label for="q-unit">Unit</label>
+        <input class="form-control qsp-input" id="q-unit" data-ie-unit readonly tabindex="-1">
+      </div>
+      <div class="qsp-ie">
+        <label for="q-qty">Qty</label>
+        <input class="form-control qsp-input num" id="q-qty" data-ie="qty" inputmode="decimal" value="1">
+      </div>
+      <div class="qsp-ie">
+        <label for="q-rate">Rate</label>
+        <input class="form-control qsp-input num" id="q-rate" data-ie="rate" inputmode="decimal" value="0.00">
+      </div>
+      <div class="qsp-ie">
+        <label for="q-dis">Dis %</label>
+        <input class="form-control qsp-input num" id="q-dis" data-ie="disc_pct" inputmode="decimal" value="0.00">
+      </div>
+      <div class="qsp-ie">
+        <label for="q-disamt">Dis amt</label>
+        <input class="form-control qsp-input num" id="q-disamt" data-ie="disc_amt" inputmode="decimal" value="0.00">
+      </div>
+      <input type="hidden" id="q-gstpct" data-ie="gst_pct" value="0.00">
+      <output type="hidden" class="qsp-ie__amount" data-ie-amount hidden>0.00</output>
+      <div class="qsp-ie qsp-ie--amount">
+        <button class="btn btn--primary qsp-btn-sm" type="button" data-item-ok>OK</button>
+      </div>
+      <div class="qsp-ie qsp-ie--particular">
+        <label for="q-part">Particulars (printed under the item)</label>
+        <textarea class="form-control qsp-input" id="q-part" data-ie="particular" rows="2"></textarea>
+      </div>
+      <div class="qsp-ie qsp-ie--actions">
+        <button class="btn btn--secondary" type="button" data-item-cancel hidden>Cancel edit</button>
+      </div>
+      <p class="qsp-error qsp-ie__error" data-item-error role="alert"></p>
+    </div>
+
+    <div class="qsp-grid-wrap">
+      <table class="table qsp-grid" aria-label="Quotation items">
+        <thead>
+          <tr>
+            <th scope="col" class="num">S.No</th>
+            <th scope="col">Code</th>
+            <th scope="col">Item description</th>
+            <th scope="col">Unit</th>
+            <th scope="col" class="num">Qty</th>
+            <th scope="col" class="num">Rate</th>
+            <th scope="col" class="num">Amount</th>
+            <th scope="col" class="num">Dis</th>
+            <th scope="col" class="num">GST %</th>
+            <th scope="col" class="num">GST amt</th>
+            <th scope="col">Avail</th>
+          </tr>
+        </thead>
+        <tbody data-item-rows></tbody>
+      </table>
+      <p class="qsp-grid__empty" data-items-empty>No items yet. Pick a part above and press OK.</p>
+    </div>
+    <p class="qsp-error" data-error-for="items"></p>
+  </fieldset>
+
+  <div class="qsp-bottom">
+    <fieldset class="qsp-card qsp-remarks" data-field-wrap="remarks">
+      <legend class="qsp-card__title">Remarks</legend>
+      <textarea class="form-control qsp-input" data-f="remarks" rows="5" aria-label="Remarks"></textarea>
+      <p class="qsp-error" data-error-for="remarks"></p>
+    </fieldset>
+    <fieldset class="qsp-card qsp-terms" data-field-wrap="terms">
+      <legend class="qsp-card__title">Terms &amp; conditions</legend>
+      {% for i in "01234" %}
+        <input class="form-control qsp-input" data-term="{{ i }}" maxlength="80" aria-label="Terms and conditions line {{ forloop.counter }}">
+      {% endfor %}
+      <p class="qsp-error" data-error-for="terms"></p>
+    </fieldset>
+    <fieldset class="qsp-card qsp-bank" data-field-wrap="bank">
+      <legend class="qsp-card__title">Bank details</legend>
+      {% for i in "0123" %}
+        <input class="form-control qsp-input" data-bank="{{ i }}" maxlength="40" aria-label="Bank details line {{ forloop.counter }}">
+      {% endfor %}
+      <p class="qsp-error" data-error-for="bank"></p>
+    </fieldset>
+    <section class="qsp-card qsp-totals" aria-label="Totals">
+      <dl>
+        <div><dt>Total amount</dt><dd data-total="total">0.00</dd></div>
+        <div><dt>Dis amt</dt><dd data-total="discount">0.00</dd></div>
+        <div><dt>GST amount</dt><dd data-total="gst">0.00</dd></div>
+        <div class="qsp-totals__net"><dt>Net amount</dt><dd data-total="net">0.00</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="qsp-actions">
+    <button class="btn" type="button" data-confirm data-edit-only>Confirm</button>
+    <button class="btn" type="button" data-exit>Exit</button>
+  </div>
+</form>
+
+{{ form_config|json_script:"qsp-config" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

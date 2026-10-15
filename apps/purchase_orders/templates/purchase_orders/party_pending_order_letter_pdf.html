@@ -1,0 +1,74 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pending PO Reminder</title>
+  <style>
+    /* Same reasoning as purchase_order_pdf.html: xhtml2pdf's renderer doesn't
+       support flexbox/CSS grid, so this is a plain, separate, table-based
+       layout -- not the same stylesheet as the on-screen print page
+       (party_pending_order_letter_print.css). Same data either way. */
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #000; }
+    table.pdf-border { width: 100%; border-collapse: collapse; }
+    table.pdf-border > tr > td { border: 2px solid #000; padding: 8px; }
+    .pdf-title { text-align: center; font-size: 16px; font-weight: bold; margin: 0 0 4px; }
+    .pdf-company { text-align: center; font-size: 10px; margin: 0 0 8px; }
+    .pdf-company .name { font-size: 13px; font-weight: bold; }
+    table.pdf-meta { width: 100%; border-top: 1px solid #000; padding-top: 4px; margin-bottom: 8px; }
+    table.pdf-meta td { vertical-align: top; font-size: 10px; }
+    table.pdf-meta .right { text-align: right; }
+    .pdf-items { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .pdf-items th, .pdf-items td { border: 1px solid #000; padding: 3px 4px; font-size: 9px; }
+    .pdf-items th { background: #eee; text-align: left; }
+    .pdf-items .num { text-align: right; }
+  </style>
+</head>
+<body>
+  <table class="pdf-border"><tr><td>
+    {% if copy_type %}<p style="text-align:right; font-size:10px; font-weight:bold; margin:0;">{{ copy_type|upper }}</p>{% endif %}
+    <p class="pdf-title">PENDING PURCHASE ORDER REMINDER</p>
+    <div class="pdf-company">
+      <p class="name">{{ brand.name }}</p>
+      <p>{{ brand.address_line1 }}, {{ brand.address_line2 }}</p>
+      <p>Mobile: {{ brand.print_mobile }} &nbsp; Email: {{ brand.email }}</p>
+    </div>
+
+    <table class="pdf-meta">
+      <tr>
+        <td>
+          <strong>M/s {{ result.party.name|default:result.party.code }}</strong><br>
+          {% if result.party.address_1 %}{{ result.party.address_1 }}<br>{% endif %}
+          {% if result.party.address_2 %}{{ result.party.address_2 }}<br>{% endif %}
+          {{ result.party.city }}
+        </td>
+        <td class="right">As on: <strong>{{ run_date }}</strong></td>
+      </tr>
+    </table>
+
+    <table class="pdf-items">
+      <thead>
+        <tr>
+          <th>Ord. No.</th><th>Date</th><th>Code</th><th>Item Description</th>
+          <th class="num">Qty.</th><th>Des. Dt</th><th class="num">D. Days</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in result.lines %}
+        <tr>
+          <td>{{ line.ord_no }}</td>
+          <td>{{ line.ord_date }}</td>
+          <td>{{ line.item_code }}</td>
+          <td>{{ line.item_name }}</td>
+          <td class="num">{{ line.pending_qty }}</td>
+          <td>{{ line.despatch_date }}</td>
+          <td class="num">{{ line.delay_days }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p>Kindly expedite the supplies which have already been delayed and intimate the despatch details immediately.</p>
+    <p>Thanking you,<br>For {{ brand.name }}</p>
+  </td></tr></table>
+</body>
+</html>

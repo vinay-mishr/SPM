@@ -1,0 +1,12 @@
+.pc-toolbar { flex-wrap: wrap; width: 100%; }
+.pc-party { display: flex; align-items: center; gap: 6px; }
+.pc-party__label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.pc-party__name { width: 220px; }
+.pc-party__code { width: 70px; text-transform: uppercase; }
+.pc-filter { display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.pc-filter input { min-height: 34px; padding: 5px 10px; font-size: 0.875rem; width: 130px; }
+.pc-error { margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--danger); }
+.pc-error[hidden] { display: none; }
+.pc-table { min-width: 700px; font-size: 0.8125rem; }
+.pc-table th, .pc-table td { padding: 4px 8px; white-space: nowrap; }
+.pc-table .num { text-align: right; font-variant-numeric: tabular-nums; }

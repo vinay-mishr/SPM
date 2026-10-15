@@ -1,0 +1,66 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pending Purchase Order Adjustment · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/purchase_order_adjustment.css' %}">
+  <script src="{% static 'purchase_orders/js/purchase_order_adjustment.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Pending Purchase Order Adjustment{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Pending Purchase Order Adjustment{% endblock %}
+
+{% block content %}
+<section class="master-page poa-page" data-po-adjustment
+         data-data-url="{% url 'purchase_orders:po_adjustment_data' %}"
+         data-save-url="{% url 'purchase_orders:po_adjustment_save' %}"
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  {% if not can_edit %}
+    <div class="alert alert--info" role="status">View only: saving adjustments needs the “Can change purchase order” permission.</div>
+  {% endif %}
+  <div class="alert alert--error" role="alert" data-form-alert hidden></div>
+
+  <div class="master-toolbar poa-toolbar" role="toolbar" aria-label="Pending purchase order adjustment filters">
+    <div class="poa-party">
+      <span class="poa-party__label">Party Name</span>
+      <input class="form-control poa-party__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search>
+      <input class="form-control poa-party__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+    </div>
+    <label class="poa-rundate">Run Date
+      <input class="form-control" type="text" readonly tabindex="-1" data-run-date>
+    </label>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-show>Show</button>
+      <button class="btn btn--primary" type="button" data-confirm disabled>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap poa-grid-wrap">
+    <table class="table master-table poa-table">
+      <thead>
+        <tr>
+          <th scope="col">Order No</th>
+          <th scope="col">Order Date</th>
+          <th scope="col">Item Description</th>
+          <th scope="col" class="num">Qty Ordered</th>
+          <th scope="col" class="num">Qty Rec</th>
+          <th scope="col" class="num">Pending</th>
+          <th scope="col">Adj</th>
+          <th scope="col">Code</th>
+          <th scope="col">Div</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty>Select a party to see its pending orders.</p>
+  </div>
+</section>
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

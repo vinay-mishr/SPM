@@ -1,0 +1,101 @@
+/* GST Master. Shared master / toolbar / form styles come from static/css/components.css;
+   only this screen's specifics live here. */
+
+.gst-table th,
+.gst-table td {
+  white-space: nowrap;
+}
+
+.gst-form-modal {
+  width: min(1100px, calc(100vw - 32px));
+}
+
+.gst-rate-field {
+  grid-template-columns: 100px minmax(0, 220px);
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.gst-rate-field .form-control {
+  min-height: 32px;
+  padding: 4px 10px;
+}
+
+.gst-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+
+.gst-col {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.gst-col[disabled] {
+  opacity: 0.6;
+}
+
+.gst-section-title {
+  margin: 16px 0 8px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--primary-strong, #2f6f5e);
+  border-radius: 4px;
+}
+
+.gst-col:first-child .gst-section-title:first-child {
+  margin-top: 0;
+}
+
+.gst-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.gst-row__label {
+  flex: 0 0 130px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.gst-row__name {
+  flex: 1;
+  min-height: 32px;
+  padding: 4px 10px;
+}
+
+.gst-row__code {
+  flex: 0 0 70px;
+  min-height: 32px;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  background: var(--surface-muted, #f3f4f6);
+}
+
+@media (max-width: 900px) {
+  .gst-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .gst-row {
+    flex-wrap: wrap;
+  }
+
+  .gst-row__label {
+    flex: 0 0 100%;
+  }
+
+  .gst-row__name {
+    flex: 1 1 auto;
+  }
+}

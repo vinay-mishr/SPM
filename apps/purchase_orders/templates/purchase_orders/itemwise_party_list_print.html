@@ -1,0 +1,54 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Itemwise Party List · {{ brand.name }}</title>
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/purchase_order_print.css' %}">
+</head>
+<body>
+  {% if not result %}
+    <p>Select an item first.</p>
+  {% else %}
+  <header class="pop-header">
+    <div class="pop-brand">
+      <img src="{% static brand.logo %}" alt="">
+      <div>
+        <h1>{{ brand.name }}</h1>
+        <p>{{ brand.tagline }}</p>
+      </div>
+    </div>
+    <div class="pop-title">
+      <h2>ITEMWISE PARTY LIST</h2>
+      <p>{{ result.part.name }}, {{ result.part.code }}</p>
+    </div>
+  </header>
+
+  <table class="pop-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Vendor Name</th>
+        <th>City</th>
+        <th>Grade</th>
+        <th class="num">Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in result.rows %}
+      <tr>
+        <td>{{ row.party_code }}</td>
+        <td>{{ row.party_name }}</td>
+        <td>{{ row.city }}</td>
+        <td>{{ row.grade }}</td>
+        <td class="num">{{ row.rate }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No parties found for this item.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>window.addEventListener("load", function () { window.print(); });</script>
+  {% endif %}
+</body>
+</html>

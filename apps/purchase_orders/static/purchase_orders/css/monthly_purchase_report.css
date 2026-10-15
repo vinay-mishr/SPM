@@ -1,0 +1,49 @@
+/* Monthly Purchase Report — read-only report. Shared master / toolbar / table styles
+   come from static/css/components.css; only this screen's specifics live here. */
+
+.mpr-toolbar {
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.mpr-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mpr-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 140px;
+}
+
+.mpr-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.mpr-error[hidden] { display: none; }
+
+.mpr-table { min-width: 900px; font-size: 0.8125rem; }
+.mpr-table th, .mpr-table td { padding: 4px 8px; white-space: nowrap; }
+.mpr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.mpr-total th,
+.mpr-total td {
+  padding: 6px 8px;
+  font-weight: 700;
+  background: var(--bg-mint);
+  border-top: 1px solid var(--border-mint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mpr-total th { text-align: right; }

@@ -1,0 +1,66 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Order Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/monthly_order_report.css' %}">
+  <script src="{% static 'purchase_orders/js/monthly_order_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Order Report{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Order Report{% endblock %}
+
+{% block content %}
+<section class="master-page mor-page" data-monthly-order-report
+         data-data-url="{% url 'purchase_orders:monthly_order_report_data' %}"
+         data-export-url="{% url 'purchase_orders:monthly_order_report_export' %}"
+         data-print-url="{% url 'purchase_orders:monthly_order_report_print' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar mor-toolbar" role="toolbar" aria-label="Monthly order report filters">
+    <label class="mor-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="mor-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="mor-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-generate>Generate Report</button>
+      <button class="btn btn--secondary" type="button" data-refresh>Refresh</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-print><span class="master-toolbar__key">P</span>rint</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <p class="mor-heading">
+    <strong>{{ brand.name }}</strong> &middot; <span data-heading-range>ORDER REPORT AS ON {{ initial_data.start_date }} TO {{ initial_data.end_date }}</span>
+  </p>
+
+  <div class="master-table-wrap mor-grid-wrap">
+    <table class="table master-table mor-table">
+      <thead>
+        <tr>
+          <th scope="col">Item Name</th>
+          <th scope="col">Ord.No</th>
+          <th scope="col">Ord.Date</th>
+          <th scope="col">Party Name</th>
+          <th scope="col">City</th>
+          <th scope="col" class="num">Ord.Qty</th>
+          <th scope="col" class="num">Rec.Qty</th>
+          <th scope="col" class="num">Bal.Qty</th>
+          <th scope="col">Des.Date</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No orders found for the selected date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"mor-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

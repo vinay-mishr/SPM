@@ -1,0 +1,69 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Item-Wise Pending P.O. · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/item_wise_pending_report.css' %}">
+  <script src="{% static 'purchase_orders/js/item_wise_pending_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Item-Wise Pending P.O.{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Item-Wise Pending P.O.{% endblock %}
+
+{% block content %}
+<section class="master-page iwp-page" data-item-wise-report
+         data-data-url="{% url 'purchase_orders:item_wise_pending_report_data' %}"
+         data-export-url="{% url 'purchase_orders:item_wise_pending_report_export' %}"
+         data-parts-url="{% url 'purchase_orders:api_parts' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Item wise pending report filters">
+    <fieldset class="iwp-mode">
+      <legend class="visually-hidden">All / Single</legend>
+      <label><input type="radio" name="iwp-mode" value="all" checked> All</label>
+      <label><input type="radio" name="iwp-mode" value="single"> Single</label>
+    </fieldset>
+
+    <div class="iwp-item">
+      <span class="iwp-item__label">Item Name</span>
+      <input class="form-control iwp-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search disabled>
+      <input class="form-control iwp-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+    </div>
+
+    <label class="iwp-filter">Run Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-run-date data-date-mask>
+    </label>
+
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-search><span class="master-toolbar__key">S</span>earch</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap iwp-grid-wrap">
+    <table class="table master-table iwp-table">
+      <thead>
+        <tr>
+          <th scope="col">Item Name</th>
+          <th scope="col">Ord. No</th>
+          <th scope="col">Ord. Date</th>
+          <th scope="col">Party Name</th>
+          <th scope="col">City</th>
+          <th scope="col" class="num">Ord. Qty</th>
+          <th scope="col" class="num">Rec. Qty</th>
+          <th scope="col" class="num">Bal. Qty</th>
+          <th scope="col">Des. Date</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No pending purchase orders found.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"iwp-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

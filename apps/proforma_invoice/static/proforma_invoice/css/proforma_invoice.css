@@ -1,0 +1,27 @@
+/* Proforma Invoice reuses apps.gst_invoice's .gi-* layout classes wholesale
+   (identical field shapes) -- this file only holds what it adds. */
+.pi-form-modal {
+  width: min(1400px, 98vw);
+  max-height: calc(100vh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--gi-border, #9ca3af);
+  border-radius: 6px;
+  background: #f2faf5;
+}
+.pi-form-modal[open] { display: flex; flex-direction: column; }
+.pi-form-modal::backdrop { background: rgba(0, 0, 0, 0.35); }
+.pi-item-row { grid-template-columns: 2fr 110px 1fr 1fr 1fr auto !important; }
+.pi-shortcut { display: inline-block; margin: 2px 0 8px; font-size: 12px; font-weight: 700; color: #1d4ed8; text-decoration: underline; cursor: pointer; }
+
+/* Input boxes (and whatever is typed into them) are bold throughout this screen. */
+.pi-form-modal input,
+.pi-form-modal select,
+.pi-form-modal textarea {
+  font-weight: 700;
+}
+
+/* Field labels are 15px throughout this screen. */
+.pi-form-modal label {
+  font-size: 15px;
+}

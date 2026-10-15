@@ -1,0 +1,68 @@
+/* Order Adjustment Report — read-only report. Shared master / toolbar / table styles
+   come from static/css/components.css; only this screen's specifics live here. */
+
+.pwpoa-toolbar {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.pwpoa-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.8125rem;
+}
+
+.pwpoa-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.pwpoa-party {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pwpoa-party__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pwpoa-party__name { width: 220px; }
+.pwpoa-party__code { width: 70px; text-transform: uppercase; }
+
+.pwpoa-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pwpoa-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 130px;
+}
+
+.pwpoa-table { min-width: 800px; font-size: 0.8125rem; }
+.pwpoa-table th, .pwpoa-table td { padding: 4px 8px; white-space: nowrap; }
+.pwpoa-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.pwpoa-party-row td {
+  background: var(--bg-mint);
+  font-weight: 700;
+  border-top: 1px solid var(--border-mint);
+  border-bottom: 1px solid var(--border-mint);
+}

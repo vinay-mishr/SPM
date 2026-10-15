@@ -1,0 +1,139 @@
+/* HelpLookup — universal keyboard-driven Help / Lookup popup (static/js/common/help_lookup.js).
+   Reuses the app's color tokens (static/css/base.css) so it matches every screen automatically. */
+
+.help-lookup-dialog {
+  padding: 0;
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(560px, calc(100vh - 64px));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.help-lookup-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.help-lookup {
+  display: flex;
+  flex-direction: column;
+  max-height: min(560px, calc(100vh - 64px));
+}
+
+.help-lookup__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-mint);
+  border-bottom: 1px solid var(--border-mint);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.help-lookup__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.help-lookup__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--text-primary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.help-lookup__close:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.help-lookup__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+  min-height: 0;
+}
+
+.help-lookup__search {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #000000;
+  background: var(--surface);
+  border: 2px solid #000000;
+  border-radius: var(--radius-md);
+}
+
+.help-lookup__grid-wrap {
+  min-height: 120px;
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.help-lookup__grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+}
+
+.help-lookup__grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.help-lookup__grid tbody td {
+  padding: 3px 8px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.help-lookup__grid tbody tr {
+  cursor: pointer;
+}
+
+.help-lookup__grid tbody tr:hover {
+  background: #FFF9C4;
+}
+
+.help-lookup__grid tbody tr.is-selected {
+  background: #FFF176;
+  box-shadow: inset 3px 0 0 var(--text-primary);
+}
+
+.help-lookup__empty {
+  margin: 0;
+  padding: 20px 12px;
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+

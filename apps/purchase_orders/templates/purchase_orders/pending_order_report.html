@@ -1,0 +1,65 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Party Wise Pending Purchase Order · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/pending_order_report.css' %}">
+  <script src="{% static 'purchase_orders/js/pending_order_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Party Wise Pending Purchase Order{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Party Wise Pending Purchase Order{% endblock %}
+
+{% block content %}
+<section class="master-page por-page" data-pending-report
+         data-data-url="{% url 'purchase_orders:pending_report_data' %}"
+         data-export-url="{% url 'purchase_orders:pending_report_export' %}"
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Pending purchase order report filters">
+    <label class="por-filter">As On Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-as-on data-date-mask>
+    </label>
+
+    <input class="form-control por-quick-search" type="text" autocomplete="off"
+           placeholder="Search party, city, item…" data-quick-search aria-label="Search the results">
+
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-search><span class="master-toolbar__key">S</span>earch</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-refresh><span class="master-toolbar__key">R</span>efresh</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap por-grid-wrap">
+    <table class="table master-table por-table">
+      <thead>
+        <tr>
+          <th scope="col">Party Name</th>
+          <th scope="col">City</th>
+          <th scope="col">Code</th>
+          <th scope="col">Grade</th>
+          <th scope="col">Ord. No</th>
+          <th scope="col">Ord. Date</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Item Name</th>
+          <th scope="col" class="num">Pend. Qty</th>
+          <th scope="col" class="num">Rate</th>
+          <th scope="col" class="num">Value</th>
+          <th scope="col">Des. Date</th>
+          <th scope="col" class="num">Delay Days</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No pending purchase orders found.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"por-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  {% comment %}
+  A near-empty title: the browser's own print header/footer (date, title, URL,
+  page number) is outside this document's border and can't be fully removed
+  from CSS alone -- the user also needs "Headers and footers" off in the print
+  dialog's "More settings" -- but an empty title keeps that line blank instead
+  of repeating the PO number.
+  {% endcomment %}
+  <title> </title>
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/purchase_order_print.css' %}">
+</head>
+<body>
+  {% if public %}
+  <!-- On-screen only (see @media print in the CSS) -- the person opening a
+       shared link has no app toolbar, so this is their way to get a PDF. -->
+  <div class="pop-public-bar">
+    <span>Purchase Order {{ order.div }}/{{ order.po_no }} &middot; {{ brand.name }}</span>
+    {% if pdf_url %}
+    <a href="{{ pdf_url }}" class="pop-public-bar__pdf-link">Download PDF</a>
+    {% else %}
+    <button type="button" onclick="window.print()">Download / Print PDF</button>
+    {% endif %}
+  </div>
+  {% endif %}
+  <div class="pop-sheet">
+
+    {% if brand.gstin %}<p class="pop-gstin">GSTIN :{{ brand.gstin }}</p>{% endif %}
+    {% if copy_type %}<p class="pop-copy-type">{{ copy_type|upper }}</p>{% endif %}
+
+    <header class="pop-header">
+      <img class="pop-logo" src="{% static brand.logo_full %}" alt="{{ brand.name }}">
+      <div class="pop-title">
+        <h2>PURCHASE ORDER</h2>
+      </div>
+    </header>
+
+    <div class="pop-company">
+      <h1>{{ brand.name }}</h1>
+      <p>{{ brand.address_line1 }}</p>
+      <p>{{ brand.address_line2 }}</p>
+      <p>Mobile No.: {{ brand.print_mobile }}</p>
+      <p>Email: {{ brand.email }}</p>
+      <p>Website: {{ brand.website }}</p>
+    </div>
+
+    <section class="pop-party">
+      <div class="pop-party__supplier">
+        <p class="pop-party__name">M/s {{ party.name|default:order.party_code }}</p>
+        {% if party.address_1 %}<p>{{ party.address_1 }}</p>{% endif %}
+        {% if party.address_2 %}<p>{{ party.address_2 }}</p>{% endif %}
+        {% if party.city %}<p>{{ party.city }}</p>{% endif %}
+        <p>STATE : {{ party.state_name|default:"" }}</p>
+        <p>PH.NO. {{ party.phone_1|default:"" }}</p>
+        <p>Mobile: {{ party.mobile_1|default:"" }}</p>
+        <p class="pop-kind-attention">Kind Attention: {{ party.contact_person_1|default:"" }}</p>
+      </div>
+      <div class="pop-party__po">
+        <p>P.O.NO: <strong>{{ order.po_no }}</strong></p>
+        <p>P.O.DATE: <strong>{{ order.order_date|slice:"8:10" }}-{{ order.order_date|slice:"5:7" }}-{{ order.order_date|slice:"0:4" }}</strong></p>
+      </div>
+    </section>
+
+    <p class="pop-instruction">Please arrange to supply the following material as per the terms and conditions mentioned below.</p>
+
+    <table class="pop-table">
+      <colgroup>
+        <col class="pop-col-sno">
+        <col class="pop-col-desc">
+        <col class="pop-col-part">
+        <col class="pop-col-hsn">
+        <col class="pop-col-unit">
+        <col class="pop-col-material">
+        <col class="pop-col-despatch">
+        <col class="pop-col-gst">
+        <col class="pop-col-qty">
+        <col class="pop-col-rate">
+        <col class="pop-col-disc">
+        <col class="pop-col-amount">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="num pop-col-sno">SNO</th>
+          <th class="pop-col-desc">Descriptions of Goods</th>
+          <th>Part No.</th>
+          <th>HSN CODE</th>
+          <th>UNIT</th>
+          <th>MATERIAL</th>
+          <th>DESPATCH DATE</th>
+          <th class="num">GST%</th>
+          <th class="num">QTY</th>
+          <th class="num">RATE</th>
+          <th class="num">DISC%</th>
+          <th class="num">AMOUNT</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in order.lines %}
+        <tr>
+          <td class="num pop-col-sno">{{ forloop.counter }}</td>
+          <td class="pop-col-desc">{{ line.part_name }}</td>
+          <td>{{ line.part_code }}</td>
+          <td>{{ line.hsn_code }}</td>
+          <td>{{ line.unit }}</td>
+          <td>{{ line.material }}</td>
+          <td>{{ line.despatch_date|slice:"8:10" }}-{{ line.despatch_date|slice:"5:7" }}-{{ line.despatch_date|slice:"0:4" }}</td>
+          <td class="num">{{ line.gst_percent }}</td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num">{{ line.rate|floatformat:2 }}</td>
+          <td class="num">{{ line.discount_percent }}</td>
+          <td class="num">{{ line.amount }}</td>
+        </tr>
+        {% endfor %}
+        {% for _ in fill_rows %}
+        <tr class="pop-fill-row">
+          <td class="pop-col-sno">&nbsp;</td>
+          <td class="pop-col-desc">&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        {% endfor %}
+        <!-- Grown by the script at the bottom of this page, by exactly the gap
+             still left above Remarks after the fixed filler rows above -- so
+             the grid's vertical lines reach Remarks exactly, however many
+             items or filler rows came before it. -->
+        <tr class="pop-fill-row" id="pop-grid-spacer-row">
+          <td class="pop-col-sno">&nbsp;</td>
+          <td class="pop-col-desc">&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Remarks/Totals + Terms/Signature pushed down toward the bottom of the
+         page (.pop-bottom-block has margin-top: auto in a flex-column sheet)
+         when the grid above -- real items plus its own blank filler rows --
+         doesn't already reach that far down the page on its own. -->
+    <div class="pop-bottom-block">
+      <section class="pop-bottom">
+        <div class="pop-remarks">
+          <p class="pop-remarks__label">Remarks :</p>
+          <p class="pop-remarks__text">{{ order.remarks }}</p>
+        </div>
+        <div class="pop-totals">
+          <div class="pop-totals__row"><span>Total</span><span class="pop-rupee">₹</span><span class="num">{{ order.gross_amount }}</span></div>
+          <div class="pop-totals__row"><span>Discount Amt</span><span class="pop-rupee">₹</span><span class="num">{{ order.discount_amount }}</span></div>
+          <div class="pop-totals__row"><span>GST Amount</span><span class="pop-rupee">₹</span><span class="num">{{ order.gst_amount }}</span></div>
+          <div class="pop-totals__row pop-totals__row--net"><span>Net Amount</span><span class="pop-rupee">₹</span><span class="num">{{ order.net_amount }}</span></div>
+        </div>
+      </section>
+
+      <section class="pop-footer">
+        <div class="pop-terms">
+          <p class="pop-terms__title">TERMS AND CONDITIONS:-</p>
+          <ol>
+            {% for term in terms %}<li>{{ term }}</li>{% endfor %}
+          </ol>
+        </div>
+        <div class="pop-signature">
+          <p>For {{ brand.name }}</p>
+          <div class="pop-signature__space"></div>
+          <p>Authorised Signatory</p>
+          <p>Purchase Department</p>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <script>
+    window.addEventListener("load", function () {
+      // Close the gap between the item grid and Remarks/Totals exactly, by
+      // growing OR shrinking the one spacer row at the bottom of the grid by
+      // however much space is actually left above Remarks. Shrinking matters
+      // too: a description or other cell that wraps onto a second line makes
+      // its row taller than the fixed filler-row height assumes, which would
+      // otherwise push the whole page over by that same amount with nothing
+      // to claw the space back -- clamped at 0, not negative.
+      try {
+        var table = document.querySelector(".pop-table");
+        var bottomBlock = document.querySelector(".pop-bottom-block");
+        var spacerRow = document.getElementById("pop-grid-spacer-row");
+        if (table && bottomBlock && spacerRow) {
+          var gap = bottomBlock.getBoundingClientRect().top - table.getBoundingClientRect().bottom;
+          var newHeight = Math.max(0, spacerRow.getBoundingClientRect().height + gap);
+          spacerRow.querySelectorAll("td").forEach(function (td) { td.style.height = newHeight + "px"; });
+        }
+      } catch (e) { /* print still works even if this adjustment fails */ }
+      {% if not preview %}
+      window.print();
+      {% endif %}
+    });
+  </script>
+</body>
+</html>

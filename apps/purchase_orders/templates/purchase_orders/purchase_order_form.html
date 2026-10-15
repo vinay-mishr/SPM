@@ -1,0 +1,182 @@
+{# Shared ADD / MODIFY / VIEW form (old VFP "PURCHASE ORDER FORM" / po1). purchase_order_master.js switches the mode. #}
+<dialog class="modal po-form-modal" id="po-form-dialog" aria-labelledby="po-form-title">
+  <form novalidate data-po-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="po-form-title">Purchase Order Master — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform pof-header">
+        <label class="mform__label" for="po-po_no">PO No</label>
+        <div class="mform__field">
+          <input class="form-control mform__input mform__input--code pof-short" id="po-po_no" type="text" readonly tabindex="-1" placeholder="Auto" data-field="po_no">
+        </div>
+
+        <label class="mform__label" for="po-order_date">PO Date</label>
+        <div class="mform__field">
+          <input class="form-control mform__input pof-short" id="po-order_date" type="text" inputmode="numeric"
+                 placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-field="order_date" data-date-mask>
+          <p class="mform__error" data-error-for="order_date"></p>
+        </div>
+
+        <div class="pof-header__row pof-header__span">
+          <label class="mform__label mform__label--required pof-header__row-label" for="po-party_search">Party Name</label>
+          <div class="pof-party">
+            <input class="form-control mform__input pof-party-search" id="po-party_search" type="text" autocomplete="off"
+                   placeholder="Type party name to search…" data-party-search aria-label="Search party by name">
+            <button class="btn btn--secondary pof-previous-info" type="button" data-previous-info>Previous Info…</button>
+          </div>
+        </div>
+
+        <div class="pof-header__row pof-header__span">
+          <span class="mform__label pof-header__row-label"></span>
+          <div class="pof-party-detail">
+            <p class="pof-party-name" id="po-party-help" data-party-name></p>
+            <input class="form-control mform__input pof-code" id="po-party_code" type="text" maxlength="4"
+                   autocomplete="off" placeholder="Code" data-field="party_code" aria-describedby="po-party-help">
+          </div>
+          <p class="mform__error" data-error-for="party_code"></p>
+        </div>
+      </div>
+
+      <fieldset class="pof-add-row" data-line-fieldset>
+        <div class="pof-add-row__grid">
+          <div class="pof-add-row__stack pof-add-row__stack--wide">
+            <label class="pof-add-row__field pof-add-row__field--wide">
+              <span>Part / Code</span>
+              <input class="form-control pof-search" type="text" autocomplete="off" placeholder="Type part code or name to search…" data-row-part-search aria-label="Search part by code or name">
+              <input class="pof-part-code" type="text" maxlength="10" autocomplete="off" hidden data-row-part-code>
+            </label>
+            <label class="pof-add-row__field pof-add-row__field--wide">
+              <span>Particulars</span>
+              <textarea class="form-control pof-particulars__input" rows="2" data-row-particulars></textarea>
+            </label>
+          </div>
+          <div class="pof-add-row__stack">
+            <label class="pof-add-row__field pof-add-row__field--material">
+              <span>Material</span>
+              <input class="form-control" type="text" readonly tabindex="-1" data-row-material>
+            </label>
+            <label class="pof-add-row__field pof-add-row__field--packing">
+              <span>Std. Packing</span>
+              <input class="form-control" type="text" readonly tabindex="-1" data-row-packing>
+            </label>
+          </div>
+          <label class="pof-add-row__field">
+            <span>Despatch Dt.</span>
+            <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-row-despatch data-date-mask>
+          </label>
+          <label class="pof-add-row__field">
+            <span>P.O. Qty.</span>
+            <input class="form-control mform__input--num" type="text" inputmode="decimal" data-row-po-qty>
+          </label>
+          <div class="pof-add-row__stack">
+            <label class="pof-add-row__field pof-add-row__field--qty">
+              <span>Qty.</span>
+              <input class="form-control mform__input--num" type="text" inputmode="decimal" data-row-qty>
+            </label>
+            <label class="pof-add-row__field pof-add-row__field--current-stock">
+              <span>Current Stk.</span>
+              <input class="form-control" type="text" readonly tabindex="-1" data-row-current-stock>
+            </label>
+          </div>
+          <label class="pof-add-row__field pof-add-row__field--unit">
+            <span>Unit</span>
+            <input class="form-control" type="text" readonly tabindex="-1" data-row-unit>
+          </label>
+          <div class="pof-add-row__stack">
+            <label class="pof-add-row__field">
+              <span>HSN Code</span>
+              <input class="form-control" type="text" readonly tabindex="-1" data-row-hsn>
+            </label>
+            <label class="pof-add-row__field pof-add-row__field--size">
+              <span>Size</span>
+              <input class="form-control" type="text" autocomplete="off" data-row-size>
+            </label>
+          </div>
+          <label class="pof-add-row__field pof-add-row__field--discount">
+            <span>Disc. %</span>
+            <input class="form-control mform__input--num" type="text" inputmode="decimal" data-row-discount>
+          </label>
+          <div class="pof-add-row__stack">
+            <div class="pof-add-row__rate-row">
+              <label class="pof-add-row__field">
+                <span>Rate</span>
+                <input class="form-control mform__input--num" type="text" inputmode="decimal" data-row-rate>
+              </label>
+              <button class="btn btn--secondary pof-add-row__ok" type="button" data-row-add>OK</button>
+            </div>
+            <label class="pof-add-row__field">
+              <span>Last Rate</span>
+              <input class="form-control" type="text" readonly tabindex="-1" data-row-last-rate>
+            </label>
+          </div>
+        </div>
+        <p class="mform__error" data-row-error></p>
+      </fieldset>
+
+      <div class="master-table-wrap pof-grid-wrap">
+        <table class="table master-table pof-grid-table">
+          <thead>
+            <tr>
+              <th scope="col" class="num">#</th>
+              <th scope="col">Code</th>
+              <th scope="col">Part Description</th>
+              <th scope="col">Material</th>
+              <th scope="col">Despatch Date</th>
+              <th scope="col" class="num">P.O. Qty</th>
+              <th scope="col" class="num">Qty</th>
+              <th scope="col">Unit</th>
+              <th scope="col" class="num">Rate</th>
+              <th scope="col" class="num">Disc %</th>
+              <th scope="col" class="num">Amount</th>
+            </tr>
+          </thead>
+          <tbody data-grid-rows></tbody>
+        </table>
+        <p class="master-table__empty" data-grid-empty hidden>No items added yet.</p>
+      </div>
+
+      <div class="pof-footer">
+        <div class="pof-footer__notes">
+          <label class="pof-footer__remarks">
+            <span>Remarks</span>
+            <textarea class="form-control" rows="1" data-field="remarks"></textarea>
+          </label>
+          <label class="pof-footer__remarks">
+            <span>Payment</span>
+            <input class="form-control" type="text" data-field="payment">
+          </label>
+          <label class="pof-footer__remarks pof-footer__remarks--note">
+            <span>Note</span>
+            <textarea class="form-control" rows="2" data-field="note"></textarea>
+          </label>
+        </div>
+        <div class="pof-footer__totals">
+          <label><span>Total Amount</span><input class="form-control" type="text" readonly tabindex="-1" data-total-amount></label>
+          <label><span>GST Amount</span><input class="form-control" type="text" readonly tabindex="-1" data-total-gst></label>
+          <label><span>Discount Amt</span><input class="form-control" type="text" readonly tabindex="-1" data-total-discount></label>
+          <label><span>Net Amount</span><input class="form-control" type="text" readonly tabindex="-1" data-total-net></label>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-confirm-box hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="po-sure-title">
+      <p class="modal-discard__title" id="po-sure-title" data-confirm-text>Are you sure?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--primary" type="button" data-confirm-yes>Yes</button>
+        <button class="btn btn--secondary" type="button" data-confirm-no>No</button>
+      </div>
+    </div>
+  </div>
+</dialog>

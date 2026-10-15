@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %}
+  Split-screen layout shared by the login and password-reset pages.
+  Child templates fill {% block card %}. Another project can restyle the
+  brand showcase by overriding {% block showcase %}.
+{% endcomment %}
+
+{% block fonts %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Playfair+Display:ital,wght@1,400&display=swap">
+{% endblock %}
+
+{% block extra_head %}
+  <link rel="preload" as="image" href="{% static 'accounts/img/hero-machine.jpg' %}">
+  <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
+  <script src="{% static 'accounts/js/login.js' %}" defer></script>
+{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+{% include "accounts/includes/icons.html" %}
+<div class="auth">
+  <main class="auth__main">
+    <div class="auth__hero" aria-hidden="true"></div>
+
+    {# Login area comes first in the DOM so keyboard and screen-reader users reach the form first. #}
+    <section class="auth-panel" aria-labelledby="auth-title">
+      <a class="auth-panel__brand" href="{% url 'accounts:login' %}">
+        <img src="{% static brand.logo_full %}" alt="{{ brand.name }} — {{ brand.tagline }}" width="225" height="160">
+      </a>
+
+      <p class="auth-panel__deco" aria-hidden="true">Packaging <span>Possibilities</span></p>
+
+      <div class="auth-card">
+        {% block card %}{% endblock %}
+      </div>
+
+      <p class="auth-panel__tagline">&ldquo;Smart Machines<br>for a Better Tomorrow&rdquo;</p>
+    </section>
+
+    {% block showcase %}
+    <section class="showcase" aria-label="About {{ brand.name }}">
+      <div class="showcase__intro">
+        <a class="brand" href="{% url 'accounts:login' %}">
+          <img class="brand__logo" src="{% static brand.logo_full %}" alt="{{ brand.name }} — {{ brand.tagline }}" width="225" height="160">
+        </a>
+
+        <h2 class="showcase__title">
+          Packaging<br>
+          a brighter<br>
+          <span class="showcase__title-accent">tomorrow</span>
+        </h2>
+
+        <p class="showcase__lead">
+          Advanced Packaging Machines<br>
+          for a Smarter, Faster &amp; Better World
+        </p>
+
+        <ul class="values" role="list">
+          <li>Reliable</li>
+          <li>Innovative</li>
+          <li>Efficient</li>
+        </ul>
+      </div>
+
+      <ul class="categories" role="list">
+        <li class="category">
+          <img class="category__img" src="{% static 'accounts/img/category-biscuit.jpg' %}" alt="" width="160" height="160" loading="lazy" decoding="async">
+          <span class="category__label">Biscuit<br>Packaging</span>
+        </li>
+        <li class="category">
+          <img class="category__img" src="{% static 'accounts/img/category-industrial.jpg' %}" alt="" width="160" height="160" loading="lazy" decoding="async">
+          <span class="category__label">Industrial<br>Packaging</span>
+        </li>
+        <li class="category">
+          <img class="category__img" src="{% static 'accounts/img/category-medical.jpg' %}" alt="" width="160" height="160" loading="lazy" decoding="async">
+          <span class="category__label">Health &amp; Medical<br>Packaging</span>
+        </li>
+        <li class="category">
+          <img class="category__img" src="{% static 'accounts/img/category-soap.jpg' %}" alt="" width="160" height="160" loading="lazy" decoding="async">
+          <span class="category__label">Soap<br>Packaging</span>
+        </li>
+      </ul>
+    </section>
+    {% endblock %}
+
+  </main>
+
+  <footer class="auth-footer">
+    <div class="auth-footer__brand">
+      <span class="auth-footer__logo"><img src="{% static brand.logo %}" alt="" width="46" height="30"></span>
+      <strong>{{ brand.name }}</strong>
+      <span class="auth-footer__sep" aria-hidden="true"></span>
+      <span>{{ brand.tagline }}</span>
+    </div>
+    <div class="auth-footer__contact">
+      {% if brand.website %}
+        <a href="{{ brand.website }}" target="_blank" rel="noopener">{{ brand.website|cut:"https://"|cut:"http://" }}</a>
+        <span class="auth-footer__sep" aria-hidden="true"></span>
+      {% endif %}
+      <span class="auth-footer__icons" aria-hidden="true">
+        <svg><use href="#i-settings"></use></svg>
+        <svg><use href="#i-globe"></use></svg>
+      </span>
+      {% if brand.phone %}
+        <a class="auth-footer__phone" href="tel:{{ brand.phone|cut:' ' }}">
+          <svg aria-hidden="true"><use href="#i-phone"></use></svg>
+          {{ brand.phone }}
+        </a>
+      {% endif %}
+    </div>
+  </footer>
+</div>
+{% endblock %}

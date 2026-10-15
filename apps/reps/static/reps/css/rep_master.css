@@ -1,0 +1,21 @@
+/* Rep Master — list screen. Toolbar, table and search come from the shared
+   "Master screens" styles in static/css/components.css. */
+
+.rep-table {
+  width: auto;
+}
+
+.rep-table td:nth-child(1) {
+  min-width: 200px;
+  white-space: normal;
+}
+
+.rep-table td:nth-child(2),
+.rep-table th:nth-child(2) {
+  width: 140px;
+}
+
+.rep-table td:nth-child(3),
+.rep-table th:nth-child(3) {
+  width: 90px;
+}

@@ -1,0 +1,73 @@
+/* Item Master — module-specific sizes. Shared form/list styles live in static/css/components.css. */
+
+.item-form-modal {
+  width: min(760px, calc(100vw - 32px));
+}
+
+/* Add/Modify/View form: size each input to roughly fit its own character limit
+   instead of stretching full width (item code 4 digits, names 30/35/35 chars,
+   unit 3 chars, GST% 4 digits, rate 8 digits). */
+.item-form .mform__input--code {
+  max-width: 9ch;
+}
+
+.item-form [data-field="item_name_1"] {
+  max-width: 36ch;
+}
+
+.item-form [data-field="item_name_2"],
+.item-form [data-field="item_name_3"] {
+  max-width: 41ch;
+}
+
+.item-form [data-field="unit"] {
+  max-width: 8ch;
+}
+
+.item-form [data-field="gst_percent"] {
+  max-width: 11ch;
+}
+
+.item-form [data-field="rate"] {
+  max-width: 16ch;
+}
+
+/* Numeric fields: type left-to-right like the text fields, not right-aligned. */
+.item-form .mform__input--num {
+  text-align: left;
+}
+
+/* GST %, Rate, Op. Balance: hide the browser's up/down spinner arrows. */
+.item-form .mform__input--num::-webkit-inner-spin-button,
+.item-form .mform__input--num::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.item-form .mform__input--num {
+  -moz-appearance: textfield;
+}
+
+/* List: Item Description / Description / Description2 / Rate / GST % / Code.
+   Fixed layout so the percentage widths below are respected; long values are
+   ellipsised rather than wrapping or stretching the table (full value on hover
+   via the cell's title attribute, set in item_master.js). */
+.item-table {
+  table-layout: fixed;
+  min-width: 760px;
+}
+
+.item-table th,
+.item-table td {
+  padding: 6px 6px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-table td:nth-child(1), .item-table th:nth-child(1) { width: 31%; text-align: left; }
+.item-table td:nth-child(2), .item-table th:nth-child(2) { width: 23%; text-align: left; }
+.item-table td:nth-child(3), .item-table th:nth-child(3) { width: 23%; text-align: left; }
+.item-table td:nth-child(4), .item-table th:nth-child(4) { width: 10%; }
+.item-table td:nth-child(5), .item-table th:nth-child(5) { width: 6%; }
+.item-table td:nth-child(6), .item-table th:nth-child(6) { width: 7%; text-align: center; }

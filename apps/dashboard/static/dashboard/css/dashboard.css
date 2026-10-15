@@ -1,0 +1,51 @@
+/* Dashboard module — summary cards (page frame and sidebar live in components.css) */
+
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.dash-card,
+.dash-panel {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dash-card {
+  border-radius: 14px;
+}
+
+.dash-card__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.dash-card__value {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.dash-panel {
+  background: var(--surface);
+}
+
+.dash-panel__title {
+  margin-bottom: 6px;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+}
+
+.dash-panel p {
+  color: var(--text-secondary);
+}

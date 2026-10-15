@@ -1,0 +1,10 @@
+.cr-toolbar { flex-wrap: wrap; width: 100%; }
+.cr-filter { display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.cr-filter input { min-height: 34px; padding: 5px 10px; font-size: 0.875rem; width: 120px; }
+.cr-error { margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--danger); }
+.cr-error[hidden] { display: none; }
+.cr-table { min-width: 1000px; font-size: 0.8125rem; }
+.cr-table th, .cr-table td { padding: 2px 6px; white-space: nowrap; }
+.cr-table td { font-size: 16px; }
+.cr-table th { font-size: 19px; }
+.cr-table .num { text-align: right; font-variant-numeric: tabular-nums; }

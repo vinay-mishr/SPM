@@ -1,0 +1,12 @@
+/* Unit Master — list + tiny single-field Add/Modify/View form. Shared master / modal /
+   form styles come from static/css/components.css; only this screen's specifics live here. */
+
+.unit-form-modal {
+  width: min(320px, calc(100vw - 32px));
+}
+
+[data-unit-master] .master-table-wrap {
+  flex: none;
+  max-height: 420px;
+  width: min(420px, 100%);
+}

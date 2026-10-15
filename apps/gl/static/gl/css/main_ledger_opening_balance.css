@@ -1,0 +1,196 @@
+/* Main Ledger (Op. Balance) — compact ERP grid. Shared toolbar/table/button styles
+   come from static/css/components.css; only this screen's layout lives here. */
+
+.mlob {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 12px;
+  min-width: 0;
+  min-height: 300px;
+}
+
+.mlob > * { flex: none; }
+
+/* --- Search bar ------------------------------------------------------------------ */
+
+.mlob-search {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 10px 18px;
+  padding: 8px 12px;
+}
+
+.mlob-search .mlob-actions {
+  flex: none;
+  margin-left: 4px;
+}
+
+.mlob-search__mode {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mlob-search__mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.mlob-search__mode input { accent-color: var(--text-primary); }
+
+.mlob-search__label {
+  float: left;
+  margin-right: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mlob-search__text {
+  display: flex;
+  flex: 1 1 320px;
+  align-items: center;
+  max-width: 460px;
+}
+
+.mlob-search__text .form-control {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+}
+
+.mlob-search .btn {
+  --control-height: 34px;
+  padding: 0 16px;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+}
+
+.mlob-search__hint {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+/* --- Grid --------------------------------------------------------------------------- */
+
+.mlob > .mlob-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.mlob-table {
+  min-width: 720px;
+  font-size: 0.8125rem;
+  border: 0;
+  border-radius: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.mlob-table th,
+.mlob-table td {
+  padding: 4px 8px;
+  white-space: nowrap;
+  border-right: 1px solid var(--border);
+}
+
+.mlob-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--border-dark);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--surface);
+}
+
+.mlob-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.mlob-col-sno { width: 56px; }
+.mlob-col-code { width: 80px; }
+.mlob-col-amt { width: 160px; }
+
+.mlob-table tbody tr.is-selected { background: var(--surface-selected); }
+.mlob-table tbody tr.is-changed td:first-child { box-shadow: inset 3px 0 0 var(--primary-dark); }
+
+/* Editable amount cells */
+.mlob-table td.mlob-cell { padding: 0; }
+
+.mlob-amount {
+  width: 100%;
+  height: 26px;
+  padding: 2px 8px;
+  font: inherit;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  border-radius: 0;
+}
+
+.mlob-amount:hover { border-color: var(--border-dark); }
+
+.mlob-amount:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--primary-dark);
+  box-shadow: var(--focus-ring);
+}
+
+.mlob-amount[readonly] { background: transparent; cursor: default; }
+
+.mlob-amount.is-invalid { border-color: var(--danger); background: var(--danger-bg); }
+
+/* Total / Difference / G.Total rows */
+.mlob-total th,
+.mlob-total td {
+  padding: 6px 8px;
+  font-weight: 700;
+  background: var(--bg-mint);
+  border-top: 1px solid var(--border-mint);
+}
+
+.mlob-total th {
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mlob-total--grand th,
+.mlob-total--grand td {
+  border-top: 2px solid var(--border-dark);
+}
+
+.mlob-changes {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* --- Buttons ------------------------------------------------------------------------- */
+
+.mlob-actions {
+  --control-height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.mlob-actions .btn {
+  min-width: 110px;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

@@ -1,0 +1,97 @@
+{# Shared Add / Modify / View form. item_form.js switches the mode. #}
+<dialog class="modal item-form-modal" id="item-form-dialog" aria-labelledby="item-form-title">
+  <form class="item-form" novalidate data-item-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="item-form-title">Item Master — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform">
+        <label class="mform__label" for="f-item_code">Item Code</label>
+        <div class="mform__field">
+          <input class="form-control mform__input mform__input--code" id="f-item_code" type="text" readonly tabindex="-1" data-field="item_code">
+        </div>
+
+        <label class="mform__label" for="f-item_name_1">Item Name 1</label>
+        <div class="mform__field mform__field--wide">
+          <input class="form-control mform__input" id="f-item_name_1" name="item_name_1" type="text" maxlength="30" autocomplete="off" data-field="item_name_1">
+          <p class="mform__error" data-error-for="item_name_1"></p>
+        </div>
+
+        <label class="mform__label" for="f-item_name_2">Item Name 2</label>
+        <div class="mform__field mform__field--wide">
+          <input class="form-control mform__input" id="f-item_name_2" name="item_name_2" type="text" maxlength="35" autocomplete="off" data-field="item_name_2">
+          <p class="mform__error" data-error-for="item_name_2"></p>
+        </div>
+
+        <label class="mform__label" for="f-item_name_3">Item Name 3</label>
+        <div class="mform__field mform__field--wide">
+          <input class="form-control mform__input" id="f-item_name_3" name="item_name_3" type="text" maxlength="35" autocomplete="off" data-field="item_name_3">
+          <p class="mform__error" data-error-for="item_name_3"></p>
+        </div>
+      </div>
+
+      <h3 class="section-bar mform__section">Unit / Tax / Price Details</h3>
+
+      <div class="mform mform--two">
+        <label class="mform__label" for="f-unit">Unit</label>
+        <div class="mform__field">
+          <input class="form-control mform__input" id="f-unit" name="unit" type="text" maxlength="3" list="unit-suggestions" autocomplete="off" data-field="unit">
+          <datalist id="unit-suggestions">
+            {% for unit in unit_suggestions %}<option value="{{ unit }}">{% endfor %}
+          </datalist>
+          <p class="mform__error" data-error-for="unit"></p>
+        </div>
+
+        <label class="mform__label" for="f-hsn_code">HSN Code</label>
+        <div class="mform__field">
+          <input class="form-control mform__input" id="f-hsn_code" name="hsn_code" type="text" maxlength="8" autocomplete="off" data-field="hsn_code">
+          <p class="mform__error" data-error-for="hsn_code"></p>
+        </div>
+
+        <label class="mform__label" for="f-gst_percent">GST %</label>
+        <div class="mform__field">
+          <input class="form-control mform__input mform__input--num" id="f-gst_percent" name="gst_percent" type="number" inputmode="decimal" step="0.01" min="0" max="100" data-field="gst_percent" data-decimal="2">
+          <p class="mform__error" data-error-for="gst_percent"></p>
+        </div>
+
+        <label class="mform__label" for="f-rate">Rate</label>
+        <div class="mform__field">
+          <input class="form-control mform__input mform__input--num" id="f-rate" name="rate" type="number" inputmode="decimal" step="0.01" min="0" data-field="rate" data-decimal="2">
+          <p class="mform__error" data-error-for="rate"></p>
+        </div>
+
+        <label class="mform__label" for="f-opening_balance">Op. Balance</label>
+        <div class="mform__field">
+          <input class="form-control mform__input mform__input--num" id="f-opening_balance" name="opening_balance" type="number" inputmode="decimal" step="0.01" data-field="opening_balance" data-decimal="2">
+          <p class="mform__error" data-error-for="opening_balance"></p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        Confirm
+      </button>
+      <button class="btn btn--secondary" type="button" data-form-exit>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        Exit
+      </button>
+    </footer>
+  </form>
+
+  {# "Discard unsaved changes?" prompt, shown inside the form dialog. #}
+  <div class="modal-discard" data-discard hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="discard-title">
+      <p class="modal-discard__title" id="discard-title">Discard unsaved changes?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--secondary" type="button" data-discard-cancel>Cancel</button>
+        <button class="btn btn--primary" type="button" data-discard-confirm>Exit</button>
+      </div>
+    </div>
+  </div>
+</dialog>

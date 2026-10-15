@@ -1,0 +1,76 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Vendor Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'vendors/css/vendor_master.css' %}">
+  <link rel="stylesheet" href="{% static 'vendors/css/vendor_form.css' %}">
+  <script src="{% static 'vendors/js/vendor_form.js' %}" defer></script>
+  <script src="{% static 'vendors/js/vendor_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Vendor Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Vendor Master{% endblock %}
+
+{% block content %}
+<section class="master-page" data-vendor-master
+         data-list-url="{% url 'vendors:api_list' %}"
+         data-create-url="{% url 'vendors:api_create' %}"
+         data-next-code-url="{% url 'vendors:api_next_code' %}"
+         data-update-url="{% url 'vendors:api_update' pk=0 %}"
+         data-delete-url="{% url 'vendors:api_delete' pk=0 %}"
+         data-export-url="{% url 'vendors:export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Vendor actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <a class="btn btn--secondary" href="{% url 'vendors:export' %}" download title="Excel list of all vendors">Excel</a>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+    <label class="master-search">
+      <span class="visually-hidden">Search vendors</span>
+      <input class="form-control" type="search" placeholder="Search name, city, phone, code…" data-search autocomplete="off">
+    </label>
+  </div>
+
+  {% if read_only %}
+    <div class="alert alert--info" role="status">
+      Showing vendors from the SP_MACHINE database (table <strong>cust_mst</strong>, Sundry Creditors). Saving changes to that database is switched off until you approve it, so Confirm and Delete will show a message and nothing is changed.</div>
+  {% endif %}
+
+  <div class="master-table-wrap">
+    <table class="table master-table vendor-table">
+      <thead>
+        <tr>
+          <th scope="col">Vendor Code</th>
+          <th scope="col">Vendor Name</th>
+          <th scope="col">City</th>
+          <th scope="col">Phone Number</th>
+          <th scope="col">Mobile</th>
+          <th scope="col">GST Number</th>
+          <th scope="col">GST State</th>
+          <th scope="col" class="num">Opening Balance</th>
+          <th scope="col" class="num">Credit Days</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No vendors yet. Click <strong>Add</strong> to create the first one.</p>
+  </div>
+  <p class="master-count" data-count aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"vendor-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "vendors/vendor_form.html" %}
+  {% include "vendors/vendor_confirm_delete.html" %}
+{% endblock %}

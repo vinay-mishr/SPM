@@ -1,0 +1,112 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GST Returnable Challan {{ challan.chl_no }} · {{ brand_name }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #000; margin: 12px 24px 24px; background: #fff; }
+    .ch-print .company-header { position: relative; text-align: center; margin-bottom: 6px; min-height: 100px; }
+    .ch-print .company-header img { position: absolute; left: 0; top: 0; height: 100px; width: auto; }
+    .ch-print h1 { font-size: 30px; margin: 0; }
+    .ch-print .company-address { font-size: 12px; color: #333; }
+    .ch-print .sub { text-align: center; font-weight: 700; margin-bottom: 14px; }
+    .ch-print .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin-bottom: 14px; font-size: 15px; }
+    .ch-print table { width: 100%; border-collapse: collapse; }
+    .ch-print th, .ch-print td { border: 1px solid #000; padding: 6px 8px; font-size: 14px; }
+    .ch-print th { background: #e5e7eb; text-align: left; }
+    .ch-print td.num, .ch-print th.num { text-align: right; }
+    .ch-print .totals { width: 45%; margin-left: auto; margin-top: 10px; }
+    .ch-print .totals td { border: 1px solid #000; }
+    .ch-print .words { margin-top: 12px; font-weight: 700; }
+    .ch-print .actions { margin-bottom: 14px; }
+    .ch-print .copy-type { text-align: right; font-weight: 700; margin: 0 0 4px; }
+    .ch-public-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: #111; color: #fff; padding: 10px 16px; margin: -24px -24px 20px;
+      font-size: 13px;
+    }
+    .ch-public-bar__pdf-link, .ch-public-bar button {
+      background: #22c55e; color: #000; border: 0; border-radius: 4px;
+      padding: 6px 12px; font-weight: 700; text-decoration: none; cursor: pointer;
+    }
+    @media print { .ch-print .actions, .ch-public-bar { display: none; } body { margin: 10mm; } }
+  </style>
+</head>
+<body>
+{% if public %}
+<!-- On-screen only (see @media print above) -- the person opening a shared
+     link has no app toolbar, so this is their way to get a PDF. -->
+<div class="ch-public-bar">
+  <span>Challan {{ challan.chl_no }} &middot; {{ brand.name }}</span>
+  {% if pdf_url %}
+  <a href="{{ pdf_url }}" class="ch-public-bar__pdf-link">Download PDF</a>
+  {% else %}
+  <button type="button" onclick="window.print()">Download / Print PDF</button>
+  {% endif %}
+</div>
+{% endif %}
+<div class="ch-print">
+  <div class="actions"><button onclick="window.print()">PRINT</button> <button onclick="window.close()">CLOSE</button></div>
+  {% if copy_type %}<p class="copy-type">{{ copy_type|upper }}</p>{% endif %}
+  <div class="company-header">
+    <img src="{% static brand.logo_full %}" alt="{{ brand.name }}">
+    <h1>{{ brand_name }}</h1>
+    <div class="company-address">{{ brand.address_line1 }}</div>
+    <div class="company-address">{{ brand.address_line2 }}</div>
+    {% if brand.print_mobile %}<div class="company-address">Mobile No.: {{ brand.print_mobile }}</div>{% endif %}
+    {% if brand.email %}<div class="company-address">Email: {{ brand.email }}</div>{% endif %}
+    {% if brand.website %}<div class="company-address">Website: {{ brand.website }}</div>{% endif %}
+  </div>
+  <div class="sub">GST RETURNABLE CHALLAN</div>
+
+  <div class="meta">
+    <div>
+      <div><strong>M/s.</strong> {{ challan.party_name }}</div>
+      <div>{{ challan.city }}</div>
+      <div><strong>Phone:</strong> {{ challan.phone }}</div>
+    </div>
+    <div>
+      <div><strong>Challan No.:</strong> {{ challan.chl_no }}</div>
+      <div><strong>Challan Date:</strong> {{ challan.chl_date }}</div>
+      <div><strong>Order No.:</strong> {{ challan.ord_no }} <strong>Order Date:</strong> {{ challan.ord_date }}</div>
+      <div><strong>Mode of Dispatch:</strong> {{ challan.mode }}</div>
+      <div><strong>Vehicle No.:</strong> {{ challan.vehicle_no }}</div>
+      <div><strong>Place of Supply:</strong> {{ challan.place_of_supply }}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Code</th><th>Item Description</th><th>HSN</th>
+        <th class="num">Qty</th><th>Unit</th><th class="num">Rate</th><th class="num">Amount</th><th class="num">GST%</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in challan.items %}
+      <tr>
+        <td>{{ l.sno }}</td><td>{{ l.part_code }}</td><td>{{ l.part_name }}</td><td>{{ l.hsn_code }}</td>
+        <td class="num">{{ l.qty }}</td><td>{{ l.unit }}</td><td class="num">{{ l.rate }}</td><td class="num">{{ l.amount }}</td>
+        <td class="num">{{ l.gst_percent }}</td>
+      </tr>
+      {% if l.particular %}
+      <tr><td></td><td colspan="8">{{ l.particular }}</td></tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="totals">
+    <tr><td>Amount</td><td class="num">{{ challan.amount }}</td></tr>
+    <tr><td>GST Amount</td><td class="num">{{ challan.gst_amt }}</td></tr>
+    <tr><th>Net Amount</th><th class="num">{{ challan.net_amount }}</th></tr>
+  </table>
+
+  <div class="words">{{ in_words }}</div>
+</div>
+{% if not preview %}
+<script>window.addEventListener("load", function () { window.print(); });</script>
+{% endif %}
+</body>
+</html>

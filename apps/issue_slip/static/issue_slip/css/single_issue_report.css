@@ -1,0 +1,37 @@
+/* Single Issue Report — read-only report. Shared master / toolbar / table styles
+   come from static/css/components.css; only this screen's specifics live here. */
+
+.sir-toolbar {
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.sir-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sir-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 140px;
+}
+
+.sir-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.sir-error[hidden] { display: none; }
+
+.sir-table { min-width: 700px; font-size: 0.8125rem; }
+.sir-table th, .sir-table td { padding: 4px 8px; white-space: nowrap; }
+.sir-table .num { text-align: right; font-variant-numeric: tabular-nums; }

@@ -1,0 +1,37 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Debit Note Statement · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'debit_note/css/debit_note.css' %}">
+  <script src="{% static 'debit_note/js/debit_note_statement.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Debit Note Statement{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Debit Note Statement{% endblock %}
+
+{% block content %}
+<section class="dn-page" data-st
+         data-data-url="{% url 'debit_note:statement_data' %}"
+         data-export-url="{% url 'debit_note:statement_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="dn-toolbar">
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <div class="dn-buttons">
+      <button type="button" class="btn btn--primary" data-show>SHOW</button>
+      <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+      <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+    </div>
+  </div>
+  <div class="dn-alert" role="alert" data-alert hidden></div>
+  <div class="dn-grid">
+    <table>
+      <thead><tr><th>DN. NO</th><th>DN. DATE</th><th>BILL NO</th><th>BILL DATE</th><th>PARTY</th><th>CITY</th><th class="num">D.N. AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="7">Press SHOW to view the statement.</td></tr></tbody>
+      <tfoot><tr><th colspan="6" class="num">TOTAL</th><th class="num" data-total>0.00</th></tr></tfoot>
+    </table>
+  </div>
+</section>
+{% endblock %}

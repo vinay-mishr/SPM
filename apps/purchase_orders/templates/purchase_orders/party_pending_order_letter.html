@@ -1,0 +1,114 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pending PO Reminder · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/party_pending_order_letter.css' %}">
+  <script src="{% static 'purchase_orders/js/party_pending_order_letter.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Pending PO Reminder{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Pending PO Reminder{% endblock %}
+
+{% block content %}
+<section class="master-page pol-page" data-pending-order-letter
+         data-data-url="{% url 'purchase_orders:pending_order_letter_data' %}"
+         data-export-url="{% url 'purchase_orders:pending_order_letter_export' %}"
+         data-print-url="{% url 'purchase_orders:pending_order_letter_print' %}"
+         data-pdf-url="{% url 'purchase_orders:pending_order_letter_pdf' %}"
+         data-share-url="{% url 'purchase_orders:pending_order_letter_share_link' %}"
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar pol-toolbar" role="toolbar" aria-label="Party pending order letter filters">
+    <div class="pol-party">
+      <span class="pol-party__label">Party</span>
+      <input class="form-control pol-party__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search>
+      <input class="form-control pol-party__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+    </div>
+
+    <label class="pol-filter">Run Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-run-date data-date-mask>
+    </label>
+
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+
+      <button class="btn btn--secondary" type="button" data-print><span class="master-toolbar__key">P</span>rint</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap pol-grid-wrap">
+    <table class="table master-table pol-table">
+      <thead>
+        <tr>
+          <th scope="col">Ord. No.</th>
+          <th scope="col">Date</th>
+          <th scope="col">Code</th>
+          <th scope="col">Item Description</th>
+          <th scope="col" class="num">Qty.</th>
+          <th scope="col">Des. Dt</th>
+          <th scope="col" class="num">D. Days</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty>Select a party to see its pending orders.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pol-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  <dialog class="modal modal--sm" id="pol-whatsapp-dialog" aria-labelledby="pol-whatsapp-title">
+    <header class="modal__header">
+      <h2 class="modal__title" id="pol-whatsapp-title">WhatsApp</h2>
+    </header>
+    <div class="modal__body">
+      <div class="alert alert--error" role="alert" data-whatsapp-alert hidden></div>
+
+      <label class="mform__label" for="pol-whatsapp-party">Party Name</label>
+      <input class="form-control" id="pol-whatsapp-party" type="text" readonly tabindex="-1" data-whatsapp-party>
+
+      <label class="mform__label" for="pol-whatsapp-mobile">Mobile Number</label>
+      <input class="form-control" id="pol-whatsapp-mobile" type="text" inputmode="tel" autocomplete="off" data-whatsapp-mobile>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="button" data-whatsapp-send>Send on WhatsApp</button>
+      <button class="btn btn--secondary" type="button" data-whatsapp-back>Back</button>
+    </footer>
+  </dialog>
+
+  <dialog class="modal modal--sm print-options-dialog" id="pol-print-options-dialog" aria-labelledby="pol-print-options-title">
+    <header class="print-options__header">
+      <h2 class="print-options__title" id="pol-print-options-title">PRINT REMINDER</h2>
+    </header>
+    <div class="print-options__body">
+      <!-- No PO Amount here: a reminder letter can cover several pending POs
+           for the one party at once, with no single total to show, unlike the
+           Purchase Order screen's own version of this dialog -- Ord No lists
+           every distinct order number the reminder actually covers instead
+           of naming just one. -->
+      <div class="print-options__fields">
+        <label><span>ORD NO</span><input type="text" readonly tabindex="-1" data-print-ord-no></label>
+      </div>
+      <div class="print-options__copies">
+        <label><input type="checkbox" name="pol-copy-type" value="Original For Consignee" checked> Original For Consignee</label>
+        <label><input type="checkbox" name="pol-copy-type" value="Duplicate For Transporter"> Duplicate For Transporter</label>
+        <label><input type="checkbox" name="pol-copy-type" value="Triplicate For Consignor"> Triplicate For Consignor</label>
+      </div>
+      <div class="print-options__grid">
+        <button type="button" data-print-action="preview">VIEW</button>
+        <button type="button" data-print-action="print">PRINT</button>
+        <button type="button" data-print-action="pdf">PRINT PDF</button>
+        <button type="button" data-print-action="whatsapp" class="print-options__whatsapp">WHATSAPP</button>
+        <button type="button" data-print-action="exit" class="print-options__exit">EXIT</button>
+      </div>
+    </div>
+  </dialog>
+{% endblock %}

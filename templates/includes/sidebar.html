@@ -1,0 +1,207 @@
+{% load static %}
+{% with ns=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
+<aside class="app-sidebar">
+  <a class="app-sidebar__brand" href="{% url 'dashboard:home' %}">
+    <img src="{% static brand.logo_full %}" alt="{{ brand.name }}" width="120" height="85">
+  </a>
+
+  <nav class="app-nav" aria-label="Main">
+    <a class="app-nav__link{% if ns == 'dashboard' %} is-active{% endif %}" href="{% url 'dashboard:home' %}"{% if ns == "dashboard" %} aria-current="page"{% endif %}>Home</a>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'items' or ns == 'parties' or ns == 'outstanding' or ns == 'marketing' or ns == 'reps' or ns == 'supervisors' or ns == 'materials' or ns == 'parts' %} is-active{% endif %}">Master</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'items' %} is-active{% endif %}" href="{% url 'items:master' %}"{% if ns == "items" %} aria-current="page"{% endif %}>Item Master</a>
+        <a class="app-nav__sublink{% if ns == 'parties' and url_name != 'opening_balance' %} is-active{% endif %}" href="{% url 'parties:master' %}"{% if ns == "parties" and url_name != "opening_balance" %} aria-current="page"{% endif %}>Customer Master</a>
+        <a class="app-nav__sublink{% if url_name == 'opening_balance' and ns == 'parties' %} is-active{% endif %}" href="{% url 'parties:opening_balance' %}"{% if url_name == "opening_balance" and ns == "parties" %} aria-current="page"{% endif %}>Opening Balance Master</a>
+        <a class="app-nav__sublink{% if ns == 'outstanding' %} is-active{% endif %}" href="{% url 'outstanding:master' %}"{% if ns == "outstanding" %} aria-current="page"{% endif %}>Previous Outstanding</a>
+        <a class="app-nav__sublink{% if ns == 'marketing' %} is-active{% endif %}" href="{% url 'marketing:master' %}"{% if ns == "marketing" %} aria-current="page"{% endif %}>Marketing Manager</a>
+        <a class="app-nav__sublink{% if ns == 'reps' %} is-active{% endif %}" href="{% url 'reps:master' %}"{% if ns == "reps" %} aria-current="page"{% endif %}>Rep Master</a>
+        <a class="app-nav__sublink{% if ns == 'supervisors' %} is-active{% endif %}" href="{% url 'supervisors:master' %}"{% if ns == "supervisors" %} aria-current="page"{% endif %}>Supervisor Master</a>
+        <a class="app-nav__sublink{% if ns == 'materials' %} is-active{% endif %}" href="{% url 'materials:master' %}"{% if ns == "materials" %} aria-current="page"{% endif %}>Material Master</a>
+        <a class="app-nav__sublink{% if ns == 'parts' %} is-active{% endif %}" href="{% url 'parts:master' %}"{% if ns == "parts" %} aria-current="page"{% endif %}>Part Master</a>
+        <a class="app-nav__sublink{% if ns == 'rate_modification' %} is-active{% endif %}" href="{% url 'rate_modification:master' %}"{% if ns == "rate_modification" %} aria-current="page"{% endif %}>Rate Modification</a>
+        <a class="app-nav__sublink{% if ns == 'vendors' %} is-active{% endif %}" href="{% url 'vendors:master' %}"{% if ns == "vendors" %} aria-current="page"{% endif %}>Vendor Master</a>
+        <a class="app-nav__sublink{% if ns == 'creditor_outstanding' %} is-active{% endif %}" href="{% url 'creditor_outstanding:master' %}"{% if ns == "creditor_outstanding" %} aria-current="page"{% endif %}>Creditor Outstanding</a>
+        <a class="app-nav__sublink{% if ns == 'bom' and url_name == 'item_master' %} is-active{% endif %}" href="{% url 'bom:item_master' %}"{% if ns == "bom" and url_name == "item_master" %} aria-current="page"{% endif %}>Bill of Material Master</a>
+        <a class="app-nav__sublink{% if ns == 'bom' and url_name == 'consumption_master' %} is-active{% endif %}" href="{% url 'bom:consumption_master' %}"{% if ns == "bom" and url_name == "consumption_master" %} aria-current="page"{% endif %}>Bill of Material Master With Value</a>
+        <a class="app-nav__sublink{% if ns == 'bom' and url_name == 'without_value' %} is-active{% endif %}" href="{% url 'bom:without_value' %}"{% if ns == "bom" and url_name == "without_value" %} aria-current="page"{% endif %}>Bill of Material Master Without Value</a>
+        <a class="app-nav__sublink{% if ns == 'bom' and url_name == 'master' %} is-active{% endif %}" href="{% url 'bom:master' %}"{% if ns == "bom" and url_name == "master" %} aria-current="page"{% endif %}>Bill of Material Master SA</a>
+        <a class="app-nav__sublink{% if ns == 'bom' and url_name == 'sa_value_wise' %} is-active{% endif %}" href="{% url 'bom:sa_value_wise' %}"{% if ns == "bom" and url_name == "sa_value_wise" %} aria-current="page"{% endif %}>Bill of Material Master SA With Value</a>
+        <a class="app-nav__sublink{% if ns == 'bom' and url_name == 'sa_suppliers' %} is-active{% endif %}" href="{% url 'bom:sa_suppliers' %}"{% if ns == "bom" and url_name == "sa_suppliers" %} aria-current="page"{% endif %}>Bill of Material Master SA Without Value</a>
+        <a class="app-nav__sublink{% if ns == 'gl' and url_name != 'opening_balance' %} is-active{% endif %}" href="{% url 'gl:master' %}"{% if ns == "gl" and url_name != "opening_balance" %} aria-current="page"{% endif %}>General Ledger Master</a>
+        <a class="app-nav__sublink{% if url_name == 'opening_balance' and ns == 'gl' %} is-active{% endif %}" href="{% url 'gl:opening_balance' %}"{% if url_name == "opening_balance" and ns == "gl" %} aria-current="page"{% endif %}>Main Ledger (Op. Balance)</a>
+        <a class="app-nav__sublink{% if ns == 'gst' %} is-active{% endif %}" href="{% url 'gst:master' %}"{% if ns == "gst" %} aria-current="page"{% endif %}>GST Master</a>
+        <a class="app-nav__sublink{% if ns == 'units' %} is-active{% endif %}" href="{% url 'units:master' %}"{% if ns == "units" %} aria-current="page"{% endif %}>Unit Master</a>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'purchase_orders' %} is-active{% endif %}">Purchase Order</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'purchase_orders' and url_name != 'pending_report' %} is-active{% endif %}" href="{% url 'purchase_orders:master' %}"{% if ns == "purchase_orders" and url_name != "pending_report" %} aria-current="page"{% endif %}>Purchase Order</a>
+        <a class="app-nav__sublink{% if url_name == 'pending_report' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:pending_report' %}"{% if url_name == "pending_report" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Party Wise Pending P.O.</a>
+        <a class="app-nav__sublink{% if url_name == 'item_wise_pending_report' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:item_wise_pending_report' %}"{% if url_name == "item_wise_pending_report" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Item-Wise Pending P.O.</a>
+        <a class="app-nav__sublink{% if url_name == 'monthly_purchase_report' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:monthly_purchase_report' %}"{% if url_name == "monthly_purchase_report" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Monthly Purchase Report</a>
+        <a class="app-nav__sublink{% if url_name == 'item_wise_rate_list' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:item_wise_rate_list' %}"{% if url_name == "item_wise_rate_list" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Item-Wise Rate List</a>
+        <a class="app-nav__sublink{% if url_name == 'party_wise_rate_list' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:party_wise_rate_list' %}"{% if url_name == "party_wise_rate_list" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Party-Wise Rate List</a>
+        <a class="app-nav__sublink{% if url_name == 'pending_order_letter' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:pending_order_letter' %}"{% if url_name == "pending_order_letter" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Pending PO Reminder</a>
+        <a class="app-nav__sublink{% if url_name == 'itemwise_party_list' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:itemwise_party_list' %}"{% if url_name == "itemwise_party_list" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Itemwise Party List</a>
+        <a class="app-nav__sublink{% if url_name == 'party_wise_item_list' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:party_wise_item_list' %}"{% if url_name == "party_wise_item_list" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Party Wise Item List</a>
+        <a class="app-nav__sublink{% if url_name == 'pending_despatch_report' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:pending_despatch_report' %}"{% if url_name == "pending_despatch_report" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Pending P.O. Despatch Report</a>
+        <a class="app-nav__sublink{% if url_name == 'po_adjustment' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:po_adjustment' %}"{% if url_name == "po_adjustment" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Pending Purchase Order Adjustment</a>
+        <a class="app-nav__sublink{% if url_name == 'party_wise_po_adjustment' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:party_wise_po_adjustment' %}"{% if url_name == "party_wise_po_adjustment" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Order Adjustment Report</a>
+        <a class="app-nav__sublink{% if url_name == 'monthly_order_report' and ns == 'purchase_orders' %} is-active{% endif %}" href="{% url 'purchase_orders:monthly_order_report' %}"{% if url_name == "monthly_order_report" and ns == "purchase_orders" %} aria-current="page"{% endif %}>Order Report</a>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'mrn' %} is-active{% endif %}">M.R.N.</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'entry' %} is-active{% endif %}" href="{% url 'mrn:entry' %}"{% if ns == "mrn" and url_name == "entry" %} aria-current="page"{% endif %}>MRN Entry</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'pending_mrn_report' %} is-active{% endif %}" href="{% url 'mrn:pending_mrn_report' %}"{% if ns == "mrn" and url_name == "pending_mrn_report" %} aria-current="page"{% endif %}>Pending MRN</a>
+        <a class="app-nav__sublink{% if ns == 'issue_slip' and url_name == 'entry' %} is-active{% endif %}" href="{% url 'issue_slip:entry' %}"{% if ns == "issue_slip" and url_name == "entry" %} aria-current="page"{% endif %}>Single Issue Slip</a>
+        <a class="app-nav__sublink{% if ns == 'issue_slip' and url_name == 'single_issue_report' %} is-active{% endif %}" href="{% url 'issue_slip:single_issue_report' %}"{% if ns == "issue_slip" and url_name == "single_issue_report" %} aria-current="page"{% endif %}>Single Issue Report</a>
+        <a class="app-nav__sublink{% if ns == 'receipt_slip' %} is-active{% endif %}" href="{% url 'receipt_slip:entry' %}"{% if ns == "receipt_slip" %} aria-current="page"{% endif %}>Single Receipt Slip</a>
+        <a class="app-nav__sublink{% if ns == 'receipt_slip' and url_name == 'single_receipt_report' %} is-active{% endif %}" href="{% url 'receipt_slip:single_receipt_report' %}"{% if ns == "receipt_slip" and url_name == "single_receipt_report" %} aria-current="page"{% endif %}>Single Receipt Report</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'current_stock_report' %} is-active{% endif %}" href="{% url 'mrn:current_stock_report' %}"{% if ns == "mrn" and url_name == "current_stock_report" %} aria-current="page"{% endif %}>Current Stock</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'stock_ledger' %} is-active{% endif %}" href="{% url 'mrn:stock_ledger' %}"{% if ns == "mrn" and url_name == "stock_ledger" %} aria-current="page"{% endif %}>Stock Statement (Grade)</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'stock_statement' %} is-active{% endif %}" href="{% url 'mrn:stock_statement' %}"{% if ns == "mrn" and url_name == "stock_statement" %} aria-current="page"{% endif %}>Stock Statement</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'part_ledger' %} is-active{% endif %}" href="{% url 'mrn:part_ledger' %}">Stock Ledger</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'item_monthwise_sale' %} is-active{% endif %}" href="{% url 'mrn:item_monthwise_sale' %}"{% if ns == "mrn" and url_name == "item_monthwise_sale" %} aria-current="page"{% endif %}>Item-wise Month-wise Sale</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'critical_shortage' %} is-active{% endif %}" href="{% url 'mrn:critical_shortage' %}"{% if ns == "mrn" and url_name == "critical_shortage" %} aria-current="page"{% endif %}>Critical Shortage</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'short_list' and request.GET.layout == 'vfp' %} is-active{% endif %}" href="{% url 'mrn:short_list' %}?layout=vfp">Short List</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'short_list' and request.GET.layout != 'vfp' %} is-active{% endif %}" href="{% url 'mrn:short_list' %}">Short List New</a>
+        <a class="app-nav__sublink{% if ns == 'mrn' and url_name == 'crisis_shortage' %} is-active{% endif %}" href="{% url 'mrn:crisis_shortage' %}"{% if ns == "mrn" and url_name == "crisis_shortage" %} aria-current="page"{% endif %}>Crisis Shortage</a>
+          <details class="app-nav__group" data-nav-flyout>
+            <summary class="app-nav__link app-nav__toggle{% if ns == 'creditor_outstanding' %} is-active{% endif %}">Creditor Outstanding</summary>
+            <div class="app-nav__submenu">
+              <a class="app-nav__sublink{% if ns == 'creditor_payment' %} is-active{% endif %}" href="{% url 'creditor_payment:entry' %}">Payment Made</a>
+              <a class="app-nav__sublink{% if ns == 'creditor_payment' and url_name == 'statement' %} is-active{% endif %}" href="{% url 'creditor_payment:statement' %}">Outstanding Statement</a>
+              <a class="app-nav__sublink{% if ns == 'creditor_payment' and url_name == 'report' %} is-active{% endif %}" href="{% url 'creditor_payment:report' %}">Outstanding Report</a>
+              <a class="app-nav__sublink{% if ns == 'creditor_outstanding' %} is-active{% endif %}" href="{% url 'creditor_payment:payment_report' %}">Payment Report</a>
+            </div>
+          </details>
+        <details class="app-nav__group" data-nav-flyout>
+          <summary class="app-nav__link app-nav__toggle{% if ns == 'debit_note' %} is-active{% endif %}">Debit Note</summary>
+          <div class="app-nav__submenu">
+            <a class="app-nav__sublink{% if ns == 'debit_note' %} is-active{% endif %}" href="{% url 'debit_note:item_entry' %}">Debit Note Entry</a>
+            <span class="app-nav__sublink is-disabled">Debit Note Printing</span>
+            <a class="app-nav__sublink{% if ns == 'debit_note' %} is-active{% endif %}" href="{% url 'debit_note:entry' %}">Debit Note Narration</a>
+            <span class="app-nav__sublink is-disabled">Printing</span>
+            <a class="app-nav__sublink{% if ns == 'debit_note' and url_name == 'statement' %} is-active{% endif %}" href="{% url 'debit_note:statement' %}">Debit Note Statement</a>
+          </div>
+        </details>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'returnable_challan' and request.resolver_match.url_name == 'pending_report' %} is-active{% endif %}">Returnable Challan</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'returnable_challan' and request.resolver_match.url_name == 'entry' %} is-active{% endif %}" href="{% url 'returnable_challan:entry' %}">Challan Entry</a>
+        <a class="app-nav__sublink{% if ns == 'returnable_challan' and request.resolver_match.url_name == 'pending_report' %} is-active{% endif %}" href="{% url 'returnable_challan:pending_report' %}"{% if ns == "returnable_challan" %} aria-current="page"{% endif %}>Pending Challan Report</a>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'job_card' %} is-active{% endif %}">Job Card</summary>
+      <div class="app-nav__submenu">
+        <details class="app-nav__group" data-nav-flyout>
+          <summary class="app-nav__link app-nav__toggle{% if ns == 'job_card' %} is-active{% endif %}">Job Card</summary>
+          <div class="app-nav__submenu">
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'entry' %} is-active{% endif %}" href="{% url 'job_card:entry' %}">Job Card Entry</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'listing' %} is-active{% endif %}" href="{% url 'job_card:listing' %}">Job Card Listing</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'supervisor_listing' %} is-active{% endif %}" href="{% url 'job_card:supervisor_listing' %}">Job Card Listing Supervisor</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'print' or url_name == 'print_job' %} is-active{% endif %}" href="{% url 'job_card:print' %}">Single Job Card Printing</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'short_list' %} is-active{% endif %}" href="{% url 'job_card:short_list' %}">Short List</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'product_issue' %} is-active{% endif %}" href="{% url 'job_card:product_issue' %}">Issue Entry</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'pending_job_list' %} is-active{% endif %}" href="{% url 'job_card:pending_job_list' %}">Pending Job List</a>
+          </div>
+        </details>
+        <details class="app-nav__group" data-nav-flyout>
+          <summary class="app-nav__link app-nav__toggle{% if ns == 'job_card' and url_name == 'sub_assembly' %} is-active{% endif %}">Job Card (Sub Assembly)</summary>
+          <div class="app-nav__submenu">
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'sub_assembly' %} is-active{% endif %}" href="{% url 'job_card:sub_assembly' %}">Job Card Entry</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'listing' %} is-active{% endif %}" href="{% url 'job_card:listing' %}">Job Card Listing</a>
+            <span class="app-nav__sublink is-disabled" aria-disabled="true">Graphical Printing</span>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'short_list' %} is-active{% endif %}" href="{% url 'job_card:short_list' %}">Short List</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'product_issue' %} is-active{% endif %}" href="{% url 'job_card:product_issue' %}">Issue Entry</a>
+            <a class="app-nav__sublink{% if ns == 'job_card' and url_name == 'pending_job_list' %} is-active{% endif %}" href="{% url 'job_card:pending_job_list' %}">Pending Job List</a>
+          </div>
+        </details>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'receipt_slip' and url_name == 'stock_receipt' %} is-active{% endif %}">Stock</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'receipt_slip' and url_name == 'stock_receipt' %} is-active{% endif %}" href="{% url 'receipt_slip:stock_receipt' %}">Stock Receipt</a>
+        <a class="app-nav__sublink{% if ns == 'receipt_slip' and url_name == 'stock_report' %} is-active{% endif %}" href="{% url 'receipt_slip:stock_report' %}">Stock Receipt Report</a>
+        <a class="app-nav__sublink{% if ns == 'receipt_slip' and url_name == 'current_stock' %} is-active{% endif %}" href="{% url 'receipt_slip:current_stock' %}">Current Stock</a>
+        <a class="app-nav__sublink{% if ns == 'receipt_slip' and url_name == 'stock_ledger' %} is-active{% endif %}" href="{% url 'receipt_slip:stock_ledger' %}">Stock Ledger</a>
+        <details class="app-nav__group" data-nav-flyout>
+          <summary class="app-nav__link app-nav__toggle">Production Schedule (New)</summary>
+          <div class="app-nav__submenu">
+            <a class="app-nav__sublink{% if ns == 'receipt_slip' and url_name == 'production_schedule' %} is-active{% endif %}" href="{% url 'receipt_slip:production_schedule' %}">Based upon Inventory</a>
+            <a class="app-nav__sublink{% if ns == 'receipt_slip' and url_name == 'production_pending' %} is-active{% endif %}" href="{% url 'receipt_slip:production_pending' %}">Based upon Pending Order</a>
+          </div>
+        </details>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'sale_order' %} is-active{% endif %}">Sale Order</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'entry' %} is-active{% endif %}" href="{% url 'sale_order:entry' %}">Order Entry</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'report' %} is-active{% endif %}" href="{% url 'sale_order:report' %}">Sale Order Report</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'party_pending' %} is-active{% endif %}" href="{% url 'sale_order:party_pending' %}">Party Wise Pending Order</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'item_pending' %} is-active{% endif %}" href="{% url 'sale_order:item_pending' %}">Item Wise Pending Order</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'area_pending' %} is-active{% endif %}" href="{% url 'sale_order:area_pending' %}">Area Wise Pending Order</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'rep_orders' %} is-active{% endif %}" href="{% url 'sale_order:rep_orders' %}">Rep Wise Order Received</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'rep_pending' %} is-active{% endif %}" href="{% url 'sale_order:rep_pending' %}">Rep Wise Pending Order</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'despatch_status' %} is-active{% endif %}" href="{% url 'sale_order:despatch_status' %}">Pending Despatch Status</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'adjustment' %} is-active{% endif %}" href="{% url 'sale_order:adjustment' %}">Pending Order Adjustment</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'adjustment_report' %} is-active{% endif %}" href="{% url 'sale_order:adjustment_report' %}">Order Adjustment Report</a>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'sale_order' and url_name == 'spare_entry' %} is-active{% endif %}">Spare Sale Order</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'spare_entry' %} is-active{% endif %}" href="{% url 'sale_order:spare_entry' %}">Entry</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'spare_printing' %} is-active{% endif %}" href="{% url 'sale_order:spare_printing' %}">Printing</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'spare_party_pending' %} is-active{% endif %}" href="{% url 'sale_order:spare_party_pending' %}">Partywise Spare Part Pending Order</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'spare_item_pending' %} is-active{% endif %}" href="{% url 'sale_order:spare_item_pending' %}">Itemwise Spare Part Pending Order</a>
+        <a class="app-nav__sublink{% if ns == 'sale_order' and url_name == 'spare_adjustment' %} is-active{% endif %}" href="{% url 'sale_order:spare_adjustment' %}">Order Adjustment</a>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'gst_invoice' or ns == 'credit_note' or ns == 'returnable_challan' and request.resolver_match.url_name == 'entry' or ns == 'spare_invoice' or ns == 'proforma_invoice' or ns == 'proforma_spearpart' or ns == 'quotations' or ns == 'quotation_spearpart' %} is-active{% endif %}">Invoice</summary>
+      <div class="app-nav__submenu">
+        <details class="app-nav__group" data-nav-flyout>
+          <summary class="app-nav__link app-nav__toggle{% if ns == 'gst_invoice' or ns == 'credit_note' or ns == 'returnable_challan' and request.resolver_match.url_name == 'entry' or ns == 'spare_invoice' %} is-active{% endif %}">Invoice</summary>
+          <div class="app-nav__submenu">
+            <a class="app-nav__sublink{% if ns == 'gst_invoice' %} is-active{% endif %}" href="{% url 'gst_invoice:entry' %}">Billing</a>
+            <span class="app-nav__sublink is-disabled">GST Sale Day Book</span>
+            <a class="app-nav__sublink{% if ns == 'credit_note' and request.resolver_match.url_name == 'entry' %} is-active{% endif %}" href="{% url 'credit_note:entry' %}">Credit Note</a>
+            <a class="app-nav__sublink{% if ns == 'credit_note' and request.resolver_match.url_name == 'narration_entry' %} is-active{% endif %}" href="{% url 'credit_note:narration_entry' %}">Credit Note (Narration)</a>
+            <a class="app-nav__sublink{% if ns == 'returnable_challan' and request.resolver_match.url_name == 'entry' %} is-active{% endif %}" href="{% url 'returnable_challan:entry' %}">Challan Entry</a>
+            <span class="app-nav__sublink is-disabled">Report</span>
+            <a class="app-nav__sublink{% if ns == 'spare_invoice' %} is-active{% endif %}" href="{% url 'spare_invoice:entry' %}">Spare Part Invoice</a>
+          </div>
+        </details>
+        <a class="app-nav__sublink{% if ns == 'proforma_invoice' %} is-active{% endif %}" href="{% url 'proforma_invoice:entry' %}">Proforma Invoice</a>
+        <a class="app-nav__sublink{% if ns == 'proforma_spearpart' %} is-active{% endif %}" href="{% url 'proforma_spearpart:entry' %}">Performa Invoice Sparepart</a>
+        <a class="app-nav__sublink{% if ns == 'quotations' %} is-active{% endif %}" href="{% url 'quotations:list' %}">Quotation</a>
+        <a class="app-nav__sublink{% if ns == 'quotation_spearpart' %} is-active{% endif %}" href="{% url 'quotation_spearpart:list' %}">Quotation (Spare Part)</a>
+      </div>
+    </details>
+    <details class="app-nav__group" data-nav-flyout>
+      <summary class="app-nav__link app-nav__toggle{% if ns == 'money_receipt' %} is-active{% endif %}">Money Receipts</summary>
+      <div class="app-nav__submenu">
+        <a class="app-nav__sublink{% if ns == 'money_receipt' and url_name == 'entry' %} is-active{% endif %}" href="{% url 'money_receipt:entry' %}">Money Receipt</a>
+        <a class="app-nav__sublink{% if ns == 'money_receipt' and url_name == 'party_outstanding' %} is-active{% endif %}" href="{% url 'money_receipt:party_outstanding' %}">Party Outstanding</a>
+      </div>
+    </details>
+    <a class="app-nav__link" href="#">Accounts</a>
+    <a class="app-nav__link" href="#">Reports</a>
+    <a class="app-nav__link" href="#">Utilities</a>
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button class="app-nav__link app-nav__quit" type="submit">Logout</button>
+    </form>
+  </nav>
+</aside>
+{% endwith %}

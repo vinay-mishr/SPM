@@ -1,0 +1,122 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}GST Credit Note (Narration) · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'credit_note/css/credit_note.css' %}">
+  <script src="{% static 'credit_note/js/narration_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}GST Credit Note (Narration){% endblock %}
+{% block page_subtitle %}Invoice &rsaquo; Invoice &rsaquo; Credit Note (Narration){% endblock %}
+
+{% block content %}
+<section class="cn-page" data-ie
+         data-list-url="{% url 'credit_note:narration_api_list' %}"
+         data-next-no-url="{% url 'credit_note:narration_api_next_no' %}"
+         data-detail-url-template="{% url 'credit_note:narration_api_detail' cn_no='__NO__' %}"
+         data-save-url="{% url 'credit_note:narration_api_save' %}"
+         data-delete-url="{% url 'credit_note:narration_api_delete' %}"
+         data-parties-url="{% url 'credit_note:narration_api_parties' %}"
+         data-print-url-template="{% url 'credit_note:narration_print' cn_no='__NO__' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="cn-toolbar master-toolbar">
+    <div class="cn-buttons">
+      <button type="button" class="btn btn--primary" data-action="add"{% if not can_edit %} disabled{% endif %}>ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+      <button type="button" class="btn btn--secondary" data-action="print" disabled>PRINT</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="cn-search">SEARCH <input class="form-control" type="text" data-search placeholder="Type party name..."></label>
+    <div class="cn-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="cn-alert" role="alert" data-alert hidden></div>
+
+  <div class="cn-grid">
+    <table>
+      <thead><tr><th>CN. NO</th><th>CN. DATE</th><th class="num">NET AMOUNT</th><th>PARTY</th><th>CITY</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="5">No credit notes in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="cn-form-modal" data-form>
+  <form novalidate data-ie-form>
+    <header class="cn-titlebar">GST CREDIT NOTE (NARRATION) <span class="cn-mode" data-mode-label>Add</span></header>
+    <div class="cn-body">
+      <div class="cn-alert" role="alert" data-form-alert hidden></div>
+      <div class="nar-columns">
+        <div class="nar-column nar-column--cn">
+          <label>C.N. NO <input data-field="cn_no" maxlength="10"></label>
+          <label>C.N. DATE <input data-field="cn_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label>PRE GST <input data-field="pre_gst" maxlength="1"></label>
+        </div>
+        <div class="nar-column nar-column--invoice">
+          <label>INVOICE NO <input data-field="invoice_no" maxlength="20"></label>
+          <label>INVOICE DATE <input data-field="invoice_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label class="cn-wide nar-party-row">PARTY
+            <span class="nar-party-group">
+              <input data-party-search placeholder="Type party name and press Enter" autocomplete="off">
+              <input type="hidden" data-field="party_code">
+              <input data-field="city" class="nar-city" readonly tabindex="-1">
+            </span>
+          </label>
+          <label class="cn-wide">PLACE OF SUPPLY <input data-field="place_of_supply" maxlength="20"></label>
+        </div>
+        <div class="nar-column nar-column--reason nar-reason">
+          <div class="nar-reason-title">REASON FOR ISSUING DOCUMENT</div>
+          <input data-field="nar1" maxlength="30">
+          <input data-field="nar2" maxlength="30">
+          <input data-field="nar3" maxlength="30">
+          <input data-field="nar4" maxlength="30">
+        </div>
+      </div>
+
+      <div class="cn-grid nar-rates">
+        <table>
+          <thead><tr><th></th><th></th><th class="num">DIS %</th><th class="num">TAXABLE VAL</th><th class="num">CGST AMT</th><th class="num">SGST AMT</th><th class="num">IGST AMT</th></tr></thead>
+          <tbody>
+            <tr><th>SALE 0%</th><td><input class="num" data-extra="0" value="0.00"></td><td><input class="num" data-dis="0" value="0.00"></td><td><input class="num" data-taxable="0" value="0.00"></td><td class="num" data-cgst="0">0.00</td><td class="num" data-sgst="0">0.00</td><td class="num" data-igst="0">0.00</td></tr>
+            <tr><th>SALE 5%</th><td><input class="num" data-extra="5" value="0.00"></td><td><input class="num" data-dis="5" value="0.00"></td><td><input class="num" data-taxable="5" value="0.00"></td><td><input class="num" data-cgst="5" value="0.00"></td><td><input class="num" data-sgst="5" value="0.00"></td><td><input class="num" data-igst="5" value="0.00"></td></tr>
+            <tr><th>SALE 12%</th><td><input class="num" data-extra="12" value="0.00"></td><td><input class="num" data-dis="12" value="0.00"></td><td><input class="num" data-taxable="12" value="0.00"></td><td><input class="num" data-cgst="12" value="0.00"></td><td><input class="num" data-sgst="12" value="0.00"></td><td><input class="num" data-igst="12" value="0.00"></td></tr>
+            <tr><th>SALE 18%</th><td><input class="num" data-extra="18" value="0.00"></td><td><input class="num" data-dis="18" value="0.00"></td><td><input class="num" data-taxable="18" value="0.00"></td><td><input class="num" data-cgst="18" value="0.00"></td><td><input class="num" data-sgst="18" value="0.00"></td><td><input class="num" data-igst="18" value="0.00"></td></tr>
+            <tr><th>SALE 28%</th><td><input class="num" data-extra="28" value="0.00"></td><td><input class="num" data-dis="28" value="0.00"></td><td><input class="num" data-taxable="28" value="0.00"></td><td><input class="num" data-cgst="28" value="0.00"></td><td><input class="num" data-sgst="28" value="0.00"></td><td><input class="num" data-igst="28" value="0.00"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cn-summary">
+        <label>AMOUNT <input class="num" data-amount readonly tabindex="-1" value="0.00"></label>
+        <label>GST AMOUNT <input class="num" data-gst-amount readonly tabindex="-1" value="0.00"></label>
+        <label>CESS AMOUNT <input class="num" data-field="cess_amt" value="0.00"></label>
+        <label>NET AMOUNT <input class="num" data-net-amount readonly tabindex="-1" value="0.00"></label>
+        <label>NET ROUNDED <input class="num" data-net-rounded readonly tabindex="-1" value="0"></label>
+      </div>
+
+      <div class="cn-footer">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="cn-confirm" data-delete-dialog>
+  <p>Are You Sure?</p>
+  <div class="cn-footer">
+    <button type="button" class="btn btn--danger" data-delete-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-delete-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

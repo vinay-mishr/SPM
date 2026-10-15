@@ -1,0 +1,85 @@
+/* Part Master — sectioned Add / Modify / View form. Field, section-bar and modal
+   styles come from static/css/components.css; only this screen's layout lives here. */
+
+.part-form-modal {
+  width: min(760px, calc(100vw - 32px));
+}
+
+.pform {
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 8px 12px;
+  margin-bottom: 4px;
+}
+
+.pform--three {
+  grid-template-columns: 100px minmax(0, 1fr) 100px minmax(0, 1fr) 100px minmax(0, 1fr);
+}
+
+.pform--two {
+  grid-template-columns: 108px minmax(0, 1fr) 108px minmax(0, 1fr);
+}
+
+.pform--two .mform__label {
+  white-space: nowrap;
+}
+
+.pform__partno {
+  max-width: 140px;
+  text-transform: uppercase;
+}
+
+.pform--suppliers {
+  grid-template-columns: 90px minmax(0, 1fr) 70px 110px;
+}
+
+.pform .mform__input.form-control {
+  min-height: 34px;
+  padding: 5px 10px;
+}
+
+.pform__short {
+  max-width: 160px;
+}
+
+.pform__code {
+  width: 70px;
+  text-transform: uppercase;
+}
+
+.pform__supplier {
+  display: flex;
+  gap: 6px;
+  max-width: none;
+}
+
+.pform__party-search {
+  flex: 1;
+}
+
+@media (max-width: 767px) {
+  .pform,
+  .pform--three,
+  .pform--two,
+  .pform--suppliers {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .pform__short {
+    max-width: none;
+  }
+
+  .pform__supplier {
+    flex-direction: column;
+  }
+}
+
+.pform, .pform--three, .pform--two, .pform--suppliers { gap: 4px 8px; }
+.part-form-modal .mform__label { font-size: 14px; }
+.part-form-modal .mform__input.form-control { font-size: 15px; }
+.part-form-modal .mform__section { font-size: 15px; padding: 6px 10px; }
+
+.pform, .pform--three, .pform--two, .pform--suppliers { gap: 2px 6px; }
+.part-form-modal .mform__label { font-size: 15px; }
+.part-form-modal .mform__input.form-control { font-size: 16px; font-weight: 700; padding: 3px 8px; min-height: 30px; }
+.part-form-modal .mform__section { font-size: 16px; padding: 4px 8px; }

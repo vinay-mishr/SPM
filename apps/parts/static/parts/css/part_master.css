@@ -1,0 +1,17 @@
+/* Part Master — list screen. Toolbar, table and search come from the shared
+   "Master screens" styles in static/css/components.css. */
+
+.part-table {
+  min-width: 900px;
+}
+
+.part-table td:nth-child(2) {
+  min-width: 220px;
+  white-space: normal;
+}
+
+.part-table__sa {
+  width: 48px;
+  text-align: center;
+}
+.part-table th, .part-table td { padding: 0; }

@@ -1,0 +1,103 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GST Returnable Challan {{ challan.chl_no }}</title>
+  <style>
+    /* xhtml2pdf's renderer only supports a CSS2-era subset -- no flexbox, no
+       CSS grid. This is deliberately a plain table-based layout, not the same
+       stylesheet as the on-screen/browser-print page (challan_print.html),
+       which relies on flexbox for the logo row. Same data, simpler presentation
+       -- see the view's own docstring. */
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #000; }
+    table.pdf-border { width: 100%; border-collapse: collapse; }
+    table.pdf-border > tr > td { border: 2px solid #000; padding: 8px; }
+    .pdf-copy { text-align: right; font-size: 10px; font-weight: bold; margin: 0; }
+    .pdf-title { text-align: center; font-size: 16px; font-weight: bold; margin: 0 0 4px; }
+    table.pdf-company { width: 100%; margin-bottom: 8px; }
+    table.pdf-company .logo { width: 70px; }
+    table.pdf-company img { height: 60px; }
+    table.pdf-company .name { font-size: 18px; font-weight: bold; text-align: right; }
+    table.pdf-company .address { font-size: 10px; text-align: right; }
+    table.pdf-meta { width: 100%; border-top: 1px solid #000; padding-top: 4px; margin-bottom: 8px; }
+    table.pdf-meta td { vertical-align: top; font-size: 10px; }
+    table.pdf-meta .right { text-align: right; }
+    .pdf-items { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .pdf-items th, .pdf-items td { border: 1px solid #000; padding: 3px 4px; font-size: 9px; }
+    .pdf-items th { background: #eee; text-align: left; }
+    .pdf-items .num { text-align: right; }
+    table.pdf-totals { width: 100%; }
+    table.pdf-totals td { font-size: 10px; padding: 1px 0; }
+    .pdf-totals .right { text-align: right; width: 120px; }
+    .pdf-words { font-size: 10px; font-weight: bold; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <table class="pdf-border"><tr><td>
+    {% if copy_type %}<p class="pdf-copy">{{ copy_type|upper }}</p>{% endif %}
+    <p class="pdf-title">GST RETURNABLE CHALLAN</p>
+
+    <table class="pdf-company">
+      <tr>
+        <td class="logo"><img src="{% static brand.logo_full %}" alt="{{ brand.name }}"></td>
+        <td>
+          <p class="name">{{ brand.name|upper }}</p>
+          <p class="address">{{ brand.address_line1 }}, {{ brand.address_line2 }}</p>
+          <p class="address">
+            {% if brand.print_mobile %}Mobile No.: {{ brand.print_mobile }}{% endif %}
+            {% if brand.email %} &middot; Email: {{ brand.email }}{% endif %}
+            {% if brand.website %} &middot; Website: {{ brand.website }}{% endif %}
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <table class="pdf-meta">
+      <tr>
+        <td>
+          <strong>M/s {{ challan.party_name }}</strong><br>
+          {{ challan.city }}<br>
+          Phone: {{ challan.phone }}
+        </td>
+        <td class="right">
+          Challan No.: <strong>{{ challan.chl_no }}</strong><br>
+          Challan Date: <strong>{{ challan.chl_date }}</strong><br>
+          Order No.: {{ challan.ord_no }} Order Date: {{ challan.ord_date }}<br>
+          Mode of Dispatch: {{ challan.mode }}<br>
+          Vehicle No.: {{ challan.vehicle_no }}<br>
+          Place of Supply: {{ challan.place_of_supply }}
+        </td>
+      </tr>
+    </table>
+
+    <table class="pdf-items">
+      <thead>
+        <tr>
+          <th>#</th><th>Code</th><th>Item Description</th><th>HSN</th>
+          <th class="num">Qty</th><th>Unit</th><th class="num">Rate</th><th class="num">Amount</th><th class="num">GST%</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in challan.items %}
+        <tr>
+          <td>{{ l.sno }}</td><td>{{ l.part_code }}</td><td>{{ l.part_name }}</td><td>{{ l.hsn_code }}</td>
+          <td class="num">{{ l.qty }}</td><td>{{ l.unit }}</td><td class="num">{{ l.rate }}</td><td class="num">{{ l.amount }}</td>
+          <td class="num">{{ l.gst_percent }}</td>
+        </tr>
+        {% if l.particular %}
+        <tr><td></td><td colspan="8">{{ l.particular }}</td></tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <table class="pdf-totals">
+      <tr><td></td><td class="right">Amount: {{ challan.amount }}</td></tr>
+      <tr><td></td><td class="right">GST Amount: {{ challan.gst_amt }}</td></tr>
+      <tr><td></td><td class="right">Net Amount: <strong>{{ challan.net_amount }}</strong></td></tr>
+    </table>
+
+    <p class="pdf-words">{{ in_words }}</p>
+  </td></tr></table>
+</body>
+</html>

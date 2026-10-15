@@ -1,0 +1,93 @@
+/* MRN print view -- matches the legacy VFP "MATERIAL RECEIPT NOTE" report layout
+   exactly: GST No / title line, a bordered company-details box (no logo), a
+   bordered two-column party/MRN-meta box, the items table, a single TOTAL line,
+   and a signature strip at the bottom. */
+* { box-sizing: border-box; }
+@page { size: A4 portrait; margin: 10mm; }
+html, body { margin: 0; padding: 0; background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+
+.mop-sheet { border: 2px solid #000; }
+
+.mop-topline {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 8px; border-bottom: 1px solid #000;
+}
+.mop-topline span { font-weight: bold; font-size: 11px; }
+.mop-topline h2 { margin: 0; font-size: 18px; letter-spacing: 0.04em; flex: 1; text-align: center; }
+
+.mop-company {
+  position: relative; text-align: center; padding: 6px 8px 10px 2.1in; border-bottom: 1px solid #000;
+}
+.mop-logo { position: absolute; left: 10px; top: 6px; width: 1.8in; height: auto; }
+.mop-company h1 { margin: 2px 0 8px; font-size: 30px; letter-spacing: 0.03em; }
+.mop-company p { margin: 3px 0; font-size: 15px; }
+
+.mop-party {
+  display: flex; border-bottom: 1px solid #000; font-size: 14px;
+}
+.mop-party__left, .mop-party__right { padding: 8px 10px; }
+.mop-party__left { flex: 1.2; border-right: 1px solid #000; }
+.mop-party__right { flex: 1; }
+.mop-party p { margin: 3px 0; }
+.mop-party__name { font-weight: bold; font-size: 16px; }
+.mop-field-label { font-weight: bold; }
+.mop-field-label--inline { margin-left: 10px; }
+
+.mop-table { width: 100%; border-collapse: collapse; }
+.mop-table th, .mop-table td { border: 1px solid #000; padding: 3px 5px; font-size: 10px; vertical-align: top; }
+.mop-table th { background: #eee; text-align: center; font-size: 10px; }
+.mop-table .num { text-align: right; }
+.mop-table .mop-sno { width: 30px; text-align: center; }
+.mop-table .mop-desc { text-align: left; font-size: 12px; }
+.mop-table tbody tr { height: 24px; }
+
+.mop-totals {
+  text-align: right; padding: 6px 10px; border-left: 1px solid #000; border-right: 1px solid #000;
+  border-bottom: 1px solid #000; font-weight: bold; font-size: 12px;
+}
+.mop-totals p { margin: 0; }
+
+.mop-sign { width: 100%; border-collapse: collapse; }
+.mop-sign th, .mop-sign td { border: 1px solid #000; padding: 4px 6px; font-size: 10px; font-weight: bold; text-align: left; }
+.mop-sign td { height: 30px; font-weight: normal; }
+
+.mop-public-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+  background: #f0f8f2;
+  border: 1px solid #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+}
+.mop-public-bar button {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.mop-public-bar button:hover { background: #eee; }
+.mop-public-bar__pdf-link {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.mop-public-bar__pdf-link:hover { background: #eee; }
+
+@media print {
+  body { padding: 0; }
+  .mop-public-bar { display: none; }
+}

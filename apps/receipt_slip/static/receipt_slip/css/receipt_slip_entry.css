@@ -1,0 +1,118 @@
+/* Single Receipt — list + Add/Modify/View form. Shared master / modal / form
+   styles come from static/css/components.css; only this screen's specifics live here. */
+
+.rcp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.rcp-filters__date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rcp-filters__date input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+}
+
+/* --- Add / Modify / View form -- scoped under .rcp-form-modal so none of it
+   leaks onto other screens. --------------------------------------------- */
+
+.rcp-form-modal {
+  --green: #bfe0c9; --green-dk: #16a34a; --red: #dc2626;
+  --border: #9ca3af; --ro: #e5e7eb; --lbl: #111827;
+  --h: 24px; --fs: 13px;
+  width: 860px;
+  max-width: calc(100vw - 32px);
+  background: #f2faf5;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: var(--fs);
+  color: var(--lbl);
+}
+
+.rcp-form-modal .rcp-head {
+  background: #8fc4a2;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 6px 10px; font-weight: 700; font-size: 14px;
+}
+.rcp-form-modal .rcp-mode { color: #b91c1c; font-style: italic; text-transform: capitalize; }
+.rcp-form-modal .rcp-head button { border: 0; background: none; font-size: 18px; cursor: pointer; line-height: 1; }
+.rcp-form-modal .rcp-body { padding: 10px 12px; overflow-x: auto; }
+
+.rcp-form-modal .rcp-body input {
+  height: var(--h); padding: 2px 6px; font-size: var(--fs);
+  border: 2px solid #000; border-radius: 2px; width: 100%; min-width: 0; background: #fff;
+  color: #000;
+}
+.rcp-form-modal .rcp-body input:focus {
+  outline: none; border-color: var(--green-dk);
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.35);
+}
+.rcp-form-modal .rcp-body input[readonly] { background: var(--ro); }
+.rcp-form-modal .rcp-body input[data-date-mask] { font-weight: 700; }
+.rcp-form-modal .num { text-align: right; }
+.rcp-form-modal .rcp-body label { font-weight: 700; color: #000; font-size: 15px; white-space: nowrap; align-self: center; }
+
+/* HEADER */
+.rcp-form-modal .rcp-hdr {
+  display: grid; grid-template-columns: 90px 100px 50px 1fr; gap: 6px; align-items: center;
+}
+
+/* ITEM ENTRY */
+.rcp-form-modal .rcp-item {
+  margin-top: 10px; display: grid; gap: 4px 8px; align-items: end;
+  grid-template-columns: 2fr 55px 102px 1fr 60px;
+  border: 0; padding: 0;
+}
+.rcp-form-modal .rcp-item .hl { font-weight: 700; color: #000; font-size: 15px; }
+.rcp-form-modal .rcp-item input { height: 32px; font-size: 15px; font-weight: 700; }
+.rcp-form-modal #rcp-mis_date { max-width: 172px; }
+.rcp-form-modal .rcp-item .ok {
+  height: var(--h); padding: 0 10px; font-weight: 700; border: 1px solid var(--border);
+  background: #fff; border-radius: 2px; cursor: pointer;
+}
+.rcp-form-modal .rcp-item .ok:hover { background: var(--green); }
+.rcp-form-modal [data-row-error] { grid-column: 1 / -1; color: var(--red); font-size: 11px; margin: 0; }
+.rcp-form-modal [data-row-error]:empty { display: none; }
+
+/* GRID */
+.rcp-form-modal .tbl-wrap { margin-top: 8px; border: 1px solid var(--border); height: 340px; overflow: auto; }
+.rcp-form-modal table { border-collapse: collapse; width: 100%; table-layout: fixed; font-size: var(--fs); }
+.rcp-form-modal th:nth-child(1) { width: 28px; }
+.rcp-form-modal th:nth-child(2) { width: 110px; }
+.rcp-form-modal th:nth-child(3) { width: 179px; }
+.rcp-form-modal th:nth-child(4) { width: 85px; }
+.rcp-form-modal th:nth-child(5) { width: 110px; }
+.rcp-form-modal th:nth-child(6) { width: 260px; }
+.rcp-form-modal th:nth-child(4) { width: 100px; }
+.rcp-form-modal th { background: var(--green); position: sticky; top: 0; padding: 4px 6px; border-right: 1px solid #fff; text-align: left; white-space: nowrap; font-size: 15px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
+.rcp-form-modal td { font-size: 16px; font-weight: 700; padding: 2px 6px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rcp-form-modal td.num, .rcp-form-modal th.num { text-align: right; }
+.rcp-form-modal tbody tr { cursor: default; }
+.rcp-form-modal tbody tr:focus, .rcp-form-modal tbody tr.sel, .rcp-form-modal tbody tr.is-editing { background: #fef9c3; outline: none; }
+.rcp-form-modal .empty td { text-align: center; color: #6b7280; padding: 10px; }
+
+/* FOOTER */
+.rcp-form-modal .rcp-ftr { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+.rcp-form-modal .rcp-ftr label { flex: 0 0 auto; }
+.rcp-form-modal .rcp-ftr input { flex: 1; }
+.rcp-form-modal .rcp-ftr__actions { display: flex; gap: 8px; flex: 0 0 auto; }
+.rcp-form-modal .btn-ok, .rcp-form-modal .btn-exit {
+  height: 32px; padding: 0 18px; border: 0; border-radius: 3px; color: #fff; font-weight: 700; cursor: pointer;
+}
+.rcp-form-modal .btn-ok { background: var(--green-dk); }
+.rcp-form-modal .btn-exit { background: var(--red); }
+
+.rcp-form-modal .form-alert { margin: 6px 0; }
+.rcp-form-modal .mform__error { color: var(--red); font-size: 11px; margin: 2px 0; }
+.rcp-form-modal .mform__error:empty { display: none; }

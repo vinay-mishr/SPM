@@ -1,0 +1,142 @@
+/* The outer list screen (toolbar + master grid) reuses apps.gst_invoice's
+   .gi-* classes -- the entry FORM below has its own larger, self-contained
+   .mr-vfp-* scheme, laid out the same way as the real VFP "MONEY RECEIPT
+   ENTRY" window but in this project's own mint/green theme (matching
+   gst_invoice/spare_invoice) rather than a literal cyan/blue VFP skin. */
+
+.mr-vfp-modal {
+  width: min(1100px, 98vw);
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px solid #9ca3af;
+  border-radius: 6px;
+  background: #f2faf5;
+}
+.mr-vfp-modal[open] { display: flex; }
+.mr-vfp-modal::backdrop { background: rgba(0, 0, 0, 0.35); }
+
+.mr-vfp-panel {
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f2faf5;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #000;
+  overflow-y: auto;
+}
+
+.mr-vfp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #8fc4a2;
+}
+.mr-vfp-title { flex: 1; font-weight: 700; font-size: 17px; }
+.mr-vfp-btn {
+  height: 32px; padding: 0 20px; border: 1px solid #000; border-radius: 4px;
+  background: #e5e7eb; font-weight: 700; font-size: 13px; cursor: pointer;
+}
+.mr-vfp-btn:hover { background: #d1d5db; }
+.mr-vfp-btn--exit { background: #ef4444; color: #fff; }
+.mr-vfp-btn--exit:hover { background: #dc2626; }
+
+.mr-vfp-panel .gi-alert { margin: 8px 16px 0; }
+
+/* Three columns, four rows -- named so PREVIOUS ADV./TOTAL AMOUNT line up
+   level with CHEQUE DATE/CHEQUE NO (column 3, rows 3-4) instead of floating
+   off to the right below everything else. A hidden field (CHEQUE DATE in
+   CASH mode) just leaves its cell blank -- the grid rows don't collapse. */
+.mr-vfp-header {
+  display: grid;
+  grid-template-columns: 260px 1fr 240px;
+  grid-template-areas:
+    "mode    party   ."
+    "rdate   bank    ."
+    "amt     chqdate prevadv"
+    ".       chqno   total";
+  gap: 10px 20px;
+  padding: 16px;
+}
+.mr-f-mode { grid-area: mode; }
+.mr-f-party { grid-area: party; }
+.mr-f-rdate { grid-area: rdate; }
+.mr-f-bank { grid-area: bank; }
+.mr-f-amt { grid-area: amt; }
+.mr-f-chqdate { grid-area: chqdate; }
+.mr-f-prevadv { grid-area: prevadv; }
+.mr-f-chqno { grid-area: chqno; }
+.mr-f-total { grid-area: total; }
+
+.mr-vfp-panel label {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+  font-weight: 700; font-size: 13px; text-transform: uppercase; white-space: nowrap;
+}
+.mr-vfp-panel input, .mr-vfp-panel select {
+  height: 30px; border: 2px solid #000; border-radius: 4px; background: #fff;
+  font-size: 14px; padding: 2px 10px; font-weight: 700; color: #000; min-width: 0;
+}
+.mr-f-mode select, .mr-f-rdate input, .mr-f-amt input, .mr-f-chqno input { width: 100%; margin-left: auto; }
+.mr-f-party, .mr-f-bank { width: 100%; }
+.mr-f-party input[data-party-search], .mr-f-bank input[data-bank-search] { flex: 1; min-width: 0; }
+.mr-vfp-code { width: 90px; flex: none; background: #e5e7eb !important; }
+
+.mr-f-prevadv, .mr-f-total { justify-content: space-between; }
+.mr-f-prevadv input, .mr-f-total input { width: 140px; flex: none; }
+.mr-vfp-panel input[readonly] { background: #e5e7eb; }
+.mr-vfp-panel input:disabled { background: #eef1f4; color: #9ca3af; }
+
+.mr-vfp-panel .num { text-align: right; }
+
+.mr-vfp-grid-wrap { margin: 0 16px; border: 1px solid #000; border-radius: 4px; background: #fff; overflow: auto; min-height: 220px; max-height: 420px; }
+table.mr-vfp-grid { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+table.mr-vfp-grid thead th {
+  position: sticky; top: 0;
+  background: #bfe0c9; color: #000; font-weight: 700; text-transform: uppercase;
+  padding: 6px 8px; text-align: left; white-space: nowrap; border-bottom: 1px solid #000;
+}
+table.mr-vfp-grid td {
+  padding: 5px 8px; border-bottom: 1px solid #e5e7eb; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+table.mr-vfp-grid tbody tr { cursor: pointer; }
+table.mr-vfp-grid tbody tr:hover { background: #f0f8f2; }
+table.mr-vfp-grid tbody tr.is-selected { background: #fef9c3; }
+table.mr-vfp-grid tbody tr.is-locked { color: #047857; font-weight: 700; }
+table.mr-vfp-grid tbody tr.empty { cursor: default; color: #6b7280; }
+table.mr-vfp-grid tbody tr.empty:hover { background: #fff; }
+/* Explicit column widths -- # DIV INV.NO. INV.DATE | INV.AMOUNT BALANCE AMT
+   CASH DIS. AMOUNT ADJ BALANCE -- so every numeric column's header and its
+   own data cells line up exactly beneath each other, not just share a text-
+   align rule that happens to look right until content width varies. */
+table.mr-vfp-grid th:nth-child(1), table.mr-vfp-grid td:nth-child(1) { width: 36px; }
+table.mr-vfp-grid th:nth-child(2), table.mr-vfp-grid td:nth-child(2) { width: 56px; }
+table.mr-vfp-grid th:nth-child(3), table.mr-vfp-grid td:nth-child(3) { width: 80px; }
+table.mr-vfp-grid th:nth-child(4), table.mr-vfp-grid td:nth-child(4) { width: 100px; }
+table.mr-vfp-grid th:nth-child(5), table.mr-vfp-grid td:nth-child(5),
+table.mr-vfp-grid th:nth-child(6), table.mr-vfp-grid td:nth-child(6),
+table.mr-vfp-grid th:nth-child(7), table.mr-vfp-grid td:nth-child(7),
+table.mr-vfp-grid th:nth-child(8), table.mr-vfp-grid td:nth-child(8),
+table.mr-vfp-grid th:nth-child(9), table.mr-vfp-grid td:nth-child(9) {
+  width: auto; text-align: right; font-variant-numeric: tabular-nums;
+}
+
+.mr-vfp-footer {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 30px; padding: 16px; flex-wrap: wrap;
+}
+.mr-vfp-footer-left { display: flex; flex-direction: column; gap: 8px; }
+.mr-vfp-footer-left label { justify-content: space-between; width: 300px; }
+.mr-vfp-footer-right { display: flex; align-items: flex-end; gap: 16px; }
+.mr-vfp-footer-actions { flex-basis: 100%; display: flex; justify-content: flex-end; gap: 16px; margin-top: 10px; }
+.mr-vfp-footer-right label { flex-direction: column; align-items: flex-start; gap: 4px; }
+.mr-vfp-footer-right input { width: 120px; }
+.mr-vfp-ok {
+  height: 32px; width: 70px; border: 1px solid #000; border-radius: 4px;
+  background: #22c55e; color: #fff; font-weight: 700; cursor: pointer;
+}
+.mr-vfp-ok:hover:not(:disabled) { background: #16a34a; }
+.mr-vfp-ok:disabled { background: #e5e7eb; color: #9ca3af; cursor: default; }
+

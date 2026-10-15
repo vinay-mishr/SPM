@@ -1,0 +1,101 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}GST Debit Note · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'debit_note/css/debit_note.css' %}">
+  <script src="{% static 'debit_note/js/debit_note.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}GST Debit Note (Narration){% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Debit Note{% endblock %}
+
+{% block content %}
+<section class="dn-page" data-dn
+         data-list-url="{% url 'debit_note:api_list' %}"
+         data-next-no-url="{% url 'debit_note:api_next_no' %}"
+         data-detail-url-template="{% url 'debit_note:api_detail' dn_no='__NO__' %}"
+         data-save-url="{% url 'debit_note:api_save' %}"
+         data-delete-url="{% url 'debit_note:api_delete' %}"
+         data-parties-url="{% url 'debit_note:api_parties' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="dn-toolbar master-toolbar">
+    <div class="dn-buttons">
+      <button type="button" class="btn btn--primary" data-action="add"{% if not can_edit %} disabled{% endif %}>ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="dn-search">SEARCH PARTY <input class="form-control" type="text" data-search placeholder="Type party name..."></label>
+    <div class="dn-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="dn-alert" role="alert" data-alert hidden></div>
+
+  <div class="dn-grid">
+    <table>
+      <thead><tr><th>DN. NO</th><th>DN. DATE</th><th>BILL NO</th><th>BILL DATE</th><th>PARTY CODE</th><th>PARTY</th><th>CITY</th><th class="num">BILL AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="8">No debit notes in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="dn-form-modal" data-form>
+  <form novalidate data-dn-form>
+    <header class="dn-titlebar">GST PURCHASE DEBIT NOTE <span class="dn-mode" data-mode-label>Add</span></header>
+    <div class="dn-body">
+      <div class="dn-alert" role="alert" data-form-alert hidden></div>
+      <div class="dn-fields">
+        <label>D.N. NO <input data-field="dn_no" maxlength="10"></label>
+        <label>D.N. DATE <input data-field="dn_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label>INVOICE NO <input data-field="invoice_no" maxlength="20"></label>
+        <label>INVOICE DATE <input data-field="invoice_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="dn-wide">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+        <label>PLACE OF SUPPLY <input data-field="place_of_supply" maxlength="40"></label>
+        <label class="dn-check"><input type="checkbox" data-field="interstate"> INTERSTATE (IGST)</label>
+      </div>
+
+      <div class="dn-narration">
+        <div class="dn-narration-title">REASON FOR ISSUING DOCUMENT</div>
+        <textarea data-field="narration" rows="4" maxlength="1000" placeholder="Up to four lines"></textarea>
+      </div>
+
+      <div class="dn-rates">
+        <div class="dn-rate-head"><span>RATE</span><span>TAXABLE VAL</span><span>CGST AMT</span><span>SGST AMT</span><span>IGST AMT</span></div>
+        <div class="dn-rate" data-rate="0"><span>PUR 0%</span><input class="num" data-taxable="0" value="0.00"><span data-cgst="0">0.00</span><span data-sgst="0">0.00</span><span data-igst="0">0.00</span></div>
+        <div class="dn-rate" data-rate="5"><span>PUR 5%</span><input class="num" data-taxable="5" value="0.00"><span data-cgst="5">0.00</span><span data-sgst="5">0.00</span><span data-igst="5">0.00</span></div>
+        <div class="dn-rate" data-rate="12"><span>PUR 12%</span><input class="num" data-taxable="12" value="0.00"><span data-cgst="12">0.00</span><span data-sgst="12">0.00</span><span data-igst="12">0.00</span></div>
+        <div class="dn-rate" data-rate="18"><span>PUR 18%</span><input class="num" data-taxable="18" value="0.00"><span data-cgst="18">0.00</span><span data-sgst="18">0.00</span><span data-igst="18">0.00</span></div>
+        <div class="dn-rate" data-rate="28"><span>PUR 28%</span><input class="num" data-taxable="28" value="0.00"><span data-cgst="28">0.00</span><span data-sgst="28">0.00</span><span data-igst="28">0.00</span></div>
+        <div class="dn-totals">
+          <label>CESS AMOUNT <input class="num" data-field="cess" value="0.00"></label>
+          <label>TOTAL AMOUNT <input class="num" data-total readonly tabindex="-1" value="0.00"></label>
+          <label>NET ROUNDED <input class="num" data-net readonly tabindex="-1" value="0.00"></label>
+        </div>
+      </div>
+
+      <div class="dn-footer">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="dn-confirm" data-delete-dialog>
+  <p>Are You Sure?</p>
+  <div class="dn-footer">
+    <button type="button" class="btn btn--danger" data-delete-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-delete-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

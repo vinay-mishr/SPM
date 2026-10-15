@@ -1,0 +1,74 @@
+{% comment %}
+Shared ADD / MODIFY / VIEW form, matching the supplied reference screenshot
+(Challan No / Date header, compact item-entry row, grid, footer Remarks/Confirm/Exit).
+{% endcomment %}
+<dialog class="modal mis-form-modal" id="mis-form-dialog" aria-labelledby="mis-form-title">
+  <form novalidate data-mis-form>
+    <header class="mis-head">
+      <span id="mis-form-title">SINGLE ISSUE SLIP</span>
+      <span class="mis-mode" data-mode-label>Add</span>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="mis-body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <!-- HEADER -->
+      <div class="mis-hdr">
+        <label>CHALLAN NO</label>
+        <input id="mis-mis_no" readonly tabindex="-1" data-field="mis_no">
+        <label>DATE</label>
+        <input id="mis-mis_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-field="mis_date" data-date-mask>
+        <label>USER</label>
+        <input id="mis-uname" readonly tabindex="-1">
+      </div>
+      <p class="mform__error" data-error-for="mis_date"></p>
+
+      <!-- ITEM ENTRY -->
+      <fieldset class="mis-item" data-line-fieldset>
+        <span class="hl">ITEM DESCRIPTION</span>
+        <span class="hl">QTY ISSUED</span>
+        <span class="hl">REMARKS</span>
+        <span></span>
+
+        <input id="mis-row-item-desc" placeholder="Type part code or name to search…" data-row-part-search>
+        <input id="mis-row-qty" class="num" data-row-qty>
+        <input id="mis-row-remarks" data-row-remarks>
+        <button class="ok" type="button" data-row-add>OK</button>
+        <p class="mform__error" data-row-error></p>
+      </fieldset>
+
+      <!-- GRID -->
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Code</th><th style="width:40%">Item Description</th>
+              <th class="num">Qty Issued</th><th>Remark</th>
+            </tr>
+          </thead>
+          <tbody data-grid-rows><tr class="empty" data-grid-empty><td colspan="5">No items added yet. Press Space on a row to remove it, double-click to edit.</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="mis-ftr">
+        <label>REMARKS</label><input id="mis-remarks" data-field="remarks">
+        <div class="mis-ftr__actions">
+          <button class="btn-ok" type="button" data-form-confirm>Confirm</button>
+          <button class="btn-exit" type="button" data-form-exit>Exit</button>
+        </div>
+      </div>
+
+      <div class="modal-discard" data-confirm-box hidden>
+        <div class="modal-discard__box">
+          <p class="modal-discard__title" data-confirm-text>Are you sure?</p>
+          <div class="modal-discard__actions">
+            <button class="btn btn--primary" type="button" data-form-confirm-yes>Yes</button>
+            <button class="btn btn--secondary" type="button" data-confirm-no>No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>

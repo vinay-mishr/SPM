@@ -1,0 +1,662 @@
+/* Quotation module (listing + entry). Colours and controls come from base.css / components.css. */
+
+/* --- Listing ---------------------------------------------------------------- */
+
+.quot-toolbar {
+  width: 100%;
+  align-items: flex-end;
+}
+
+.quot-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.quot-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.quot-filter .form-control {
+  width: 140px;
+  min-height: 40px;
+  padding: 7px 10px;
+  font-size: 0.9375rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.quot-filter--search .form-control {
+  width: 240px;
+}
+
+.quot-table-wrap {
+  width: 100%;
+}
+
+.quot-table {
+  min-width: 760px;
+}
+
+.quot-table__desc {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quot-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+
+.quot-badge--ok {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: var(--success);
+}
+
+.quot-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quot-pager__links {
+  --control-height: 36px;
+  display: flex;
+  gap: 8px;
+}
+
+/* --- Entry form -------------------------------------------------------------- */
+
+.quot-mode {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--danger);
+  background: var(--surface);
+  border: 1px solid var(--border-mint);
+}
+
+.quot-mode--view {
+  color: var(--info);
+}
+
+/* Dense one-screen layout: the whole Add form fits a ~900px tall desktop window. */
+.quot-entry {
+  --control-height: 32px;
+  --qi-h: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: fit-content;
+  max-width: 1620px;
+  font-size: 0.95rem;
+}
+
+.quot-card {
+  min-width: 0;
+  margin: 0;
+  padding: 5px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.quot-card__title {
+  float: left; /* keeps the legend inside the card's padding box */
+  width: 100%;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.quot-card__title + * {
+  clear: both;
+}
+
+.quot-head {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 880px);
+  gap: 5px 26px;
+}
+
+.quot-head__col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.quot-field {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  align-items: start;
+  gap: 2px 8px;
+}
+
+.quot-field > label {
+  padding-top: 5px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.quot-field > .quot-error,
+.quot-field > .quot-hint {
+  grid-column: 2;
+}
+
+.quot-grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3px 10px;
+}
+
+.quot-grid-2 .quot-field {
+  grid-template-columns: 130px minmax(0, 1fr);
+}
+
+.quot-grid-2 .quot-field + .quot-field {
+  grid-template-columns: 78px minmax(0, 1fr);
+}
+
+.quot-input.form-control {
+  min-height: var(--qi-h);
+  height: var(--qi-h);
+  padding: 1px 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-width: 1px;
+  border-color: var(--border-dark);
+  border-radius: var(--radius-sm);
+}
+
+.quot-input.form-control:focus {
+  border-color: var(--primary-dark);
+  box-shadow: 0 0 0 2px rgba(111, 169, 130, 0.45);
+}
+
+.quot-input--short {
+  max-width: 88px;
+}
+
+.quot-input--date {
+  max-width: 125px;
+}
+
+textarea.quot-input.form-control {
+  height: auto;
+  padding: 2px 4px;
+}
+
+.quot-input.num,
+.quot-grid .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+textarea.quot-input {
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.3;
+}
+
+.quot-input[readonly],
+.quot-input:disabled {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  opacity: 1;
+}
+
+.quot-inline {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.quot-inline .quot-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.quot-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quot-btn-sm {
+  --control-height: var(--qi-h);
+  padding: 0 10px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+.quot-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--info);
+  white-space: nowrap;
+}
+
+.quot-link:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 2px;
+}
+
+.quot-hint {
+  margin: 1px 0 0;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.quot-inline .quot-hint {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.quot-hint:empty {
+  display: none;
+}
+
+/* "Party code: ..." next to Party, and "Code ... / Unit ..." under Item are redundant with the fields themselves. */
+[data-party-code-label],
+[data-item-label] {
+  display: none !important;
+}
+
+.quot-error {
+  margin: 1px 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.quot-error:empty {
+  display: none;
+}
+
+.is-invalid .quot-input.form-control,
+.quot-input.is-invalid {
+  border-color: var(--danger);
+}
+
+.quot-confirmed {
+  margin: 0;
+  padding: 3px 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--success);
+  background: var(--success-bg);
+  border-radius: var(--radius-sm);
+}
+
+.quot-entry > .alert {
+  padding: 5px 10px;
+  font-size: 0.8125rem;
+}
+
+/* Item entry row */
+.quot-item-entry {
+  display: grid;
+  grid-template-columns: 305px 100px 90px 115px 80px 108px 115px;
+  justify-content: start;
+  gap: 3px 6px;
+  align-items: end;
+  padding: 4px 6px;
+  margin-bottom: 5px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.quot-ie {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.quot-ie > label,
+.quot-ie__label {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.quot-ie--item .quot-hint {
+  font-size: 0.68rem;
+}
+
+.quot-ie--particular {
+  grid-column: 1 / span 6;
+}
+
+.quot-ie--actions {
+  --control-height: 32px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.quot-ie--actions .btn {
+  padding: 0 16px;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+}
+
+.quot-ie__amount-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.quot-ie__amount {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--qi-h);
+  padding: 2px 6px;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface);
+  border: 1px dashed var(--border-dark);
+  border-radius: var(--radius-sm);
+}
+
+.quot-ie__amount-row .btn {
+  flex: 0 0 auto;
+}
+
+.quot-ie__error {
+  grid-column: 1 / -1;
+}
+
+/* Items grid: a short empty state; with many items only the grid scrolls. */
+.quot-grid-wrap {
+  /* Shrinks on short screens so the page itself doesn't scroll. */
+  max-height: max(110px, min(260px, calc(100vh - 625px)));
+  min-height: 72px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.quot-grid {
+  min-width: 860px;
+  border: 0;
+  border-radius: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: visible;
+  font-size: 0.9rem;
+}
+
+.quot-grid th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 3px 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #111827;
+  background: #bfe0c9;
+  font-weight: 700;
+}
+
+.quot-grid td {
+  padding: 2px 6px;
+  vertical-align: top;
+  font-weight: 700;
+}
+
+.quot-grid__particular {
+  display: block;
+  margin-top: 1px;
+  max-width: 420px;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  white-space: pre-line;
+  max-height: 2.6em;
+  overflow: hidden;
+}
+
+.quot-grid__actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.quot-grid__actions .btn {
+  --control-height: 20px;
+  padding: 0 6px;
+  font-size: 0.72rem;
+  border-radius: var(--radius-sm);
+}
+
+.quot-grid__empty {
+  margin: 0;
+  padding: 8px 10px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.quot-grid__empty[hidden] {
+  display: none;
+}
+
+.quot-grid tbody tr.is-selected td {
+  background: #e4f0ff;
+}
+
+.quot-grid tbody tr.is-held td {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  background: var(--bg-secondary);
+}
+
+.quot-grid tbody tr.is-editing td {
+  background: #FFF3B0;
+}
+
+.quot-grid tbody tr[data-index] {
+  cursor: pointer;
+}
+
+.quot-grid tbody tr[data-index]:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: -2px;
+}
+
+/* Bottom: remarks | terms | bank | totals in one row. */
+.quot-bottom {
+  display: grid;
+  grid-template-columns: 235px 680px 295px 270px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.quot-remarks textarea.quot-input.form-control {
+  min-height: calc(5 * var(--qi-h) + 8px);
+}
+
+.quot-terms,
+.quot-bank {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quot-terms {
+  padding: 3px 5px;
+}
+
+.quot-terms .quot-input.form-control {
+  padding: 1px 3px;
+}
+
+.quot-totals {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.quot-totals dl {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.quot-totals dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 6px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.quot-totals dt {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  align-self: center;
+}
+
+.quot-totals dd {
+  margin: 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.quot-totals__net {
+  color: #7a1d1d;
+  background: #fde7e7 !important;
+  font-size: 1.05rem;
+}
+
+.quot-actions {
+  --control-height: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  padding: 4px 0;
+  background: var(--bg-main);
+}
+
+.quot-actions .btn {
+  padding: 0 22px;
+  font-size: 1rem;
+}
+
+.quot-actions .btn[data-exit] {
+  color: #ffffff;
+}
+
+.quot-actions .btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quot-entry.is-readonly [data-edit-only] {
+  display: none !important;
+}
+
+@media (max-width: 1180px) {
+  .quot-bottom {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .quot-head {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  .quot-item-entry {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .quot-ie--item,
+  .quot-ie--particular {
+    grid-column: 1 / -1;
+  }
+
+  .quot-ie--actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  .quot-head,
+  .quot-bottom,
+  .quot-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .quot-field,
+  .quot-grid-2 .quot-field,
+  .quot-grid-2 .quot-field + .quot-field {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .quot-field > label {
+    padding-top: 0;
+  }
+
+  .quot-field > .quot-error,
+  .quot-field > .quot-hint {
+    grid-column: 1;
+  }
+
+  .quot-item-entry {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Touch screens: keep inputs comfortable to tap. */
+  .quot-entry {
+    --qi-h: 32px;
+  }
+}
+
+/* Exit stays red like every other screen (the toolbar's mint link style would win otherwise). */
+.quot-toolbar a.btn[data-action="exit"] {
+  color: #ffffff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.quot-toolbar a.btn[data-action="exit"]:hover {
+  color: #ffffff;
+  background: var(--danger-hover);
+}

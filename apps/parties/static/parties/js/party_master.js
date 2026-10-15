@@ -1,0 +1,262 @@
+/* Party Master — list screen: table, row selection, search, toolbar actions, delete dialog.
+ * Uses window.SPPartyForm (party_master_form.js) for Add / Modify / View.
+ */
+(function () {
+  "use strict";
+
+  var root = document.querySelector("[data-party-master]");
+  if (!root) return;
+
+  var tbody = root.querySelector("[data-rows]");
+  var emptyNote = root.querySelector("[data-empty]");
+  var countNote = root.querySelector("[data-count]");
+  var searchBox = root.querySelector("[data-search]");
+  var toast = document.querySelector("[data-toast]");
+  var deleteDialog = document.getElementById("party-delete-dialog");
+  var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
+
+  var initial = JSON.parse(document.getElementById("party-initial-data").textContent);
+  var state = { parties: initial.parties, selectedId: null, query: "" };
+
+  /* --- Helpers ---------------------------------------------------------------- */
+
+  function selectedParty() {
+    return state.parties.find(function (p) { return p.id === state.selectedId; }) || null;
+  }
+
+  function phone(party) {
+    return party.phone_1 || party.mobile_1 || party.mobile_2 || "";
+  }
+
+  function stateLabel(party) {
+    return party.state_code ? party.state_name + " (" + party.state_code + ")" : "";
+  }
+
+  function showToast(message, kind) {
+    toast.textContent = message;
+    toast.className = "toast toast--" + (kind || "success") + " is-visible";
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(function () { toast.classList.remove("is-visible"); }, 3500);
+  }
+
+  function cell(text, className) {
+    var td = document.createElement("td");
+    td.textContent = text;
+    if (className) td.className = className;
+    return td;
+  }
+
+  function matches(party) {
+    if (!state.query) return true;
+    var haystack = [party.party_code, party.name, party.city, party.mobile_1, party.mobile_2,
+      party.state_name, party.gst_no, party.contact_person_1, party.contact_person_2]
+      .join(" ").toLowerCase();
+    return haystack.indexOf(state.query) > -1;
+  }
+
+  /* --- Rendering -------------------------------------------------------------- */
+
+  function render() {
+    var visible = state.parties.filter(matches);
+    tbody.textContent = "";
+
+    visible.forEach(function (party) {
+      var tr = document.createElement("tr");
+      tr.dataset.id = party.id;
+      tr.tabIndex = 0;
+      tr.setAttribute("aria-selected", String(party.id === state.selectedId));
+      if (party.id === state.selectedId) tr.classList.add("is-selected");
+      if (!party.is_active) tr.classList.add("is-inactive");
+      tr.append(
+        cell(party.name + (party.is_active ? "" : " (inactive)")),
+        cell(party.city),
+        cell(phone(party)),
+        cell(party.party_code, "master-table__code")
+      );
+      tbody.appendChild(tr);
+    });
+
+    emptyNote.hidden = state.parties.length > 0;
+    countNote.textContent = state.parties.length
+      ? visible.length + " of " + state.parties.length + " part" + (state.parties.length === 1 ? "y" : "ies")
+      : "";
+    updateToolbar();
+  }
+
+  function updateToolbar() {
+    var hasSelection = Boolean(selectedParty());
+    root.querySelectorAll('[data-action="modify"], [data-action="delete"], [data-action="view"]').forEach(function (btn) {
+      btn.disabled = !hasSelection;
+    });
+  }
+
+  function select(id) {
+    state.selectedId = id;
+    tbody.querySelectorAll("tr").forEach(function (tr) {
+      var on = tr.dataset.id === id;
+      tr.classList.toggle("is-selected", on);
+      tr.setAttribute("aria-selected", String(on));
+    });
+    updateToolbar();
+  }
+
+  function refresh(selectId) {
+    return fetch(root.dataset.listUrl, { credentials: "same-origin" })
+      .then(function (response) { return response.json(); })
+      .then(function (data) {
+        state.parties = data.parties;
+        SPPartyForm.setSuggestions(data.suggestions);
+        if (selectId !== undefined) state.selectedId = selectId;
+        if (!selectedParty()) state.selectedId = null;
+        render();
+        var row = tbody.querySelector('tr[data-id="' + state.selectedId + '"]');
+        if (row) row.scrollIntoView({ block: "nearest" });
+      });
+  }
+
+  /* --- Delete dialog ---------------------------------------------------------- */
+
+  function details(party) {
+    var address = [party.address_1, party.address_2, party.address_3].filter(Boolean).join(", ");
+    var partyType = { SD: "Sundry Debtor", SC: "Sundry Creditor" }[party.party_type] || "";
+    return [
+      ["Party Code", party.party_code], ["Name", party.name], ["Address", address],
+      ["City", party.city + (party.pin ? " - " + party.pin : "")], ["State", stateLabel(party)],
+      ["GST No.", party.gst_no], ["GST Category", party.gst_category],
+      ["Mkt Manager", party.mkt_manager_name || party.mkt_manager],
+      ["Rep Code", party.rep_name || party.rep_code],
+      ["Con. Person 1", party.contact_person_1], ["Mobile 1", party.mobile_1],
+      ["Con. Person 2", party.contact_person_2], ["Mobile 2", party.mobile_2],
+      ["Email", party.email], ["Party Type", partyType], ["Transport", party.transport],
+      ["Cr Days", party.credit_days], ["Active", party.is_active ? "Yes" : "No"],
+      ["Association", party.association],
+      ["W / I", party.supply_type === "W" ? "Within" : party.supply_type === "I" ? "Interstate" : ""],
+      ["Permit", party.permit ? "Yes" : "No"]
+    ];
+  }
+
+  function openDelete(party) {
+    var list = deleteDialog.querySelector("[data-delete-details]");
+    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
+    list.textContent = "";
+    details(party).forEach(function (pair) {
+      var dt = document.createElement("dt");
+      var dd = document.createElement("dd");
+      dt.textContent = pair[0];
+      dd.textContent = pair[1] || "—";
+      list.append(dt, dd);
+    });
+    alertBox.hidden = true;
+    deleteDialog.querySelector("[data-delete-confirm]").disabled = false;
+    deleteDialog.showModal();
+    deleteDialog.querySelector(".modal__footer [data-delete-cancel]").focus();
+  }
+
+  function confirmDelete() {
+    var party = selectedParty();
+    var button = deleteDialog.querySelector("[data-delete-confirm]");
+    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
+    if (!party) return;
+    button.disabled = true;
+
+    fetch(root.dataset.deleteUrl.replace("/0/", "/" + encodeURIComponent(party.id) + "/"), {
+      method: "POST",
+      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" },
+      credentials: "same-origin"
+    })
+      .then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (body) {
+          return { ok: response.ok, body: body };
+        });
+      })
+      .then(function (result) {
+        if (result.ok) {
+          deleteDialog.close();
+          state.selectedId = null;
+          showToast(result.body.message);
+          return refresh();
+        }
+        alertBox.textContent = result.body.message || "The party could not be deleted.";
+        alertBox.hidden = false;
+      })
+      .catch(function () {
+        alertBox.textContent = "Could not reach the server. Please try again.";
+        alertBox.hidden = false;
+        button.disabled = false;
+      });
+  }
+
+  /* --- Actions ------------------------------------------------------------------ */
+
+  var actions = {
+    add: function () { SPPartyForm.open("add", null); },
+    modify: function () { var p = selectedParty(); if (p) SPPartyForm.open("modify", p); },
+    view: function () { var p = selectedParty(); if (p) SPPartyForm.open("view", p); },
+    "delete": function () { var p = selectedParty(); if (p) openDelete(p); },
+    exit: function () { window.location.href = root.dataset.exitUrl; }
+  };
+
+  root.querySelectorAll("[data-action]").forEach(function (btn) {
+    btn.addEventListener("click", function () { actions[btn.dataset.action](); });
+  });
+
+  tbody.addEventListener("click", function (event) {
+    var row = event.target.closest("tr");
+    if (row) select(row.dataset.id);
+  });
+
+  tbody.addEventListener("dblclick", function (event) {
+    var row = event.target.closest("tr");
+    if (row) { select(row.dataset.id); actions.view(); }
+  });
+
+  tbody.addEventListener("keydown", function (event) {
+    var row = event.target.closest("tr");
+    if (!row) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      select(row.dataset.id);
+      if (event.key === "Enter") actions.view();
+    } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      var next = event.key === "ArrowDown" ? row.nextElementSibling : row.previousElementSibling;
+      if (next) { next.focus(); select(next.dataset.id); }
+    }
+  });
+
+  searchBox.addEventListener("input", function () {
+    state.query = searchBox.value.trim().toLowerCase();
+    render();
+  });
+
+  // Alt + A / M / D / V / E shortcuts, matching the underlined letters.
+  document.addEventListener("keydown", function (event) {
+    if (!event.altKey || document.querySelector("dialog[open]")) return;
+    var map = { a: "add", m: "modify", d: "delete", v: "view", e: "exit" };
+    var action = map[event.key.toLowerCase()];
+    var button = action && root.querySelector('[data-action="' + action + '"]');
+    if (button && !button.disabled) {
+      event.preventDefault();
+      button.click();
+    }
+  });
+
+  deleteDialog.querySelectorAll("[data-delete-cancel]").forEach(function (btn) {
+    btn.addEventListener("click", function () { deleteDialog.close(); });
+  });
+  deleteDialog.querySelector("[data-delete-confirm]").addEventListener("click", confirmDelete);
+
+  SPPartyForm.init({
+    createUrl: root.dataset.createUrl,
+    updateUrl: root.dataset.updateUrl,
+    csrfToken: csrfToken,
+    companyStateCode: initial.company_state_code,
+    nextCodeUrl: root.dataset.nextCodeUrl,
+    onSaved: function (party, message) {
+      showToast(message);
+      refresh(party.id);
+    }
+  });
+
+  render();
+})();

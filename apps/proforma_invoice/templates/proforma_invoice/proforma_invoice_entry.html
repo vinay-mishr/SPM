@@ -1,0 +1,144 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Proforma Invoice · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <link rel="stylesheet" href="{% static 'proforma_invoice/css/proforma_invoice.css' %}">
+  <script src="{% static 'proforma_invoice/js/proforma_invoice_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Proforma Invoice{% endblock %}
+{% block page_subtitle %}Invoice &rsaquo; Proforma Invoice{% endblock %}
+
+{% block content %}
+<section class="gi-page" data-pi
+         data-list-url="{% url 'proforma_invoice:api_list' %}"
+         data-next-no-url="{% url 'proforma_invoice:api_next_no' %}"
+         data-detail-url-template="{% url 'proforma_invoice:api_detail' bill_no='__NO__' %}"
+         data-items-url="{% url 'proforma_invoice:api_items' %}"
+         data-item-url="{% url 'proforma_invoice:api_item' %}"
+         data-parties-url="{% url 'proforma_invoice:api_parties' %}"
+         data-party-url="{% url 'proforma_invoice:api_party' %}"
+         data-save-url="{% url 'proforma_invoice:api_save' %}"
+         data-delete-url="{% url 'proforma_invoice:api_delete' %}"
+         data-print-url-template="{% url 'proforma_invoice:print' bill_no='__NO__' %}"
+         data-new-item-url="{% url 'items:master' %}"
+         data-new-party-url="{% url 'parties:master' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--primary" data-action="add"{% if not can_edit %} disabled{% endif %}>ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+      <button type="button" class="btn btn--secondary" data-action="print" disabled>PRINT</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="gi-search">SEARCH <input class="form-control" type="text" data-search placeholder="Type party name..."></label>
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="gi-grid">
+    <table>
+      <thead><tr><th>BILL</th><th>DATE</th><th>PARTY</th><th>CITY</th><th class="num">NET AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="5">No proforma invoices in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="pi-form-modal" data-form>
+  <form novalidate data-pi-form>
+    <header class="gi-titlebar">PERFORMA INVOICE <span class="gi-mode" data-mode-label>Add</span></header>
+    <div class="gi-body">
+      <div class="gi-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="gi-fields">
+        <div class="gi-field-row">
+          <label>PERFORMA NO <input data-field="bill_no" readonly tabindex="-1"></label>
+          <label>DATE <input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label>CA/CR <select data-ca-cr><option value="CR" selected>CR</option><option value="CA">CA</option></select></label>
+          <label>GST(Y/N) <select data-field="gst_enabled"><option value="Y" selected>Y</option><option value="N">N</option></select></label>
+          <label class="gi-radio">SUPPLY
+            <span><input type="radio" name="pi-supply" value="W" checked> (W) WITHIN STATE</span>
+            <span><input type="radio" name="pi-supply" value="I"> (I) INTERSTATE</span>
+          </label>
+        </div>
+
+        <div class="gi-field-row">
+          <label class="gi-wide">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+          <label class="gi-wide">GST NO <input data-field="gst_no" maxlength="16"></label>
+          <label class="gi-wide" data-cash-row hidden>CASH PARTY <input data-field="cash_party_name" maxlength="40"></label>
+          <label data-cash-row hidden>CASH PARTY CITY <input data-field="cash_party_city" maxlength="40"></label>
+          <a class="pi-shortcut" data-new-party target="_blank" rel="noopener">New Party</a>
+        </div>
+      </div>
+
+      <div class="gi-item-row pi-item-row">
+        <label class="gi-wide">ITEM <input data-item-search placeholder="Type item code or name..." autocomplete="off"><input type="hidden" data-item-code></label>
+        <label>CURRENCY <select data-item-currency><option value="RS." selected>RS.</option><option value="USD">USD</option><option value="EUR">EUR</option></select></label>
+        <label>HSN NO <input data-item-hsn></label>
+        <label>QTY <input class="num" data-item-qty></label>
+        <label>RATE <input class="num" data-item-rate></label>
+        <button type="button" class="btn btn--primary" data-item-add>OK</button>
+        <div class="gi-row-error" data-item-error></div>
+      </div>
+      <a class="pi-shortcut" data-new-item target="_blank" rel="noopener">New Item</a>
+
+      <div class="gi-grid gi-items">
+        <table>
+          <thead><tr><th>#</th><th>SNO</th><th>CODE</th><th>ITEM DESCRIPTION</th><th>HSN CODE</th><th>CURR</th>
+            <th class="num">QTY</th><th class="num">RATE</th><th class="num">AMOUNT</th><th class="num">GST%</th></tr></thead>
+          <tbody data-item-rows><tr class="empty"><td colspan="10">No items added. Press Space on a row to remove it, double-click to edit.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="gi-fields" style="margin-top: 6px;">
+        <div class="gi-field-row">
+          <label class="gi-wide">REMARKS <input data-field="remarks" maxlength="100"></label>
+        </div>
+      </div>
+
+      <div class="gi-summary">
+        <label>TOTAL AMOUNT <input class="num" data-total-amount readonly tabindex="-1" value="0.00"></label>
+        <label>GST AMT <input class="num" data-gst-amount readonly tabindex="-1" value="0.00"></label>
+        <div class="gi-summary-adj-row">
+          <select data-adj-sign="0"><option value="A">ADD</option><option value="S">LESS</option></select>
+          <input data-adj-code="0" maxlength="4" placeholder="Ledger">
+          <input class="num" data-adj-amount="0" value="0.00">
+        </div>
+        <div class="gi-summary-adj-row">
+          <select data-adj-sign="1"><option value="A">ADD</option><option value="S">LESS</option></select>
+          <input data-adj-code="1" maxlength="4" placeholder="Ledger">
+          <input class="num" data-adj-amount="1" value="0.00">
+        </div>
+        <label>NET AMOUNT <input class="num" data-net-amount readonly tabindex="-1" value="0.00"></label>
+        <label>NET ROUNDED <input class="num" data-net-rounded readonly tabindex="-1" value="0"></label>
+      </div>
+
+      <div class="gi-footer">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="gi-confirm" data-delete-dialog>
+  <p>Are You Sure?</p>
+  <div class="gi-footer">
+    <button type="button" class="btn btn--danger" data-delete-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-delete-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

@@ -1,0 +1,99 @@
+.ch-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.ch-filter { display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.ch-filter input { min-height: 34px; padding: 5px 10px; font-size: 0.875rem; width: 150px; }
+.ch-filter--search input { width: 240px; }
+
+.ch-form-modal { width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; overflow: hidden; background: #fff; }
+.ch-head { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #bfe0c9; font-weight: 700; }
+.ch-head .ch-mode { color: #b91c1c; font-style: italic; }
+.ch-head button { margin-left: auto; border: 0; background: none; font-size: 18px; cursor: pointer; }
+.ch-body { padding: 10px 12px; max-height: calc(100vh - 110px); overflow: auto; font-size: 0.8125rem; }
+.ch-top { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; }
+.ch-col { display: flex; flex-direction: column; gap: 6px; }
+.ch-col label, .ch-supply label, .ch-particulars label { display: grid; grid-template-columns: 150px 1fr; gap: 6px; align-items: center; font-weight: 700; font-size: 15px; text-transform: uppercase; }
+.ch-body input, .ch-body textarea { min-height: 26px; padding: 3px 6px; border: 2px solid #000; border-radius: 2px; background: #fff; width: 100%; }
+.ch-body input[readonly] { background: #e5e7eb; }
+.ch-body input.num { text-align: right; }
+.ch-body input:focus, .ch-body textarea:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,.35); }
+.ch-item { display: grid; grid-template-columns: 1.6fr 90px 70px 90px 90px 60px; gap: 6px; align-items: end; margin-top: 10px; }
+.ch-item .hl { font-size: 0.7rem; font-weight: 700; }
+[data-row-part-search] { font-weight: 700; font-size: 14px; }
+[data-row-hsn], [data-row-qty], [data-row-rate] { font-weight: 700; font-size: 14px; }
+.ch-item .ok { height: 26px; font-weight: 700; border: 1px solid #9ca3af; background: #fff; border-radius: 2px; cursor: pointer; }
+.ch-item .ok:hover { background: #bfe0c9; }
+.ch-item .ok { border: 2px solid #000; }
+.ch-item [data-row-error] { grid-column: 1 / -1; color: var(--danger); font-size: 0.75rem; margin: 0; }
+.ch-item [data-row-error]:empty { display: none; }
+.tbl-wrap { margin-top: 8px; border: 2px solid #000; height: 150px; overflow: auto; background: #fff; }
+.tbl-wrap table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.tbl-wrap th { background: #bfe0c9; color: #000; position: sticky; top: 0; padding: 4px 6px; text-align: left; font-size: 0.72rem; }
+.tbl-wrap td { padding: 3px 6px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; font-weight: 700; font-size: 14px; }
+.tbl-wrap .num { text-align: right; }
+.tbl-wrap tbody tr:focus, .tbl-wrap tbody tr.is-editing { background: #eef9f1; outline: none; }
+.tbl-wrap .empty td { text-align: center; color: #6b7280; }
+.ch-particulars { margin-top: 8px; }
+.ch-particulars textarea { height: 56px; }
+.ch-bottom { display: grid; grid-template-columns: 1fr 260px 200px; gap: 12px; align-items: end; margin-top: 10px; }
+.ch-supply { display: flex; flex-direction: column; gap: 6px; }
+.ch-totals { display: grid; grid-template-columns: 1fr 130px; gap: 6px; font-weight: 700; }
+.ch-net-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+.ch-net-row .ch-totals { width: 260px; }
+.ch-actions { display: flex; flex-direction: row; justify-content: flex-end; gap: 8px; }
+.ch-actions .btn-save, .ch-actions .btn-ok, .ch-actions .btn-exit { height: 30px; border: 0; border-radius: 3px; color: #fff; font-weight: 700; cursor: pointer; }
+.ch-actions .btn-save { background: #111827; }
+.ch-actions .btn-ok { background: #16a34a; }
+.ch-actions .btn-exit { background: #dc2626; }
+.mform__error { color: var(--danger); font-size: 0.75rem; margin: 2px 0; }
+.mform__error:empty { display: none; }
+.form-alert { margin-bottom: 6px; }
+
+.ch-city-row { display: flex; gap: 8px; }
+.ch-city-row input[data-party-city] { flex: 1; }
+.ch-city-row .ch-code { width: 110px; }
+/* Pulls Remarks/Vehicle/Supply fields AND the Confirm/Exit buttons up together
+   (as one grid row) so they sit right under the item grid instead of below the
+   Totals box's own height -- the Totals box (.ch-net-row) is right-aligned and
+   occupies its own full-width row above this one, so without this the left
+   column below it is pushed down by that row's height for no visual reason. */
+.ch-bottom { margin-top: -143px; }
+.ch-supply label { font-size: 15px; }
+.ch-actions .btn-save, .ch-actions .btn-ok, .ch-actions .btn-exit { height: 40px; min-width: 110px; padding: 0 22px; font-size: 15px; }
+.ch-col label, .ch-supply label, .ch-particulars label, .ch-item .hl { font-size: 15px; }
+.ch-body { padding: 6px 10px; }
+.ch-top, .ch-col, .ch-item, .ch-bottom { gap: 4px; }
+
+/* PRINT OPTIONS / WHATSAPP -- same dialog pattern as the Purchase Order and
+   MRN screens (print-options-dialog etc. are shared class names; each app
+   keeps its own copy since static files aren't shared across Django apps). */
+.print-options-dialog { width: min(360px, calc(100vw - 32px)); padding: 0; overflow: hidden; }
+.print-options__header { background: var(--primary); padding: 10px 16px; }
+.print-options__title { margin: 0; font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.04em; }
+.print-options__body { padding: 16px; }
+.print-options__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.print-options__grid button {
+  grid-column: span 1;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--primary);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+.print-options__grid button:hover { background: var(--border-mint); }
+
+.print-options__fields { display: flex; gap: 10px; margin-bottom: 12px; }
+.print-options__fields label { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+.print-options__fields input { padding: 6px 8px; border: 1px solid var(--border-mint); border-radius: var(--radius-sm, 4px); background: var(--bg-mint-subtle, #f0f8f2); font-weight: 700; }
+
+.print-options__copies { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 0.8125rem; }
+.print-options__copies label { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.print-options__exit { grid-column: 3; background: var(--surface-hover); }
+.print-options__exit:hover { background: var(--border-mint); }
+.ch-body label { padding: 0; margin: 0; }

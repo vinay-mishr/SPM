@@ -1,0 +1,1050 @@
+/* ==========================================================================
+   SP Machines — shared components
+   Buttons, alerts, forms and tables used by every module.
+   Colours come from the tokens in base.css.
+   ========================================================================== */
+
+/* --- Buttons ------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--control-height);
+  padding: 0 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition), box-shadow var(--transition);
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.25);
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--primary {
+  color: var(--button-primary-text);
+  background: var(--button-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--primary:hover,
+.btn--primary:active {
+  color: var(--button-primary-text);
+  background: var(--button-primary-hover);
+}
+
+.btn--secondary {
+  color: var(--text-primary);
+  background: var(--surface);
+  border-color: var(--text-primary);
+}
+
+.btn--secondary:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+/* Mint action button (secondary emphasis, e.g. "+ New"). */
+.btn--mint {
+  color: var(--text-primary);
+  background: var(--primary);
+  border-color: var(--border-mint);
+}
+
+.btn--mint:hover {
+  color: var(--text-primary);
+  background: var(--primary-hover);
+}
+
+/* Destructive actions only (delete, cancel document, ...). */
+.btn--danger {
+  color: var(--surface);
+  background: var(--danger);
+}
+
+.btn--danger:hover {
+  color: var(--surface);
+  background: var(--danger-hover);
+}
+
+.btn[disabled],
+.btn.is-loading {
+  opacity: 0.8;
+  cursor: progress;
+}
+
+/* --- Alerts -------------------------------------------------------------- */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.alert svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}
+
+.alert--error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+
+.alert--success {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: var(--success);
+}
+
+.alert--warning {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border-color: var(--warning);
+}
+
+.alert--info {
+  color: var(--info);
+  background: var(--info-bg);
+  border-color: var(--info);
+}
+
+/* --- Forms --------------------------------------------------------------- */
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-control {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  color: #000000;
+  background: var(--surface);
+  border: 2px solid #000000;
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-dark);
+  box-shadow: var(--focus-ring);
+}
+
+.form-error {
+  margin-top: 6px;
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+/* --- Tables -------------------------------------------------------------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.table th {
+  padding: 12px 14px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 12px 14px;
+  font-weight: 700;
+  border-top: 1px solid var(--border);
+}
+
+.table tbody tr:hover {
+  background: #FFF9C4;
+}
+
+.table tbody tr.is-selected {
+  background: #FFF9C4;
+}
+
+.table .text-muted {
+  color: var(--text-secondary);
+}
+
+/* --- App frame (sidebar + top bar + content) -------------------------------- */
+
+/* Desktop: the frame fills the window. The sidebar and the page title bar stay fixed;
+   only the page content scrolls (master screens scroll just their table rows). */
+.app {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto; /* scrolls on its own if the window is very short */
+  padding: 24px 16px;
+  background: var(--bg-mint);
+  border-right: 1px solid var(--border-mint);
+}
+
+/* Logo keeps its red/blue colours on a white panel. */
+.app-sidebar__brand {
+  display: block;
+  padding: 12px;
+  background: #bfe0c9;
+  border-radius: var(--radius-md);
+}
+
+.app-sidebar__brand img {
+  width: 120px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app-nav__link {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+a.app-nav__link:hover,
+.app-nav__link:hover {
+  color: var(--text-primary);
+  background: var(--primary-hover);
+  text-decoration: none;
+}
+
+.app-nav__link.is-active {
+  color: var(--text-primary);
+  background: var(--primary-hover);
+  box-shadow: inset 3px 0 0 var(--text-primary);
+  font-weight: 600;
+}
+
+/* Sidebar menu text is never underlined (normal, hover, focus, visited). */
+.app-nav a,
+.app-nav a:hover,
+.app-nav a:focus,
+.app-nav a:visited,
+.app-nav summary,
+.app-nav button {
+  text-decoration: none;
+}
+
+.app-nav a:focus-visible,
+.app-nav summary:focus-visible,
+.app-nav button:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: -2px;
+}
+
+/* Collapsible group (e.g. Master → Item Master), built on <details>. */
+.app-nav__toggle {
+  user-select: none; /* clicking doesn't highlight the word */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  cursor: pointer;
+}
+
+.app-nav__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.app-nav__toggle::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--text-primary);
+  border-bottom: 2px solid var(--text-primary);
+  transform: rotate(-45deg);
+  transition: transform var(--transition);
+}
+
+/* Desktop: the group's options open in a flyout panel to the RIGHT of the sidebar. */
+.app-nav__group {
+  position: relative;
+}
+
+.app-nav__group[open] > .app-nav__toggle {
+  background: var(--primary-hover);
+}
+
+.app-nav__submenu {
+  /* Fixed to the window so the sidebar's own scrolling can't clip it; sidebar.js
+     places it beside the Master item (on top of the page). */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 230px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-mint);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.app-nav__submenu .app-nav__sublink:hover {
+  background: var(--surface-hover);
+}
+
+.app-nav__submenu .app-nav__sublink.is-active {
+  background: var(--surface-selected);
+}
+
+.app-nav__sublink {
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.app-nav__sublink:hover {
+  color: var(--text-primary);
+  background: var(--primary-hover);
+  text-decoration: none;
+}
+
+.app-nav__sublink.is-active {
+  color: var(--text-primary);
+  background: var(--primary-hover);
+  box-shadow: inset 3px 0 0 var(--text-primary);
+  font-weight: 600;
+}
+
+/* Quit (logout) is a POST form styled like the other menu links. */
+.app-nav__quit {
+  margin-top: 8px;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--border-mint);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.app-nav__quit:hover {
+  border-radius: var(--radius-md);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px clamp(16px, 3vw, 40px);
+  background: var(--border-mint);
+  border-bottom: 1px solid var(--border-mint);
+}
+
+.app-header__title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.app-header__subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: 14px clamp(16px, 3vw, 32px) clamp(16px, 3vw, 32px);
+}
+
+
+@media (max-width: 767px) {
+  .app {
+    height: auto;
+    overflow: visible;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-main {
+    overflow: visible;
+  }
+
+  .master-page {
+    height: auto;
+    min-height: 0;
+  }
+
+  .app-sidebar {
+    padding: 16px;
+  }
+
+  .app-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .app-nav__link {
+    width: auto;
+  }
+
+  .app-nav__group {
+    flex-basis: 100%;
+  }
+
+  /* Phones: no room beside the sidebar, so the options open underneath. */
+  .app-nav__submenu {
+    position: static;
+    min-width: 0;
+    margin: 2px 0 6px 14px;
+    padding: 0 0 0 10px;
+    background: none;
+    border: 0;
+    border-left: 1px solid var(--border-mint);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .app-nav__toggle::after {
+    transform: rotate(45deg);
+  }
+
+  .app-nav__quit {
+    margin-top: 0;
+    border-top: 0;
+  }
+}
+
+/* --- Modal dialog (native <dialog>) -------------------------------------------- */
+
+.modal {
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.modal--sm {
+  width: min(480px, calc(100vw - 32px));
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  color: var(--text-primary);
+  background: var(--bg-mint);
+  border-bottom: 1px solid var(--border-mint);
+}
+
+.modal__title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.modal__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--text-primary);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal__close:hover {
+  background: var(--primary-hover);
+}
+
+.modal__body {
+  padding: 18px;
+  overflow-y: auto;
+  max-height: calc(100vh - 160px);
+}
+
+.modal__footer {
+  --control-height: 42px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* Section heading bar inside forms/modals. */
+.section-bar {
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: var(--bg-mint);
+}
+
+/* --- Toast (success / error notice) ------------------------------------------- */
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  max-width: min(420px, calc(100vw - 48px));
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast--success {
+  color: var(--surface);
+  background: var(--success);
+}
+
+.toast--error {
+  color: var(--surface);
+  background: var(--danger);
+}
+
+/* ==========================================================================
+   Master screens (Item Master, Party Master, ...) — shared list + form styles
+   ========================================================================== */
+
+/* Master screens fit the content area: toolbar on top, table below it; only the rows scroll. */
+.master-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto; /* fills .app-main's actual remaining height, not a guessed viewport calc() */
+  gap: 12px;
+  min-width: 0;
+  min-height: 300px;
+}
+
+.master-page > * {
+  flex: none;
+}
+
+.master-page > .master-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.master-toolbar {
+  --control-height: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.master-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.master-toolbar .btn {
+  gap: 0; /* keep the underlined shortcut letter attached to the word */
+  min-width: 96px;
+  padding: 0 18px;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Add / Modify / View / Delete / Excel: sage green, matching the reference swatch. */
+.master-toolbar .btn--primary,
+.master-toolbar .btn--secondary,
+.master-toolbar a.btn {
+  color: var(--text-primary);
+  background: var(--primary);
+  border-color: var(--border-mint);
+}
+
+.master-toolbar .btn--primary:hover,
+.master-toolbar .btn--primary:active,
+.master-toolbar .btn--secondary:hover,
+.master-toolbar a.btn:hover {
+  color: var(--text-primary);
+  background: var(--border-mint);
+}
+
+/* Exit: red (covers both the master-toolbar's Exit and the compact bulk-edit
+   screens' own Exit button, e.g. Opening Balance / Rate Modification). */
+.btn[data-action="exit"],
+.btn[data-exit],
+.btn[data-form-exit] {
+  color: #ffffff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn[data-action="exit"]:hover,
+.btn[data-exit]:hover,
+.btn[data-form-exit]:hover {
+  color: #ffffff;
+  background: var(--danger-hover);
+}
+
+/* Confirm (Add/Modify forms, delete dialogs, bulk-edit screens, etc.): green. */
+.btn[data-form-confirm],
+.btn[data-confirm] {
+  color: #ffffff;
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.btn[data-form-confirm]:hover,
+.btn[data-confirm]:hover {
+  background: var(--success);
+  filter: brightness(0.92);
+}
+
+.master-toolbar .btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.master-toolbar .btn--secondary[disabled]:hover {
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+.master-toolbar__key {
+  text-decoration: none;
+}
+
+.master-search {
+  flex: none;
+  width: 280px;
+  max-width: 320px;
+}
+
+.master-search .form-control {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 0.9375rem;
+}
+
+/* --- Table ------------------------------------------------------------------ */
+
+.master-table-wrap {
+  overflow-x: auto;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.master-table {
+  min-width: 640px; /* each master can set its own width, e.g. .party-table */
+  border: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+  border-collapse: separate; /* sticky header needs these two: */
+  border-spacing: 0;
+  overflow: visible; /* .table's overflow:hidden would stop the header sticking */
+}
+
+.master-table th,
+.master-table td {
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+
+.master-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.master-table td {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.master-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.master-table tbody tr {
+  cursor: pointer;
+}
+
+.master-table tbody tr:hover {
+  background: #FFF9C4;
+}
+
+.master-table tbody tr.is-selected {
+  background: #FFF9C4;
+  box-shadow: inset 3px 0 0 var(--text-primary);
+}
+
+.master-table tbody tr:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: -2px;
+}
+
+.master-table__code {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.master-table__empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.master-count {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 767px) {
+  .master-toolbar .btn {
+    flex: 1 1 calc(33% - 8px);
+    min-width: 0;
+  }
+
+  .master-search {
+    width: 100%;
+    max-width: none;
+    flex: 1 1 100%;
+  }
+}
+
+
+/* Label | input rows, labels right-aligned as in a compact desktop form. */
+.mform {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 10px 12px;
+  align-items: start;
+}
+
+.mform--two {
+  grid-template-columns: 130px minmax(0, 1fr) 130px minmax(0, 1fr);
+}
+
+.mform__label {
+  padding-top: 9px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.mform__label::after {
+  content: " :";
+}
+
+.mform__input.form-control {
+  min-height: 38px;
+  padding: 7px 10px;
+  font-size: 0.9375rem;
+}
+
+.mform__input--code {
+  max-width: 120px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-color: var(--border-dark);
+  cursor: default;
+}
+
+.mform__input--num {
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.mform__input[readonly]:not(.mform__input--code) {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* HelpLookup.attachSelect's proxy text input in View mode (its backing <select> is
+   disabled, but the proxy stays out of [readonly] so it's still reachable by Tab). */
+.mform__input.is-disabled {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.mform__error {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+.mform__error:empty {
+  display: none;
+}
+
+.mform__field.is-invalid .form-control {
+  border-color: var(--danger);
+}
+
+.mform__section {
+  margin: 18px 0 14px;
+}
+
+.form-alert {
+  margin-bottom: 14px;
+}
+
+/* View mode: no Confirm button. */
+.modal[data-mode="view"] [data-form-confirm] {
+  display: none;
+}
+
+/* --- "Discard unsaved changes?" overlay inside the form dialog --------------- */
+
+.modal-discard {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.modal-discard[hidden] {
+  display: none;
+}
+
+.modal-discard__box {
+  --control-height: 40px;
+  width: min(340px, 100%);
+  padding: 20px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-discard__title {
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-discard__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* --- Delete dialog --------------------------------------------------------------- */
+
+.detail-list {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 6px 12px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  font-size: 0.9375rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.detail-list dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.detail-list dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.modal-question {
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+@media (max-width: 767px) {
+  .mform,
+  .mform--two {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .mform__label {
+    padding-top: 8px;
+    text-align: left;
+  }
+
+  .mform__label::after {
+    content: "";
+  }
+
+  .mform__input--code {
+    max-width: none;
+  }
+
+  .detail-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .modal__footer .btn {
+    flex: 1;
+  }
+}
+
+
+.app-nav__sublink.is-disabled { opacity: 0.5; cursor: default; }
+
+.app-nav__submenu .app-nav__sublink { color: #000; font-weight: 600; font-size: 1rem; }
+.app-nav__link { font-size: 1.1rem; }
+.app-nav__sublink { font-size: 1.05rem; }
+.app-sidebar { padding-top: 8px; }
+.app-sidebar__brand { margin-top: -8px; }
+.master-toolbar .btn { font-size: 15px; height: 40px; padding: 0 14px; }
+.master-toolbar label { font-size: 14px; }
+.master-toolbar input { font-size: 16px; height: 40px; }
+.master-table { font-size: 17px; }
+.master-table th { font-size: 15px; }
+.master-table th, .master-table td { padding: 4px 8px; }
+.app-nav__link { font-size: 1.15rem; padding: 6px 12px; }
+.app-nav__sublink { font-size: 1.1rem; }
+.app-nav { gap: 0; }
+.app-sidebar { gap: 12px; padding: 12px 14px; }
+.app-nav__link { font-size: 1.2rem; padding: 8px 12px; }
+.app-nav__sublink { font-size: 1.15rem; }
+.app-nav { gap: 1px; }
+.master-table th { font-size: 20px; padding: 8px 8px; }
+.master-table__empty { font-size: 16px; padding: 16px; }

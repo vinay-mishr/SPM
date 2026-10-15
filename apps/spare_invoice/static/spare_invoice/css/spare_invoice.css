@@ -1,0 +1,67 @@
+/* Spare Part Invoice reuses apps.gst_invoice's .gi-* layout classes wholesale
+   (identical field shapes) -- this file only holds the one class it adds. */
+.si-form-modal {
+  width: min(1400px, 98vw);
+  max-height: calc(100vh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--gi-border, #9ca3af);
+  border-radius: 6px;
+  background: #f2faf5;
+}
+.si-form-modal[open] { display: flex; flex-direction: column; }
+.si-form-modal::backdrop { background: rgba(0, 0, 0, 0.35); }
+
+/* apps.gst_invoice's own .gi-form-modal gets bold input text via a rule scoped to
+   that exact class -- this form uses .si-form-modal instead, so it never matched,
+   leaving every field (including the item-entry row, which is bold-400 even on
+   the gst_invoice screen) at the browser's normal weight. */
+.si-form-modal input, .si-form-modal select { font-weight: 700; }
+
+/* Particulars + Current Stk sit on their own row right under the item-entry row. */
+.gi-item-extra { display: flex; align-items: flex-end; gap: 14px; margin: 2px 0 4px; }
+.gi-item-extra .gi-narration { margin-top: 0; flex: 1 1 auto; max-width: 600px; }
+.gi-item-extra .gi-narration textarea { max-width: none; }
+.gi-item-stock { display: flex; flex-direction: column; gap: 2px; flex: none; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+.gi-item-stock input { height: 22px; width: 110px; padding: 1px 10px; border: 2px solid #000; border-radius: 4px; background: #e5e7eb; font-size: 13px; font-weight: 400; }
+
+.gi-particular { margin-top: 2px; font-size: 0.8rem; font-weight: 400; color: #6b7280; white-space: pre-line; }
+
+/* Due Balance sits directly under E-WAY NUMBER instead of up in the invoice-details column. */
+.gi-stack { display: flex; flex-direction: column; gap: 3px; }
+
+.gi-summary { margin-top: -140px; }
+.gi-footer { margin-top: -40px; }
+
+/* --- Compact layout (Spare Part Invoice only -- scoped under .si-form-modal so
+   apps.gst_invoice and the other modules sharing gi-*.css are untouched). ------- */
+.si-form-modal .gi-body { padding: 4px 12px; gap: 3px; }
+/* Spread the 4 header columns across the modal's full width instead of leaving
+   them left-packed with empty space on the right -- pushes G.R./Order columns
+   (3rd/4th) over to the right side of the panel. */
+.si-form-modal .gi-columns { gap: 6px 20px; width: 100%; justify-content: space-between; }
+.si-form-modal .gi-column { gap: 2px; }
+.si-form-modal .gi-item-row { margin: 1px 0; }
+.si-form-modal .gi-items { min-height: 56px; }
+.si-form-modal .gi-summary label { gap: 8px; }
+.si-form-modal .gi-narration-title { margin-bottom: 2px; }
+
+/* Field labels are 15px throughout this screen. */
+.si-form-modal label {
+  font-size: 15px;
+}
+
+/* --- Inactive (deselected) item rows: struck through, dimmed, excluded from totals. */
+.gi-items tbody tr.is-inactive { opacity: 0.55; }
+.gi-items tbody tr.is-inactive td { text-decoration: line-through; }
+
+/* --- ADD CHALLAN button (near Party/Transport) and its picker dialog. */
+.gi-challan-row { margin-top: 4px; }
+[data-challan-rows] tr { cursor: pointer; }
+[data-challan-rows] tr:hover { background: var(--bg-mint-subtle, #f0f8f2); }
+[data-challan-rows] .empty { cursor: default; color: var(--text-secondary, #6b7280); text-align: center; }
+/* The main invoice form's .gi-footer carries a large negative margin-top tuned to
+   sit right under its own (much taller) .gi-summary block -- that same class is
+   reused here for the picker dialog's plain CLOSE button, where it instead drags
+   the button up on top of the (much shorter) challan list. Reset it back to 0. */
+[data-challan-dialog] .gi-footer { margin-top: 0; }

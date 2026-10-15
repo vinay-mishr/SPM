@@ -1,0 +1,45 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Outstanding Statement · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'creditor_outstanding/js/outstanding_statement.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Creditor Outstanding Statement{% endblock %}
+{% block page_subtitle %}Creditor Outstanding &rsaquo; Outstanding Statement{% endblock %}
+
+{% block content %}
+<section class="pe-page pe-full" data-os
+         data-parties-url="{% url 'creditor_payment:parties' %}"
+         data-data-url="{% url 'creditor_payment:statement_data' %}"
+         data-export-url="{% url 'creditor_payment:statement_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-head pe-inline">
+    <div class="pe-mode">
+      <label class="pe-radio"><input type="radio" name="os-mode" value="A" checked> All</label>
+      <label class="pe-radio"><input type="radio" name="os-mode" value="S"> Single</label>
+    </div>
+    <label class="pe-wide">PARTY
+      <input data-party-search placeholder="Type party name and press Enter" autocomplete="off" disabled>
+      <input type="hidden" data-party-code>
+    </label>
+    <label>RUN DATE <input type="text" data-run-date inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+    <div class="pe-actions">
+    <button type="button" class="btn btn--primary" data-show>SHOW</button>
+    <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+  </div>
+
+
+  <div class="pe-grid">
+    <table>
+      <thead><tr><th>PARTY NAME</th><th>CITY</th><th>MRN NO</th><th>CL. DATE</th><th>BILL NO</th><th>BILL DATE</th><th class="num">BILL AMT</th><th class="num">TDS AMT</th><th class="num">AMT.PAID</th><th class="num">DR.NOTE AMT</th><th class="num">C.DIS</th><th class="num">BAL.AMT</th><th class="num">BELOW 45 DAYS</th><th class="num">BELOW 45 TO 60</th><th class="num">BELOW 60 TO 90</th><th class="num">ABOVE 90</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="16">Press SHOW to view the statement.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

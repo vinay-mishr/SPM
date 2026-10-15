@@ -1,0 +1,41 @@
+/* General Ledger Master — list + Add/Modify/View form. Shared master / modal / form
+   styles come from static/css/components.css; only this screen's specifics live here. */
+
+.gl-table th,
+.gl-table td {
+  white-space: nowrap;
+}
+
+.gl-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.gl-form-modal {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.glf {
+  grid-template-columns: 145px minmax(0, 1fr);
+  gap: 10px 12px;
+}
+
+.glf .mform__label {
+  white-space: nowrap;
+}
+
+.glf-search-row {
+  display: flex;
+}
+
+.glf-code {
+  flex: 1;
+}
+
+@media print {
+  .app-header, .app-sidebar, .master-toolbar, .master-count, .alert, .toast {
+    display: none !important;
+  }
+}
+
+#gl-opening_balance { width: 50%; }

@@ -1,0 +1,76 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Unit Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'units/css/unit_master.css' %}">
+  <script src="{% static 'units/js/unit_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Unit Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; Unit Master{% endblock %}
+
+{% block content %}
+<section class="master-page" data-unit-master
+         data-list-url="{% url 'units:api_list' %}"
+         data-create-url="{% url 'units:api_create' %}"
+         data-update-url="{% url 'units:api_update' pk=0 %}"
+         data-delete-url="{% url 'units:api_delete' pk=0 %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="Unit actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+    <label class="master-search">
+      <span class="visually-hidden">Search units</span>
+      <input class="form-control" type="search" placeholder="Search unit…" data-search autocomplete="off">
+    </label>
+  </div>
+
+  {% if not can_edit %}
+    <div class="alert alert--info" role="status">
+      Showing units from the SP_MACHINE database (table <strong>unit</strong>). Saving changes to that database is switched off until you approve it, so Confirm and Delete will show a message and nothing is changed.</div>
+  {% endif %}
+
+  <div class="master-table-wrap">
+    <table class="table master-table unit-table">
+      <thead>
+        <tr><th scope="col">Name</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No units yet. Click <strong>Add</strong> to create the first one.</p>
+  </div>
+  <p class="master-count" data-count aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"unit-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "units/unit_form.html" %}
+
+  <dialog class="modal modal--sm" id="unit-delete-dialog" aria-labelledby="unit-delete-title">
+    <header class="modal__header">
+      <h2 class="modal__title" id="unit-delete-title">Unit Master — Delete</h2>
+      <button class="modal__close" type="button" aria-label="Close" data-delete-cancel>&times;</button>
+    </header>
+    <div class="modal__body">
+      <dl class="detail-list" data-delete-details></dl>
+      <p class="modal-question">Are you sure you want to delete this unit?</p>
+      <div class="alert alert--error" role="alert" data-delete-alert hidden></div>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--danger" type="button" data-delete-confirm>Delete</button>
+      <button class="btn btn--secondary" type="button" data-delete-cancel>Cancel</button>
+    </footer>
+  </dialog>
+{% endblock %}

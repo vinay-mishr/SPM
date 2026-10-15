@@ -1,0 +1,118 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Debit Note Entry · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'debit_note/css/debit_note.css' %}">
+  <script src="{% static 'debit_note/js/debit_note_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}GST Debit Note{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Debit Note Entry{% endblock %}
+
+{% block content %}
+<section class="dn-page" data-ie
+         data-list-url="{% url 'debit_note:ie_list' %}"
+         data-next-no-url="{% url 'debit_note:ie_next_no' %}"
+         data-detail-url-template="{% url 'debit_note:ie_detail' dn_no='__NO__' %}"
+         data-items-url="{% url 'debit_note:ie_items' %}"
+         data-part-url="{% url 'debit_note:ie_part' %}"
+         data-save-url="{% url 'debit_note:ie_save' %}"
+         data-delete-url="{% url 'debit_note:ie_delete' %}"
+         data-parties-url="{% url 'debit_note:api_parties' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="dn-toolbar master-toolbar">
+    <div class="dn-buttons">
+      <button type="button" class="btn btn--primary" data-action="add"{% if not can_edit %} disabled{% endif %}>ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="dn-search">SEARCH PARTY <input class="form-control" type="text" data-search placeholder="Type party name..."></label>
+    <div class="dn-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="dn-alert" role="alert" data-alert hidden></div>
+
+  <div class="dn-grid">
+    <table>
+      <thead><tr><th>DN. NO</th><th>DN. DATE</th><th>BILL NO</th><th>BILL DATE</th><th>PARTY CODE</th><th>PARTY</th><th>CITY</th><th class="num">BILL AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="8">No debit notes in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="dn-form-modal" data-form>
+  <form novalidate data-ie-form>
+    <header class="dn-titlebar">DEBIT NOTE <span class="dn-mode" data-mode-label>Add</span></header>
+    <div class="dn-body">
+      <div class="dn-alert" role="alert" data-form-alert hidden></div>
+      <div class="dn-fields">
+        <label>D.N. NO <input data-field="dn_no" maxlength="10"></label>
+        <label>D.N. DATE <input data-field="dn_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label>INVOICE NO <input data-field="invoice_no" maxlength="20"></label>
+        <label>INVOICE DATE <input data-field="invoice_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="dn-wide">PARTY NAME <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+        <label>G.R. NO <input data-field="gr_no" maxlength="20"></label>
+        <label>G.R. DATE <input data-field="gr_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label>TRANSPORT <input data-field="transport" maxlength="40"></label>
+        <label>PLACE OF SUPPLY <input data-field="place_of_supply" maxlength="40"></label>
+        <label class="dn-check"><input type="checkbox" data-field="interstate"> (I) INTERSTATE / (W) WITHIN STATE</label>
+      </div>
+
+      <div class="dn-item-row">
+        <label class="dn-wide">ITEM DESCRIPTION <input data-item-search placeholder="Type item code or name..." autocomplete="off"><input type="hidden" data-item-code></label>
+        <label>HS CODE <input data-item-hsn readonly tabindex="-1"></label>
+        <label>UNIT <input data-item-unit readonly tabindex="-1"></label>
+        <label>QTY <input class="num" data-item-qty></label>
+        <label>RATE <input class="num" data-item-rate></label>
+        <label>MRP <input class="num" data-item-mrp></label>
+        <label>DIS% <input class="num" data-item-dis value="0"></label>
+        <button type="button" class="btn btn--primary" data-item-add>OK</button>
+        <div class="dn-row-error" data-item-error></div>
+      </div>
+
+      <div class="dn-grid dn-items">
+        <table>
+          <thead><tr><th>#</th><th>CODE</th><th>ITEM DESCRIPTION</th><th>HSN CODE</th><th class="num">QTY</th><th class="num">RATE</th><th class="num">MRP</th><th class="num">DIS %</th><th class="num">AMOUNT</th></tr></thead>
+          <tbody data-item-rows><tr class="empty"><td colspan="9">No items added. Press Space on a row to remove it, double-click to edit.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="dn-summary">
+        <label>TOTAL QTY <input class="num" data-total-qty readonly tabindex="-1" value="0"></label>
+        <label>TOTAL AMOUNT <input class="num" data-total-amount readonly tabindex="-1" value="0.00"></label>
+        <label>DIS AMOUNT <input class="num" data-dis-amount readonly tabindex="-1" value="0.00"></label>
+        <label>GST AMOUNT <input class="num" data-gst-amount readonly tabindex="-1" value="0.00"></label>
+        <label>FREIGHT <input class="num" data-field="freight" value="0.00"></label>
+        <label>GST % ON FREIGHT <input class="num" data-field="freight_gst_pct" value="0.00"></label>
+        <label>GST ON FREIGHT <input class="num" data-freight-gst readonly tabindex="-1" value="0.00"></label>
+        <label>NET AMOUNT <input class="num" data-net-amount readonly tabindex="-1" value="0.00"></label>
+        <label>NET ROUNDED <input class="num" data-net-rounded readonly tabindex="-1" value="0"></label>
+      </div>
+
+      <div class="dn-footer">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="dn-confirm" data-delete-dialog>
+  <p>Are You Sure?</p>
+  <div class="dn-footer">
+    <button type="button" class="btn btn--danger" data-delete-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-delete-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

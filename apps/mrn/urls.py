@@ -1,0 +1,48 @@
+from django.urls import path
+
+from . import part_ledger, short_list, views
+
+app_name = "mrn"
+
+urlpatterns = [
+    path("", views.MrnEntryView.as_view(), name="entry"),
+    path("api/", views.mrn_list, name="api_list"),
+    path("api/next-no/", views.mrn_next_no, name="api_next_no"),
+    path("api/pending-po/", views.pending_po_lookup, name="api_pending_po"),
+    path("api/reauthenticate/", views.reauthenticate, name="api_reauthenticate"),
+    path("api/save/", views.mrn_save, name="api_save"),
+    path("api/close/", views.mrn_close, name="api_close"),
+    path("api/delete/", views.mrn_delete, name="api_delete"),
+    path("api/<str:div>/<str:mrn_no>/", views.mrn_detail, name="api_detail"),
+    path("<str:div>/<str:mrn_no>/print/", views.mrn_print, name="print"),
+    path("<str:div>/<str:mrn_no>/pdf/", views.mrn_pdf, name="pdf"),
+    path("<str:div>/<str:mrn_no>/share/", views.mrn_share_link, name="share_link"),
+    path("part-ledger/", part_ledger.PartLedgerView.as_view(), name="part_ledger"),
+    path("part-ledger/data/", part_ledger.part_ledger_data, name="part_ledger_data"),
+    path("part-ledger/export/", part_ledger.part_ledger_export, name="part_ledger_export"),
+    path("short-list/", short_list.ShortListView.as_view(), name="short_list"),
+    path("short-list/data/", short_list.short_list_data, name="short_list_data"),
+    path("short-list/export/", short_list.short_list_export, name="short_list_export"),
+    path("pending-mrn/", views.PendingMrnReportView.as_view(), name="pending_mrn_report"),
+    path("pending-mrn/data/", views.pending_mrn_data, name="pending_mrn_report_data"),
+    path("pending-mrn/export/", views.pending_mrn_export, name="pending_mrn_report_export"),
+    path("current-stock/", views.CurrentStockReportView.as_view(), name="current_stock_report"),
+    path("current-stock/data/", views.current_stock_data, name="current_stock_data"),
+    path("current-stock/export/", views.current_stock_export, name="current_stock_export"),
+    path("stock-statement/", views.StockStatementView.as_view(), name="stock_statement"),
+    path("stock-statement/data/", views.stock_statement_data, name="stock_statement_data"),
+    path("stock-statement/export/", views.stock_statement_export, name="stock_statement_export"),
+    path("stock-ledger/", views.StockLedgerView.as_view(), name="stock_ledger"),
+    path("stock-ledger/data/", views.stock_ledger_data, name="stock_ledger_data"),
+    path("stock-ledger/export/", views.stock_ledger_export, name="stock_ledger_export"),
+    path("stock-ledger/print/", views.stock_ledger_print, name="stock_ledger_print"),
+    path("item-monthwise-sale/", views.ItemMonthwiseSaleView.as_view(), name="item_monthwise_sale"),
+    path("item-monthwise-sale/data/", views.item_monthwise_sale_data, name="item_monthwise_sale_data"),
+    path("item-monthwise-sale/export/", views.item_monthwise_sale_export, name="item_monthwise_sale_export"),
+    path("critical-shortage/", views.CriticalShortageView.as_view(), name="critical_shortage"),
+    path("critical-shortage/data/", views.critical_shortage_data, name="critical_shortage_data"),
+    path("critical-shortage/export/", views.critical_shortage_export, name="critical_shortage_export"),
+    path("crisis-shortage/", views.CrisisShortageView.as_view(), name="crisis_shortage"),
+    path("crisis-shortage/data/", views.crisis_shortage_data, name="crisis_shortage_data"),
+    path("crisis-shortage/export/", views.crisis_shortage_export, name="crisis_shortage_export"),
+]

@@ -1,0 +1,10 @@
+.cs-toolbar { flex-wrap: wrap; width: fit-content; }
+.cs-filter { display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.cs-filter input { min-height: 34px; padding: 5px 10px; font-size: 0.875rem; width: 140px; }
+.cs-error { margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--danger); }
+.cs-error[hidden] { display: none; }
+.cs-table { min-width: 600px; font-size: 0.8125rem; }
+.cs-table th, .cs-table td { padding: 4px 8px; white-space: nowrap; }
+.cs-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.cs-table th { font-size: 19px; }
+.cs-table td { font-size: 16px; }

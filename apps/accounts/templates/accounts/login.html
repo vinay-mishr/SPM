@@ -1,0 +1,79 @@
+{% extends "accounts/layout.html" %}
+
+{% block title %}Login · {{ brand.name }}{% endblock %}
+
+{% block card %}
+<header class="auth-card__header">
+  <h1 class="auth-card__title" id="auth-title">Welcome Back</h1>
+  <p class="auth-card__subtitle">Login to your {{ brand.name }} account</p>
+</header>
+
+{% if form.non_field_errors %}
+  <div class="alert alert--error auth-card__alert" role="alert">
+    <svg aria-hidden="true"><use href="#i-alert"></use></svg>
+    <div>{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+  </div>
+{% endif %}
+
+<form class="auth-form" method="post" action="{% url 'accounts:login' %}" novalidate data-validate>
+  {% csrf_token %}
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+  <div class="field{% if form.username.errors %} field--invalid{% endif %}">
+    <label class="visually-hidden" for="{{ form.username.id_for_label }}">Username</label>
+    <div class="field__control">
+      <svg class="field__icon" aria-hidden="true"><use href="#i-user"></use></svg>
+      <input class="field__input" type="text"
+             id="{{ form.username.id_for_label }}" name="{{ form.username.html_name }}"
+             value="{{ form.username.value|default_if_none:'' }}"
+             placeholder="Username" autocomplete="username" autocapitalize="none" spellcheck="false"
+             maxlength="150" required autofocus
+             data-required-message="Please enter your username."
+             aria-describedby="{{ form.username.id_for_label }}-error"
+             {% if form.username.errors %}aria-invalid="true"{% endif %}>
+    </div>
+    <p class="field__error" id="{{ form.username.id_for_label }}-error">{{ form.username.errors|first|default:'' }}</p>
+  </div>
+
+  <div class="field{% if form.password.errors %} field--invalid{% endif %}">
+    <label class="visually-hidden" for="{{ form.password.id_for_label }}">Password</label>
+    <div class="field__control">
+      <svg class="field__icon" aria-hidden="true"><use href="#i-lock"></use></svg>
+      <input class="field__input field__input--with-action" type="password"
+             id="{{ form.password.id_for_label }}" name="{{ form.password.html_name }}"
+             placeholder="Password" autocomplete="current-password" required
+             data-required-message="Please enter your password."
+             aria-describedby="{{ form.password.id_for_label }}-error"
+             {% if form.password.errors %}aria-invalid="true"{% endif %}>
+      <button class="field__action" type="button" data-toggle-password="{{ form.password.id_for_label }}"
+              aria-label="Show password" aria-pressed="false">
+        <svg class="icon-show" aria-hidden="true"><use href="#i-eye"></use></svg>
+        <svg class="icon-hide" aria-hidden="true"><use href="#i-eye-off"></use></svg>
+      </button>
+    </div>
+    <p class="field__error" id="{{ form.password.id_for_label }}-error">{{ form.password.errors|first|default:'' }}</p>
+  </div>
+
+  <div class="auth-form__row">
+    <label class="checkbox">
+      <input type="checkbox" name="{{ form.remember_me.html_name }}" {% if form.remember_me.value %}checked{% endif %}>
+      <span class="checkbox__box" aria-hidden="true"></span>
+      Remember me
+    </label>
+    <a class="auth-link" href="{% url 'accounts:password_reset' %}">Forgot Password?</a>
+  </div>
+
+  <button class="btn btn--primary btn--block" type="submit">
+    <svg aria-hidden="true"><use href="#i-login"></use></svg>
+    Login
+  </button>
+</form>
+
+{% if sso_login_url %}
+  <div class="divider" role="separator"><span>or</span></div>
+  <a class="btn btn--secondary btn--block" href="{{ sso_login_url }}">
+    <svg aria-hidden="true"><use href="#i-shield"></use></svg>
+    Login with Company SSO
+  </a>
+{% endif %}
+{% endblock %}

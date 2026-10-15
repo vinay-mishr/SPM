@@ -1,0 +1,34 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Cheque Printing · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'creditor_outstanding/js/cheque_printing.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Cheque Printing{% endblock %}
+{% block page_subtitle %}Creditor Outstanding &rsaquo; Cheque Printing{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-cp
+         data-data-url="{% url 'creditor_payment:cheque_data' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-head pe-inline">
+    <label>CHQ/NEFT/RCPT NO <input data-chq-no maxlength="20"></label>
+    <div class="pe-actions">
+      <button type="button" class="btn btn--primary" data-show>SHOW</button>
+      <button type="button" class="btn btn--secondary" data-print>PRINT</button>
+      <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+    </div>
+  </div>
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+  <div class="cp-cheque" data-cheque hidden>
+    <div class="cp-row"><span>PAY</span><b data-payee></b></div>
+    <div class="cp-row"><span>DATE</span><b data-date></b></div>
+    <div class="cp-row"><span>AMOUNT</span><b data-amount></b></div>
+    <div class="cp-row cp-words" data-words></div>
+  </div>
+</section>
+{% endblock %}

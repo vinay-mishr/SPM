@@ -1,0 +1,16 @@
+/* Supervisor Master — list screen. Toolbar, table and search come from the shared
+   "Master screens" styles in static/css/components.css. */
+
+.sv-table {
+  width: auto;
+}
+
+.sv-table td:nth-child(1) {
+  min-width: 140px;
+  white-space: normal;
+}
+
+.sv-table td:nth-child(2),
+.sv-table th:nth-child(2) {
+  width: 70px;
+}

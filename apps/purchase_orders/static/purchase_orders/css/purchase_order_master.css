@@ -1,0 +1,424 @@
+/* Purchase Order Master — list + Add/Modify/View form. Shared master / modal / form
+   styles come from static/css/components.css; only this screen's specifics live here. */
+
+.po-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.po-filters__date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.po-filters__date input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+}
+
+.po-filters__mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.8125rem;
+}
+
+.po-filters__mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.po-table td:nth-child(3) { min-width: 220px; white-space: normal; }
+/* Column headings bolder than the 700-weight rows below them. */
+.po-table th { font-weight: 800; color: var(--text-primary); }
+
+/* --- Add / Modify / View form -------------------------------------------------- */
+
+.po-form-modal {
+  width: min(1320px, calc(100vw - 32px));
+  background: #f2faf5;
+}
+
+.po-form-modal .modal__header {
+  padding: 8px 16px;
+  background: #8fc4a2;
+}
+
+.po-form-modal .modal__body {
+  padding: 10px 14px;
+}
+
+/* Rectangular inputs throughout this form -- straight corners instead of the
+   app-wide 8px radius, everywhere a .form-control (or the party-name readout
+   styled to match one) appears. */
+.po-form-modal .form-control,
+.po-form-modal .pof-party-name {
+  border-radius: 2px;
+}
+
+/* Confirm/Exit pinned to the extreme bottom-right, same as every other modal's
+   default flex-end -- Previous Info now lives in the party row, not here. */
+.po-form-modal .modal__footer {
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 10px 16px;
+}
+
+.pof-header {
+  /* Row 1: PO No, PO Date (fixed-width label/field columns sized to their actual
+     content -- a flexible 1fr field column left a big empty gap between the short
+     input and the next label). Row 2: Party Name (label + Code + Search), spanning
+     the full width via .pof-header__span. Row 3: the party's city, its own full-width
+     row below Party Name (a blank spacer label keeps the left column aligned).
+     The trailing minmax(0, 1fr) track is unused by PO No/PO Date but is what lets a
+     "grid-column: 1 / -1" row actually reach the full modal width -- without at least
+     one flexible track, a span only covers the ~354px the 4 fixed tracks add up to. */
+  grid-template-columns: 54px 104px 66px 130px minmax(0, 1fr);
+  gap: 5px 10px;
+  margin-bottom: 6px;
+}
+
+.pof-header__span { grid-column: 1 / -1; }
+
+/* Party Name / city rows: label sits beside the field (not stacked above it) --
+   a plain flex row rather than the .mform label/field grid-cell alternation, which
+   would force the label onto its own row once it spans every column. */
+.pof-header__row { display: flex; align-items: center; gap: 8px; }
+.po-form-modal .pof-header__row-label { flex: 0 0 112px; padding-top: 0; }
+
+.pof-short { max-width: 130px; }
+#po-po_no { max-width: 104px; } /* 130px * 0.8 -- 20% narrower, PO Date unchanged */
+
+/* Smaller labels throughout this form -- the shared .mform__label default (0.75rem)
+   reads oversized next to how compact everything else here has gotten. */
+.po-form-modal .mform__label {
+  font-size: 13px;
+  font-weight: 700;
+  padding-top: 7px;
+}
+
+.pof-add-row legend.mform__label {
+  padding-top: 0;
+}
+
+/* Reduce padding on every input in this form -- general baseline here, tighter
+   overrides for the header row and the Part Description add-row below. */
+.po-form-modal .form-control {
+  padding: 4px 6px;
+  min-height: 34px;
+  border: 2px solid #000;
+}
+
+.po-form-modal .mform__input.form-control {
+  padding: 3px 5px;
+  min-height: 32px;
+}
+
+/* Fields filled in automatically from Item/Part Master (Material, Unit, HSN, PO
+   No, and the read-only Particulars) are genuinely non-editable -- give them the
+   same muted "locked" look as readonly fields elsewhere in the app, instead of
+   looking identical to a normal editable box. */
+.po-form-modal .form-control[readonly] {
+  background: var(--bg-secondary);
+  border-color: var(--border-dark);
+  cursor: default;
+}
+
+.pof-party, .pof-party-detail { display: flex; flex: 1; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* min-width: 0 overrides a flex item's default min-width: auto, which otherwise clamps
+   it to the input's intrinsic content width (~210px for a plain <input type=text>) no
+   matter how small a flex-basis says -- without it, none of these size reductions
+   actually take effect. */
+.pof-code { flex: 0 0 63px; min-width: 0; text-transform: uppercase; } /* 90px * 0.7 -- 30% narrower */
+.pof-party-search { flex: 1 1 180px; min-width: 0; max-width: 545px; } /* ~50% of its previous full-row width */
+
+/* The party's city, read-only, on its own full-width row under Party Name -- capped
+   to roughly half its previous full-row width, same as the party name search above. */
+.pof-party-name {
+  flex: 1 1 180px;
+  max-width: 545px;
+  margin: 0;
+  padding: 4px 6px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pof-add-row {
+  margin: 0 0 5px;
+  padding: 5px 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.pof-add-row legend {
+  padding: 0 6px;
+  margin-bottom: -6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pof-add-row .form-control {
+  min-height: 28px;
+  padding: 2px 4px;
+  font-size: 0.875rem;
+}
+
+.pof-add-row__grid {
+  /* flex-start, not flex-end: with the Qty/HSN Code/Rate stacks now two rows tall,
+     bottom-aligning would push every single-row field (Material, Unit, Disc. %...)
+     down to match the stacks' bottom edge, making the stacks' top halves appear to
+     float above everything else instead of sitting in the same row. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 10px;
+}
+
+.pof-add-row__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pof-add-row__field input { width: 110px; }
+.pof-add-row__field--wide { flex: 1 1 312px; } /* 260px * 1.2 -- 20% wider */
+.pof-add-row__field--wide .pof-search { width: 100%; }
+/* Inside a column-direction .pof-add-row__stack, flex-basis is read along the
+   vertical axis instead of horizontal -- the 260px above would set this field's
+   HEIGHT, not its width, ballooning it (and everything stacked below it) to 260px
+   tall. The outer .pof-add-row__stack--wide already carries the width in the row;
+   this field just needs to stretch to fill that stack's width (the default for a
+   column flex's cross-axis) with its own natural (content-based) height. */
+.pof-add-row__stack > .pof-add-row__field--wide { flex: 0 0 auto; }
+.pof-add-row__field--material input { width: 88px; } /* 110px * 0.8 -- 20% narrower */
+.pof-add-row__field--packing input { width: 88px; } /* 110px * 0.8 -- 20% narrower */
+.pof-add-row__field--current-stock input { width: 88px; } /* 110px * 0.8 -- 20% narrower */
+.pof-add-row__field--size input { width: 88px; } /* 110px * 0.8 -- 20% narrower */
+.pof-add-row__field--qty input { width: 72px; } /* 110px * 0.65 -- 35% narrower */
+.pof-add-row__field--unit input { width: 77px; } /* 110px * 0.7 -- 30% narrower */
+.pof-add-row__field--discount input { width: 70px; text-align: right; }
+
+/* Qty/Current Stk., HSN Code/Size, and Rate/Last Rate each stack vertically in the
+   same column position, instead of Current Stk./Size/Last Rate sitting off in their
+   own separate Particulars sub-row. */
+.pof-add-row__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The Part/Code stack needs the same wide flex-basis its field used to carry
+   directly, now that the field is nested one level deeper inside a stack div. */
+.pof-add-row__stack--wide { flex: 1 1 260px; }
+
+/* OK sits directly beside the Rate input itself, with Last Rate below the pair. */
+.pof-add-row__rate-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pof-add-row__ok {
+  min-height: 28px;
+  padding: 0 16px;
+  font-size: 0.8125rem;
+}
+
+/* Part Code is a hidden backing field now -- kept in sync from the single visible
+   search box (typing a code there and pressing Enter opens the same lookup), so
+   there is only ever one input box for the user to see. */
+.pof-previous-info { flex: 0 0 auto; min-height: 28px; padding: 0 12px; font-size: 0.8125rem; white-space: nowrap; }
+
+/* Particulars: a real multiline input now, stacked below Part/Code (its own
+   .pof-add-row__stack), compact -- 2 short rows, not the full add-row height. */
+.pof-particulars__input {
+  width: 100%;
+  resize: vertical;
+  min-height: 0;
+  height: 40px;
+  border: 2px solid #000000;
+}
+
+.pof-add-row [data-row-error]:empty { display: none; }
+.pof-add-row [data-row-error] { margin: 6px 0 0; font-size: 0.8125rem; color: var(--danger); }
+
+/* Header (26.8px) + 8 data rows (28.3px each, measured live at this table's actual
+   font-size/padding/border) = 26.8 + 8*28.3 = 253.2px, plus ~17px so a horizontal
+   scrollbar (the table is wider than the wrap at 11 columns) doesn't eat into that
+   space -- a 9th+ row scrolls instead of growing the grid further. */
+/* .master-table-wrap (shared base) is width: fit-content, so it shrinks to the
+   table's own content width instead of filling the fieldset -- override just here. */
+.pof-grid-wrap { width: 100%; min-height: 170px; max-height: 324px; overflow: auto; } /* previous 142px/270px * 1.2 -- another 20% taller */
+.pof-grid-table { width: 100%; font-size: 0.8125rem; border-collapse: collapse; }
+.pof-grid-table th, .pof-grid-table td { padding: 4px 8px; border: 1px solid var(--border-mint); }
+.pof-grid-table th:nth-child(3), .pof-grid-table td:nth-child(3) { min-width: 200px; }
+.pof-grid-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+/* Green header (matches the modal header's own mint theme) + light zebra striping,
+   like the reference table screenshot. */
+.pof-grid-table thead th { background: var(--bg-mint); }
+.pof-grid-table tbody tr:nth-child(even) { background: var(--bg-mint-subtle, #f0f8f2); }
+.pof-grid-table tbody tr { cursor: pointer; }
+.pof-grid-table tbody tr:focus { outline: none; }
+.pof-grid-table tbody tr.is-selected { background: #FFF176; box-shadow: inset 3px 0 0 var(--text-primary); }
+/* Double-clicked row currently loaded into the entry fields above, for editing. */
+.pof-grid-table tbody tr.is-editing { background: #BBDEFB; box-shadow: inset 3px 0 0 var(--primary, #1976d2); }
+
+.pof-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* .pof-footer__remarks (used for all three: Remarks/Payment/Note) is nested inside
+   .pof-footer__notes now, a column flex -- the width-filling flex-basis has to live
+   on that outer wrapper instead, since inside a column flex a flex-basis on these
+   inner labels would be read as a HEIGHT, not a width (same pitfall as the Part/Code
+   field earlier in this file). */
+.pof-footer__notes {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Label beside its field (one line: "Remarks :  [.........]"), not stacked above it. */
+.pof-footer__remarks {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pof-footer__remarks span { flex: 0 0 60px; }
+/* .po-form-modal prefix needed on these so they actually beat the base
+   ".po-form-modal .form-control { min-height: 34px }" rule's specificity --
+   without it, these fields' height gets silently clamped back up to 34px. */
+.po-form-modal .pof-footer__remarks textarea,
+.po-form-modal .pof-footer__remarks input {
+  flex: 1;
+  min-height: 0;
+  padding: 1px 5px;
+}
+
+/* Remarks/Payment/Note heights -- 25% shorter than their previous 34px/35px/44px. */
+.po-form-modal .pof-footer__remarks textarea { height: 26px; resize: none; }
+.po-form-modal .pof-footer__remarks input { height: 26px; }
+
+/* Note: caps at ~2 short lines, then scrolls instead of growing further. */
+.po-form-modal .pof-footer__remarks--note textarea { height: 33px; overflow-y: auto; }
+
+/* Stacked at the extreme right of the footer -- one row per total, label beside its
+   own input (not above it), instead of the four side by side as flat mini-columns. */
+.pof-footer__totals {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.pof-footer__totals label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pof-footer__totals label span { flex: 0 0 90px; text-align: right; }
+.pof-footer__totals input { width: 110px; text-align: right; font-weight: 700; }
+
+@media (max-width: 900px) {
+  .pof-header { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- Previous Info popup -------------------------------------------------------- */
+
+.po-previnfo-modal { width: min(480px, calc(100vw - 32px)); }
+.po-previnfo-table { width: 100%; font-size: 0.8125rem; }
+.po-previnfo-table th, .po-previnfo-table td { padding: 5px 8px; }
+.po-previnfo-table .num { text-align: right; }
+
+/* "Are you sure?" overlay: fixed to the viewport and stacked above the grid's sticky
+   header, so it stays centred and fully visible even when the form is scrolled. */
+.po-form-modal .modal-discard { position: fixed; z-index: 20; }
+
+/* --- Print options dialog / WhatsApp ---------------------------------------------- */
+
+.print-options-dialog { width: min(360px, calc(100vw - 32px)); padding: 0; overflow: hidden; }
+.print-options__header { background: var(--primary); padding: 10px 16px; }
+.print-options__title { margin: 0; font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.04em; }
+.print-options__body { padding: 16px; }
+.print-options__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.print-options__grid button {
+  grid-column: span 1;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--primary);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+.print-options__grid button:hover { background: var(--border-mint); }
+
+.print-options__fields { display: flex; gap: 10px; margin-bottom: 12px; }
+.print-options__fields label { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+.print-options__fields input { padding: 6px 8px; border: 1px solid var(--border-mint); border-radius: var(--radius-sm, 4px); background: var(--bg-mint-subtle, #f0f8f2); font-weight: 700; }
+
+.print-options__copies { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 0.8125rem; }
+.print-options__copies label { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.print-options__exit { grid-column: 3; background: var(--surface-hover); }
+.print-options__exit:hover { background: var(--border-mint); }
+
+.btn--whatsapp {
+  color: #fff;
+  background: #25D366;
+  box-shadow: var(--shadow-md);
+}
+.btn--whatsapp:hover { background: #1ebc59; }
+.btn--whatsapp:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#po-whatsapp-dialog .mform__label { display: block; margin: 12px 0 4px; font-weight: 600; }
+#po-whatsapp-dialog input[readonly] { background: var(--surface-hover); }

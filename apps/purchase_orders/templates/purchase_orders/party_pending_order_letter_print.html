@@ -1,0 +1,98 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pending PO Reminder · {{ brand.name }}</title>
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/party_pending_order_letter_print.css' %}">
+</head>
+<body>
+  {% if public %}
+  <!-- On-screen only (see @media print in the CSS) -- the person opening a
+       shared link has no app toolbar, so this is their way to get a PDF. -->
+  <div class="pol-public-bar">
+    <span>Pending PO Reminder &middot; {{ brand.name }}</span>
+    {% if pdf_url %}
+    <a href="{{ pdf_url }}" class="pol-public-bar__pdf-link">Download PDF</a>
+    {% else %}
+    <button type="button" onclick="window.print()">Download / Print PDF</button>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if not result %}
+    <p>Select a party first.</p>
+  {% else %}
+  <header class="pol-print-header">
+    {% if copy_type %}<p class="pol-print-copy-type">{{ copy_type|upper }}</p>{% endif %}
+    <img class="pol-print-logo" src="{% static brand.logo_full %}" alt="{{ brand.name }}">
+    <h1>PENDING ORDER</h1>
+    <div class="pol-print-company">
+      <strong>{{ brand.name }}</strong>
+      <p>{{ brand.tagline }}</p>
+      <p>{{ brand.address_line1 }}</p>
+      <p>{{ brand.address_line2 }}</p>
+      <p>{{ brand.phone }}</p>
+    </div>
+  </header>
+
+  <section class="pol-print-party">
+    <p class="pol-print-party__line">
+      <strong>{{ result.party.name }}</strong>
+      <span class="pol-print-date">DATE {{ run_date|date:"d/m/Y" }}</span>
+    </p>
+    {% if result.party.address_1 %}<p>{{ result.party.address_1 }}</p>{% endif %}
+    {% if result.party.address_2 %}<p>{{ result.party.address_2 }}</p>{% endif %}
+    {% if result.party.address_3 %}<p>{{ result.party.address_3 }}</p>{% endif %}
+  </section>
+
+  <p>Dear Sir,</p>
+  <p>Please refer to our following purchase orders.</p>
+
+  <table class="pol-print-table">
+    <thead>
+      <tr>
+        <th>Ord. No.</th>
+        <th>Ord. Date</th>
+        <th>Code</th>
+        <th>Item Description</th>
+        <th class="num">Qty.</th>
+        <th>Des. Dt</th>
+        <th class="num">D. Days</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in result.lines %}
+      <tr>
+        <td>{{ line.ord_no }}</td>
+        <td>{{ line.ord_date }}</td>
+        <td>{{ line.item_code }}</td>
+        <td>{{ line.item_name }}</td>
+        <td class="num">{{ line.pending_qty }}</td>
+        <td>{{ line.despatch_date }}</td>
+        <td class="num">{{ line.delay_days }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No pending orders for this party.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="pol-print-note">
+    Kindly expedite the supplies which have already been delayed and intimate the despatch
+    details immediately.
+  </p>
+
+  <p>Thanking you</p>
+  <p class="pol-print-signoff">
+    Yours Faithfully<br>
+    For {{ brand.name }}
+    <br><br><br>
+    Authorised Signatory<br>
+    Purchase Deptt.
+  </p>
+
+  {% if not preview %}
+  <script>window.addEventListener("load", function () { window.print(); });</script>
+  {% endif %}
+  {% endif %}
+</body>
+</html>

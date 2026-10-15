@@ -1,0 +1,195 @@
+/* MRN Entry — list + Add/Modify/View form. Shared master / modal / form styles
+   come from static/css/components.css; only this screen's specifics live here. */
+
+.mrn-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.mrn-filters__date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mrn-filters__date input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+}
+
+.mrn-table td:nth-child(5) { min-width: 200px; white-space: normal; }
+
+/* --- Add / Modify / View form -- matches the supplied reference exactly,
+   scoped under .mrn-form-modal so none of it leaks onto other screens. ------ */
+
+.mrn-form-modal {
+  --green: #bfe0c9; --green-dk: #16a34a; --red: #dc2626;
+  --border: #9ca3af; --ro: #e5e7eb; --lbl: #111827;
+  --h: 22px; --fs: 12px;
+  width: 1002px;
+  background: #f2faf5;
+  max-width: calc(100vw - 32px);
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: var(--fs);
+  color: var(--lbl);
+  /* Scales the whole dialog up -- every fixed pixel width/height in this form's
+     grids scales proportionally with it, so nothing needed hand-recalculating
+     column by column. Chromium/Edge/Firefox all support zoom now; Safari
+     doesn't, where this is a no-op and the dialog just renders at its normal
+     (smaller) size instead of erroring. */
+  zoom: 1.2;
+}
+
+.mrn-form-modal .mrn-head {
+  background: #8fc4a2;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 8px; font-weight: 700; font-size: 13px;
+}
+.mrn-form-modal .mrn-head button { border: 0; background: none; font-size: 16px; cursor: pointer; line-height: 1; }
+.mrn-form-modal .mrn-body { padding: 6px 8px; overflow-x: auto; }
+
+.mrn-form-modal .mrn-body input,
+.mrn-form-modal .mrn-body select {
+  height: var(--h); padding: 1px 4px; font-size: var(--fs);
+  border: 2px solid #000; border-radius: 2px; width: 100%; min-width: 0; background: #fff;
+  color: #000;
+}
+.mrn-form-modal .mrn-body input:focus,
+.mrn-form-modal .mrn-body select:focus {
+  outline: none; border-color: var(--green-dk);
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.35); /* same green as the border, as a soft glow */
+}
+.mrn-form-modal .mrn-body input[readonly] { background: var(--ro); }
+/* MRN NO and SIZE render inside elements that would otherwise keep the base
+   white background (the header grid cell / .sizebox flex row) -- these two
+   explicit IDs make sure the light "read-only" tint actually shows. */
+.mrn-form-modal #mrn-mrn_no,
+.mrn-form-modal #mrn-row-size { background: var(--ro); }
+.mrn-form-modal .num { text-align: right; }
+.mrn-form-modal .mrn-body label { font-weight: 700; color: #000; font-size: 15px; white-space: nowrap; align-self: center; }
+.mrn-form-modal .oc-label { font-weight: 700; }
+.mrn-form-modal input, .mrn-form-modal select { font-weight: 700; }
+.mrn-form-modal input[data-date-mask] { font-weight: 800; }
+.mrn-form-modal td { color: #000; font-weight: 700; }
+.mrn-form-modal .r { text-align: right; justify-self: end; }
+
+/* HEADER */
+.mrn-form-modal .hdr {
+  display: grid; gap: 3px 6px; align-items: center;
+  /* The 5th column is a flexible spacer (not a fixed gap) so the Challan No /
+     Invoice No / G.R. No / Transport / Check PO Y/N block is pushed to the
+     right side of the form instead of sitting right after Party. */
+  grid-template-columns: 62px 80px 36px 110px 1fr 112px 150px 120px 110px;
+}
+.mrn-form-modal .hdr .party { grid-column: 2 / 5; }
+.mrn-form-modal .hdr .party-sub { grid-column: 2 / 5; display: flex; gap: 3px; }
+.mrn-form-modal .hdr .party-sub input:first-child { flex: 1; }
+.mrn-form-modal .hdr .party-sub input:last-child { width: 55px; flex: none; }
+.mrn-form-modal .hdr .transport { grid-column: 7 / 8; }
+
+/* ITEM ENTRY */
+.mrn-form-modal .item {
+  margin-top: 8px; display: grid; gap: 3px 5px; align-items: center;
+  grid-template-columns: 270px 90px 52px 58px 78px 62px 78px 78px 52px 72px 38px;
+  border: 0; padding: 0;
+}
+.mrn-form-modal .item .hl { font-weight: 700; color: #000; font-size: 13px; align-self: end; }
+.mrn-form-modal .item .sizebox { display: flex; align-items: center; gap: 5px; }
+.mrn-form-modal .item .sizebox input { width: 110px; flex: none; }
+.mrn-form-modal .item .sizebox .podt { margin-left: auto; }
+.mrn-form-modal .item .ok { height: var(--h); padding: 0 6px; font-weight: 600; border: 1px solid var(--border); background: #fff; border-radius: 2px; cursor: pointer; }
+.mrn-form-modal .item .ok:hover { background: var(--green); }
+.mrn-form-modal [data-row-error] { grid-column: 1 / -1; color: var(--red); font-size: 11px; margin: 0; }
+.mrn-form-modal [data-row-error]:empty { display: none; }
+
+/* GRID -- column widths deliberately mirror the item-entry fieldset's own
+   grid-template-columns above (see .item), so each header sits directly under
+   its matching entry field instead of the table auto-sizing its own columns. */
+.mrn-form-modal .tbl-wrap { margin-top: 6px; border: 1px solid var(--border); height: 190px; overflow: auto; }
+.mrn-form-modal table { border-collapse: collapse; width: 100%; table-layout: fixed; font-size: var(--fs); }
+.mrn-form-modal th:nth-child(1) { width: 28px; }
+.mrn-form-modal th:nth-child(2) { width: 90px; }
+.mrn-form-modal th:nth-child(3) { width: auto; } /* Item Description -- the one flexible column */
+.mrn-form-modal th:nth-child(4) { width: 60px; }  /* P.O. No    -- matches .item's P.O. NO column */
+.mrn-form-modal th:nth-child(5) { width: 60px; } /* Inv Qty    -- matches .item's INV QTY label + box */
+.mrn-form-modal th:nth-child(6) { width: 78px; } /* Qty Recd   -- matches .item's QTY ACPT label + box */
+.mrn-form-modal th:nth-child(7) { width: 78px; }  /* Qty Acpt   -- matches .item's RATE box */
+.mrn-form-modal th:nth-child(8) { width: 78px; }  /* Qty Rej    -- matches .item's DISC % box */
+.mrn-form-modal th:nth-child(9) { width: 52px; }  /* Rate       -- matches .item's DIS AMT box */
+.mrn-form-modal th:nth-child(10) { width: 72px; }
+.mrn-form-modal th:nth-child(11) { width: 85px; } /* Dis Amt */
+.mrn-form-modal th:nth-child(12) { width: 95px; } /* Amount -- wide enough for a 10-digit value */
+.mrn-form-modal th { background: var(--green); position: sticky; top: 0; padding: 2px 4px; border-right: 1px solid #fff; text-align: left; white-space: nowrap; font-size: 12px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
+.mrn-form-modal td { padding: 1px 4px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mrn-form-modal td.num, .mrn-form-modal th.num { text-align: right; }
+.mrn-form-modal tbody tr { cursor: default; }
+.mrn-form-modal tbody tr:focus, .mrn-form-modal tbody tr.sel, .mrn-form-modal tbody tr.is-editing { background: #fef9c3; outline: none; }
+.mrn-form-modal .empty td { text-align: center; color: #6b7280; padding: 8px; }
+
+/* FOOTER */
+.mrn-form-modal .ftr { margin-top: 5px; display: grid; grid-template-columns: 1fr 250px; gap: 6px; }
+.mrn-form-modal .ftr-left { display: grid; grid-template-columns: 72px 1fr; gap: 3px 6px; align-content: start; max-width: 560px; }
+.mrn-form-modal .ftr-left .lastrate { width: 90px; }
+.mrn-form-modal .links { grid-column: 1 / -1; display: flex; gap: 18px; margin-top: 6px; }
+.mrn-form-modal .links a { font-weight: 700; font-style: italic; color: #1d4ed8; text-decoration: underline; cursor: pointer; font-size: 11px; }
+.mrn-form-modal .totals { display: grid; grid-template-columns: 1fr 110px; gap: 3px 6px; align-items: center; }
+.mrn-form-modal .btns { display: flex; justify-content: center; gap: 8px; margin: 10px 0 8px; padding: 0; border: 0; }
+.mrn-form-modal .btns button { height: 26px; padding: 0 18px; border: 0; border-radius: 3px; color: #fff; font-weight: 600; cursor: pointer; }
+.mrn-form-modal .btn-ok { background: var(--green-dk); }
+.mrn-form-modal .btn-exit { background: var(--red); }
+
+.mrn-form-modal .form-alert { margin: 6px 0; }
+.mrn-form-modal .mform__error { color: var(--red); font-size: 11px; margin: 2px 0; }
+.mrn-form-modal .mform__error:empty { display: none; }
+
+/* PRINT OPTIONS / WHATSAPP -- same dialog pattern as the Purchase Order and
+   Pending PO Reminder screens (print-options-dialog etc. are shared class
+   names; each app keeps its own copy since static files aren't shared
+   across Django apps). */
+.print-options-dialog { width: min(360px, calc(100vw - 32px)); padding: 0; overflow: hidden; }
+.print-options__header { background: var(--primary); padding: 10px 16px; }
+.print-options__title { margin: 0; font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.04em; }
+.print-options__body { padding: 16px; }
+.print-options__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.print-options__grid button {
+  grid-column: span 1;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--primary);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+.print-options__grid button:hover { background: var(--border-mint); }
+
+.print-options__fields { display: flex; gap: 10px; margin-bottom: 12px; }
+.print-options__fields label { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+.print-options__fields input { padding: 6px 8px; border: 1px solid var(--border-mint); border-radius: var(--radius-sm, 4px); background: var(--bg-mint-subtle, #f0f8f2); font-weight: 700; }
+
+.print-options__exit { grid-column: 3; background: var(--surface-hover); }
+.print-options__exit:hover { background: var(--border-mint); }
+.mrn-page .btn { font-size: 15px; height: 40px; padding: 0 14px; }
+.mrn-page label { font-size: 14px; }
+.mrn-page .master-toolbar input { font-size: 16px; height: 40px; }
+.mrn-table { font-size: 17px; }
+.mrn-table th { font-size: 15px; }
+.mrn-table td { font-size: 17px; }
+.mrn-table th, .mrn-table td { padding: 4px 8px; }
+.mrn-form-modal .item .hl { font-size: 15px; }
+.mrn-form-modal .tbl-wrap th { font-size: 11px; }
+.mrn-table th { font-size: 20px !important; }

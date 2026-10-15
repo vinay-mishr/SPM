@@ -1,0 +1,81 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Main Ledger (Op. Balance) · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger_opening_balance.css' %}">
+  <script src="{% static 'gl/js/main_ledger_opening_balance.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Main Ledger (Op. Balance){% endblock %}
+{% block page_subtitle %}Master &rsaquo; Main Ledger (Op. Balance){% endblock %}
+
+{% block content %}
+<section class="mlob" data-ledger-opening-balance
+         data-data-url="{% url 'gl:opening_balance_data' %}"
+         data-save-url="{% url 'gl:opening_balance_save' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <form class="mlob-search master-toolbar" role="search" data-search-form>
+    <fieldset class="mlob-search__mode">
+      <legend class="mlob-search__label">Search</legend>
+      <label><input type="radio" name="mode" value="all" checked> All</label>
+      <label><input type="radio" name="mode" value="selective"> Selective</label>
+    </fieldset>
+    <label class="mlob-search__text">
+      <span class="visually-hidden">Search Text</span>
+      <input class="form-control" type="search" placeholder="Code or ledger description" autocomplete="off" data-search-text>
+    </label>
+    <p class="mlob-search__hint" data-search-hint aria-live="polite"></p>
+    <div class="mlob-actions">
+      <button class="btn btn--primary" type="button" data-confirm{% if not can_edit %} disabled{% endif %}>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </form>
+
+  {% if not can_edit %}
+    <div class="alert alert--info" role="status">
+      View only: changing ledger opening balances needs the “Can change ledger opening balance” permission{% if not request.user.is_superuser %} (ask your administrator){% endif %}.
+    </div>
+  {% endif %}
+
+  <div class="mlob-grid master-table-wrap" data-grid-wrap>
+    <table class="table mlob-table">
+      <thead>
+        <tr>
+          <th scope="col" class="num mlob-col-sno">Sno</th>
+          <th scope="col" class="mlob-col-code">Code</th>
+          <th scope="col">Ledger Description</th>
+          <th scope="col" class="num mlob-col-amt">Debit</th>
+          <th scope="col" class="num mlob-col-amt">Credit</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+      <tfoot>
+        <tr class="mlob-total">
+          <th scope="row" colspan="3">Total</th>
+          <td class="num" data-total-debit>0.00</td>
+          <td class="num" data-total-credit>0.00</td>
+        </tr>
+        <tr class="mlob-total">
+          <th scope="row" colspan="3">Difference</th>
+          <td class="num" data-diff-debit>0.00</td>
+          <td class="num" data-diff-credit>0.00</td>
+        </tr>
+        <tr class="mlob-total mlob-total--grand">
+          <th scope="row" colspan="3">G. Total</th>
+          <td class="num" data-grand-debit>0.00</td>
+          <td class="num" data-grand-credit>0.00</td>
+        </tr>
+      </tfoot>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No records found</p>
+  </div>
+  <p class="mlob-changes" data-changes aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"mlob-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

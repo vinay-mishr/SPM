@@ -1,0 +1,59 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Stock Ledger · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/part_ledger.css' %}">
+  <script src="{% static 'mrn/js/part_ledger.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Stock Ledger{% endblock %}
+{% block page_subtitle %}MRN &rsaquo; Stock Ledger{% endblock %}
+
+{% block content %}
+<section class="master-page pl-page" data-part-ledger
+         data-data-url="{% url 'mrn:part_ledger_data' %}"
+         data-export-url="{% url 'mrn:part_ledger_export' %}"
+         data-parts-url="{% url 'purchase_orders:api_parts' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar pl-toolbar" role="toolbar" aria-label="Stock ledger filters">
+    <fieldset class="pl-mode">
+      <legend class="visually-hidden">All / Single</legend>
+      <label><input type="radio" name="pl-mode" value="all"> All</label>
+      <label><input type="radio" name="pl-mode" value="single" checked> Single</label>
+    </fieldset>
+    <label class="pl-filter">Part No.
+      <input class="form-control" type="text" autocomplete="off" placeholder="Type part code..." data-part-search>
+      <input type="hidden" data-part-code>
+    </label>
+    <label class="pl-filter pl-filter--wide">Item Name
+      <input class="form-control" type="text" data-item-name readonly tabindex="-1">
+    </label>
+    <label class="pl-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="pl-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>View</button>
+      <button class="btn btn--secondary" type="button" data-excel>Excel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="alert alert--error" role="alert" data-ledger-alert hidden></div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table pl-table">
+      <thead><tr><th>Ref Date</th><th>Ref No.</th><th>Party</th><th class="num">Rate</th><th class="num">Rec.Qty</th><th class="num">Iss.Qty</th><th class="num">Bal.Qty</th></tr></thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No stock movements for this selection.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pl-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

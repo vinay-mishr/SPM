@@ -1,0 +1,151 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> </title>
+  <link rel="stylesheet" href="{% static 'sale_order/css/sale_order_print.css' %}">
+</head>
+<body>
+  <div class="sop-actions"><button type="button" onclick="window.print()">PRINT</button> <button type="button" onclick="window.close()">CLOSE</button></div>
+  <div class="sop-sheet">
+
+    {% if brand.gstin %}<p class="sop-gstin">GSTIN :{{ brand.gstin }}</p>{% endif %}
+
+    <header class="sop-header">
+      <img class="sop-logo" src="{% static brand.logo_full %}" alt="{{ brand.name }}">
+      <div class="sop-title">
+        <h2>SPARE SALE ORDER</h2>
+      </div>
+    </header>
+
+    <div class="sop-company">
+      <h1>{{ brand.name }}</h1>
+      <p>{{ brand.address_line1 }}</p>
+      <p>{{ brand.address_line2 }}</p>
+      <p>Mobile No.: {{ brand.print_mobile }}</p>
+      <p>Email: {{ brand.email }}</p>
+      <p>Website: {{ brand.website }}</p>
+    </div>
+
+    <section class="sop-party">
+      <div class="sop-party__supplier">
+        <p class="sop-party__name">M/s {{ order.party_name|default:order.party_code }}</p>
+        {% if order.address1 %}<p>{{ order.address1 }}</p>{% endif %}
+        {% if order.address2 %}<p>{{ order.address2 }}</p>{% endif %}
+        {% if order.city %}<p>{{ order.city }}</p>{% endif %}
+        <p>Rep: {{ order.rep_name|default:"" }}</p>
+      </div>
+      <div class="sop-party__po">
+        <p>ORDER NO: <strong>{{ order.order_no }}</strong></p>
+        <p>ORDER DATE: <strong>{{ order.order_date|slice:"8:10" }}-{{ order.order_date|slice:"5:7" }}-{{ order.order_date|slice:"0:4" }}</strong></p>
+        <p>P.O.NO: <strong>{{ order.po_no }}</strong></p>
+        <p>P.O.DATE: <strong>{% if order.po_date %}{{ order.po_date|slice:"8:10" }}-{{ order.po_date|slice:"5:7" }}-{{ order.po_date|slice:"0:4" }}{% else %}--{% endif %}</strong></p>
+      </div>
+    </section>
+
+    <p class="sop-instruction">We thank you for your above Purchase Order and convey our acceptance of the same subject to terms &amp; conditions mentioned below.</p>
+
+    <table class="sop-table">
+      <colgroup>
+        <col class="sop-col-sno">
+        <col class="sop-col-desc">
+        <col class="sop-col-part">
+        <col class="sop-col-dis">
+        <col class="sop-col-qty">
+        <col class="sop-col-rate">
+        <col class="sop-col-amount">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="num sop-col-sno">SNO</th>
+          <th class="sop-col-desc">Particulars</th>
+          <th>Code</th>
+          <th class="num">Dis%</th>
+          <th class="num">Qty</th>
+          <th class="num">Rate</th>
+          <th class="num">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in order.lines %}
+        <tr>
+          <td class="num sop-col-sno">{{ forloop.counter }}</td>
+          <td class="sop-col-desc">{{ line.name }}</td>
+          <td>{{ line.code }}</td>
+          <td class="num">{{ line.dis }}</td>
+          <td class="num">{{ line.qty }}</td>
+          <td class="num">{{ line.rate }}</td>
+          <td class="num">{{ line.amount }}</td>
+        </tr>
+        {% endfor %}
+        {% for _ in fill_rows %}
+        <tr class="sop-fill-row">
+          <td class="sop-col-sno">&nbsp;</td>
+          <td class="sop-col-desc">&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        {% endfor %}
+        <tr class="sop-fill-row" id="sop-grid-spacer-row">
+          <td class="sop-col-sno">&nbsp;</td>
+          <td class="sop-col-desc">&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sop-bottom-block">
+      <section class="sop-bottom">
+        <div class="sop-remarks">
+          <p class="sop-remarks__label">Remarks :</p>
+          <p class="sop-remarks__text">{{ order.remarks }} {{ order.remarks1 }}</p>
+        </div>
+        <div class="sop-totals">
+          <div class="sop-totals__row"><span>Total</span><span class="sop-rupee">₹</span><span class="num">{{ order.total }}</span></div>
+          <div class="sop-totals__row"><span>Discount</span><span class="sop-rupee">₹</span><span class="num">{{ order.discount }}</span></div>
+          <div class="sop-totals__row"><span>Add. Discount</span><span class="sop-rupee">₹</span><span class="num">{{ order.add_discount }}</span></div>
+          <div class="sop-totals__row sop-totals__row--net"><span>Net Amount</span><span class="sop-rupee">₹</span><span class="num">{{ order.net_amount }}</span></div>
+        </div>
+      </section>
+
+      <section class="sop-footer">
+        <div class="sop-terms">
+          <p class="sop-terms__title">TERMS AND CONDITIONS:-</p>
+          <ol>
+            {% for term in terms %}<li>{{ term }}</li>{% endfor %}
+          </ol>
+        </div>
+        <div class="sop-signature">
+          <p>For {{ brand.name }}</p>
+          <div class="sop-signature__space"></div>
+          <p>Authorised Signatory</p>
+          <p>Marketing Dept.</p>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <script>
+    window.addEventListener("load", function () {
+      try {
+        var table = document.querySelector(".sop-table");
+        var bottomBlock = document.querySelector(".sop-bottom-block");
+        var spacerRow = document.getElementById("sop-grid-spacer-row");
+        if (table && bottomBlock && spacerRow) {
+          var gap = bottomBlock.getBoundingClientRect().top - table.getBoundingClientRect().bottom;
+          var newHeight = Math.max(0, spacerRow.getBoundingClientRect().height + gap);
+          spacerRow.querySelectorAll("td").forEach(function (td) { td.style.height = newHeight + "px"; });
+        }
+      } catch (e) { /* print still works even if this adjustment fails */ }
+    });
+  </script>
+</body>
+</html>

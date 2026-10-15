@@ -1,0 +1,53 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Current Stock · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/current_stock_report.css' %}">
+  <script src="{% static 'mrn/js/current_stock_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Current Stock{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Current Stock{% endblock %}
+
+{% block content %}
+<section class="master-page cs-page" data-current-stock
+         data-data-url="{% url 'mrn:current_stock_data' %}"
+         data-export-url="{% url 'mrn:current_stock_export' %}"
+         data-exit-url="{% url 'mrn:entry' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar cs-toolbar" role="toolbar" aria-label="Current stock filters">
+    <label class="cs-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="cs-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="cs-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap cs-grid-wrap">
+    <table class="table master-table cs-table">
+      <thead>
+        <tr>
+          <th scope="col">Sno</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Item Description</th>
+          <th scope="col" class="num">Stock</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No parts with a non-zero balance for this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"cs-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

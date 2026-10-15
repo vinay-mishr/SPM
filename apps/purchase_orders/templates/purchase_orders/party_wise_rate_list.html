@@ -1,0 +1,72 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Party-Wise Rate List · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/party_wise_rate_list.css' %}">
+  <script src="{% static 'purchase_orders/js/party_wise_rate_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Party-Wise Rate List{% endblock %}
+{% block page_subtitle %}Purchase Order &rsaquo; Party-Wise Rate List{% endblock %}
+
+{% block content %}
+<section class="master-page pwr-page" data-party-wise-rate-list
+         data-data-url="{% url 'purchase_orders:party_wise_rate_list_data' %}"
+         data-export-url="{% url 'purchase_orders:party_wise_rate_list_export' %}"
+         data-print-url="{% url 'purchase_orders:party_wise_rate_list_print' %}"
+         data-parties-url="{% url 'purchase_orders:api_parties' %}"
+         data-exit-url="{% url 'purchase_orders:master' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar pwr-toolbar" role="toolbar" aria-label="Party wise rate list filters">
+    <fieldset class="pwr-mode">
+      <legend class="visually-hidden">All / Single party</legend>
+      <label><input type="radio" name="pwr-mode" value="all" checked> All Party</label>
+      <label><input type="radio" name="pwr-mode" value="single"> Single Party</label>
+    </fieldset>
+
+    <div class="pwr-party">
+      <span class="pwr-party__label">Party Name</span>
+      <input class="form-control pwr-party__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search disabled>
+      <input class="form-control pwr-party__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+    </div>
+
+    <label class="pwr-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="pwr-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="pwr-error" data-date-error hidden></p>
+
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-print><span class="master-toolbar__key">P</span>rint</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap pwr-grid-wrap">
+    <table class="table master-table pwr-table">
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Item Name</th>
+          <th scope="col">Bill No</th>
+          <th scope="col">Date</th>
+          <th scope="col" class="num">Qty</th>
+          <th scope="col" class="num">PO Qty</th>
+          <th scope="col" class="num">Rate</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No records found for the selected filters.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"pwr-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

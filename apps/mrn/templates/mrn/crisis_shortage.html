@@ -1,0 +1,72 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Crisis Shortage · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'mrn/css/crisis_shortage.css' %}">
+  <script src="{% static 'mrn/js/crisis_shortage.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Crisis Shortage{% endblock %}
+{% block page_subtitle %}M.R.N. &rsaquo; Crisis Shortage{% endblock %}
+
+{% block content %}
+<section class="master-page cx-page" data-crisis-shortage
+         data-data-url="{% url 'mrn:crisis_shortage_data' %}"
+         data-export-url="{% url 'mrn:crisis_shortage_export' %}"
+         data-exit-url="{% url 'mrn:entry' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar cx-toolbar" role="toolbar" aria-label="Crisis shortage filters">
+    <label class="cx-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="cx-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <label class="cx-filter">Days
+      <input class="form-control" type="number" min="1" max="366" data-days value="7">
+    </label>
+    <fieldset class="cx-category">
+      <legend class="visually-hidden">Category</legend>
+      <label><input type="radio" name="cx-category" value="all" checked> All</label>
+      <label><input type="radio" name="cx-category" value="routine"> Routine</label>
+      <label><input type="radio" name="cx-category" value="subassembly"> Sub Assembly</label>
+      <label><input type="radio" name="cx-category" value="workshop"> Workshop</label>
+    </fieldset>
+    <p class="cx-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-summary>Summary</button>
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap cx-grid-wrap">
+    <table class="table master-table cx-table">
+      <thead>
+        <tr>
+          <th scope="col">Sno</th>
+          <th scope="col">Code</th>
+          <th scope="col">Item Description</th>
+          <th scope="col">Unit</th>
+          <th scope="col" class="num">Cur. Avg</th>
+          <th scope="col" class="num">Last. Avg</th>
+          <th scope="col" class="num">Closing Balance</th>
+          <th scope="col" class="num">Shortage</th>
+          <th scope="col">Vendor</th>
+          <th scope="col">PO No</th>
+          <th scope="col" class="num">Pending</th>
+          <th scope="col">Despatch</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No crisis shortages for these settings.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"cx-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

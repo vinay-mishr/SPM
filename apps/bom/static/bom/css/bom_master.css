@@ -1,0 +1,195 @@
+/* Bill of Material Master — list + Add/Modify/View form. Shared master / modal / form
+   styles come from static/css/components.css; only this screen's specifics live here. */
+
+.bom-table th,
+.bom-table td {
+  white-space: nowrap;
+  padding: 5px 10px; /* tighter than .master-table's default 9px 12px -- fits more rows per page */
+}
+
+.bom-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bom-table tbody tr.is-duplicate {
+  color: var(--danger);
+}
+
+/* --- Form -------------------------------------------------------------------- */
+
+.bom-form-modal {
+  width: min(900px, calc(100vw - 32px));
+}
+
+.bom-parent {
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.bom-search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.bom-code {
+  flex: 0 0 110px;
+  text-transform: uppercase;
+}
+
+.bom-search {
+  flex: 1;
+}
+
+/* Bill of Material Master (plain, Item-wise) -- ITEM NAME row only: Code 30% narrower,
+   Search 40% narrower (flex-grow cut from 1 to 0.6) than the shared .bom-code/.bom-search
+   above, freeing room for the Unit box added inline in the same row. */
+.bomi-item-code {
+  flex: 0 0 77px; /* 110px * 0.7 */
+}
+
+.bomi-item-search {
+  flex: 0.6 1 0; /* 40% less grow than the shared .bom-search's flex: 1 */
+}
+
+.bom-search-row .bomi-item-unit {
+  flex: 0 0 80px;
+  text-transform: uppercase;
+  background: var(--surface-muted, #f3f4f6);
+}
+
+.bom-add-row {
+  margin: 0 0 6px;
+  padding: 4px 12px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.bom-add-row legend {
+  padding: 0 6px;
+  margin-bottom: -6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bom-add-row__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.bom-add-row .form-control {
+  min-height: 32px;
+  padding: 4px 10px;
+}
+
+.bom-add-row [data-row-add] {
+  min-height: 32px;
+  padding: 0 14px;
+  font-size: 0.8125rem;
+}
+
+.bom-parent .form-control {
+  min-height: 32px;
+  padding: 4px 10px;
+}
+
+.bom-add-row__desc {
+  flex: 1 1 320px;
+}
+
+.bom-add-row__qty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.bom-add-row__qty input {
+  width: 110px;
+  text-align: right;
+}
+
+.bom-add-row__unit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.bom-add-row__unit input {
+  width: 80px;
+  text-transform: uppercase;
+}
+
+#bom-parent-unit {
+  max-width: 140px;
+  text-transform: uppercase;
+  background: var(--surface-muted, #f3f4f6);
+}
+
+.bom-add-row [data-row-error]:empty {
+  display: none;
+}
+
+.bom-add-row [data-row-error] {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+.bom-grid-wrap {
+  max-height: min(960px, calc(100vh - 230px));
+  overflow: auto;
+}
+
+.bom-grid-table {
+  font-size: 0.8125rem;
+}
+
+.bom-grid-table th,
+.bom-grid-table td {
+  padding: 2px 8px;
+}
+
+.bom-grid-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bom-grid-table tbody tr {
+  cursor: pointer;
+}
+
+.bom-grid-table tbody tr:focus {
+  outline: none;
+}
+
+.bom-grid-table tbody tr.is-selected {
+  background: #FFF176;
+  box-shadow: inset 3px 0 0 var(--text-primary);
+}
+
+@media (max-width: 767px) {
+  .bom-parent {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bom-add-row__fields {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bom-add-row__qty input,
+  .bom-add-row__unit input {
+    width: 100%;
+  }
+}

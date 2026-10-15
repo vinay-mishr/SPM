@@ -1,0 +1,60 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Party-Wise Rate List · {{ brand.name }}</title>
+  <link rel="stylesheet" href="{% static 'purchase_orders/css/purchase_order_print.css' %}">
+</head>
+<body>
+  <header class="pop-header">
+    <div class="pop-brand">
+      <img src="{% static brand.logo %}" alt="">
+      <div>
+        <h1>{{ brand.name }}</h1>
+        <p>{{ brand.tagline }}</p>
+      </div>
+    </div>
+    <div class="pop-title">
+      <h2>PARTY-WISE RATE LIST</h2>
+      <p>From {{ start_date|date:"d/m/Y" }} To {{ end_date|date:"d/m/Y" }}</p>
+    </div>
+  </header>
+
+  {% for group in groups %}
+  <table class="pop-table">
+    <caption style="text-align:left; font-weight:bold; padding:6px 0;">
+      {{ group.party_name }}{% if group.city %}, {{ group.city }}{% endif %} ({{ group.party_code }})
+      {% if group.grade %}&nbsp;&nbsp;Grade: {{ group.grade }}{% endif %}
+    </caption>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Item Description</th>
+        <th>Bill No</th>
+        <th>Bill Date</th>
+        <th class="num">Qty</th>
+        <th class="num">PO Qty</th>
+        <th class="num">Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in group.lines %}
+      <tr>
+        <td>{{ line.item_code }}</td>
+        <td>{{ line.item_name }}</td>
+        <td>{{ line.bill_no }}</td>
+        <td>{{ line.bill_date }}</td>
+        <td class="num">{{ line.qty }}</td>
+        <td class="num">{{ line.po_qty }}</td>
+        <td class="num">{{ line.rate }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% empty %}
+  <p>No records found for the selected filters.</p>
+  {% endfor %}
+
+  <script>window.addEventListener("load", function () { window.print(); });</script>
+</body>
+</html>

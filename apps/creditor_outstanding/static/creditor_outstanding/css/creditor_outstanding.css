@@ -1,0 +1,126 @@
+/* Creditor Outstanding — list + compact form. Shared master / modal / form styles come
+   from static/css/components.css; only this screen's specifics live here. */
+
+.co-filters {
+  display: flex;
+  flex: 1 1 320px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.co-div {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.co-div .form-control {
+  width: auto;
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+}
+
+.co-table {
+  min-width: 820px;
+  font-size: 0.8125rem;
+}
+
+.co-table th,
+.co-table td {
+  padding: 6px 10px;
+}
+
+.co-table td:nth-child(5) {
+  white-space: normal;
+  min-width: 240px;
+}
+
+.co-total th,
+.co-total td {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 7px 10px;
+  font-weight: 700;
+  background: var(--bg-mint);
+  border-top: 1px solid var(--border-mint);
+}
+
+.co-total th {
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Form -------------------------------------------------------------------- */
+
+.co-form-modal {
+  width: min(680px, calc(100vw - 32px));
+}
+
+.co-form {
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px 12px;
+}
+
+.co-form .mform__input.form-control {
+  min-height: 34px;
+  padding: 5px 10px;
+}
+
+.co-short { max-width: 70px; text-transform: uppercase; }
+.co-mid { max-width: 150px; }
+.co-date { max-width: 170px; }
+.co-code { max-width: 90px; text-transform: uppercase; }
+
+/* Two fields on one line (Invoice No + Date, Balance + Cash Dis). */
+.co-pair {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 8px 12px;
+}
+
+.co-inline-label {
+  width: auto;
+  white-space: nowrap;
+}
+
+.co-party {
+  display: flex;
+  gap: 8px;
+}
+
+.co-party-search {
+  flex: 1;
+}
+
+.co-party-name {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.co-party-name:empty {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .co-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .co-inline-label {
+    width: auto;
+    text-align: left;
+  }
+
+  .co-filters {
+    justify-content: flex-start;
+  }
+}

@@ -1,0 +1,54 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Single Issue Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'issue_slip/css/single_issue_report.css' %}">
+  <script src="{% static 'issue_slip/js/single_issue_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Single Issue Report{% endblock %}
+{% block page_subtitle %}Single Issue Slip &rsaquo; Single Issue Report{% endblock %}
+
+{% block content %}
+<section class="master-page sir-page" data-single-issue-report
+         data-data-url="{% url 'issue_slip:single_issue_report_data' %}"
+         data-export-url="{% url 'issue_slip:single_issue_report_export' %}"
+         data-exit-url="{% url 'issue_slip:entry' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar sir-toolbar" role="toolbar" aria-label="Single issue report filters">
+    <label class="sir-filter">Start Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+    </label>
+    <label class="sir-filter">End Date
+      <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+    </label>
+    <p class="sir-error" data-date-error hidden></p>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel><span class="master-toolbar__key">E</span>xcel</button>
+      <button class="btn btn--secondary" type="button" data-exit>Exit</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap sir-grid-wrap">
+    <table class="table master-table sir-table">
+      <thead>
+        <tr>
+          <th scope="col">Challan No</th>
+          <th scope="col">Date</th>
+          <th scope="col">Item Desc</th>
+          <th scope="col">Unit</th>
+          <th scope="col" class="num">Qty</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No single issues found for the selected date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"sir-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

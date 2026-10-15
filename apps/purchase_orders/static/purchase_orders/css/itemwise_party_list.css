@@ -1,0 +1,27 @@
+/* Itemwise Party List report — read-only report. Shared master / toolbar / table
+   styles come from static/css/components.css; only this screen's specifics live here. */
+
+.ipl-toolbar {
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.ipl-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ipl-item__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ipl-item__name { width: 260px; }
+.ipl-item__code { width: 90px; text-transform: uppercase; }
+
+.ipl-table { min-width: 600px; font-size: 0.8125rem; }
+.ipl-table th, .ipl-table td { padding: 4px 8px; white-space: nowrap; }
+.ipl-table .num { text-align: right; font-variant-numeric: tabular-nums; }

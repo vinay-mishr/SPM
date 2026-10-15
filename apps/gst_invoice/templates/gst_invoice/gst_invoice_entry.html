@@ -1,0 +1,161 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}GST Invoice · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <script src="{% static 'gst_invoice/js/gst_invoice_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Billing{% endblock %}
+{% block page_subtitle %}Invoice &rsaquo; Billing{% endblock %}
+
+{% block content %}
+<section class="gi-page" data-gi
+         data-list-url="{% url 'gst_invoice:api_list' %}"
+         data-next-no-url="{% url 'gst_invoice:api_next_no' %}"
+         data-detail-url-template="{% url 'gst_invoice:api_detail' bill_no='__NO__' %}"
+         data-items-url="{% url 'gst_invoice:api_items' %}"
+         data-item-url="{% url 'gst_invoice:api_item' %}"
+         data-ledgers-url="{% url 'gst_invoice:api_ledgers' %}"
+         data-parties-url="{% url 'gst_invoice:api_parties' %}"
+         data-party-url="{% url 'gst_invoice:api_party' %}"
+         data-save-url="{% url 'gst_invoice:api_save' %}"
+         data-delete-url="{% url 'gst_invoice:api_delete' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-print-url-template="{% url 'gst_invoice:print' bill_no='__NO__' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+  {% csrf_token %}
+
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--primary" data-action="add"{% if not can_edit %} disabled{% endif %}>ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+      <button type="button" class="btn btn--secondary" data-action="print" disabled>PRINT</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="gi-search">SEARCH <input class="form-control" type="text" data-search placeholder="Type party name..."></label>
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="gi-grid">
+    <table>
+      <thead><tr><th>BILL</th><th>DATE</th><th>PARTY</th><th>CITY</th><th class="num">NET AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="5">No GST invoices in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="gi-form-modal" data-form>
+  <form novalidate data-gi-form>
+    <header class="gi-titlebar">INVOICE <span class="gi-mode" data-mode-label>Add</span></header>
+    <div class="gi-body">
+      <div class="gi-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="gi-fields">
+        <div class="gi-columns">
+          <div class="gi-column gi-column--invoice">
+            <label>GST BILL NO <input data-field="bill_no" readonly tabindex="-1"></label>
+            <label>DATE <input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            <label>CA/CR <select data-ca-cr><option value="CR" selected>CR</option><option value="CA">CA</option></select></label>
+            <label>CHK ORDER <select data-chk-order><option value="N" selected>N</option><option value="Y">Y</option></select></label>
+            <label>SUPPLY <select data-supply-type><option value="W" selected>(W) WITHIN STATE</option><option value="I">(I) INTERSTATE</option></select></label>
+          </div>
+
+          <div class="gi-column gi-column--party">
+            <label>PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+            <label data-cash-row hidden>CASH PARTY <input data-field="cash_party_name" maxlength="40"></label>
+            <label data-cash-row hidden>CASH PARTY CITY <input data-field="cash_party_city" maxlength="40"></label>
+            <label>GST NO <input data-field="gst_no" maxlength="16"></label>
+            <label>CONSIGNEE NAME <input data-field="consignee_name" maxlength="40"></label>
+            <label>CONSIG. ADDRESS <input data-field="consignee_address" maxlength="60"></label>
+            <label>PHONE NO <input data-field="phone" maxlength="25"></label>
+          </div>
+
+          <div class="gi-column gi-column--other">
+            <label>G.R.NO <input data-field="gr_no" maxlength="20"></label>
+            <label>G.R.DATE <input data-field="gr_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            <label>VEHICLE NO <input data-field="vehicle_no" maxlength="20"></label>
+            <label>TRANSPORT <input data-field="transport" maxlength="40"></label>
+          </div>
+
+          <div class="gi-column gi-column--supply">
+            <label>ORDER NO <input data-field="order_no" maxlength="20"></label>
+            <label>ORDER DATE <input data-field="order_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            <label>DATE OF SUPPLY <input data-field="date_of_supply" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            <label>TIME OF SUPPLY <input data-field="time_of_supply" maxlength="10"></label>
+            <label>PLACE OF SUPPLY <input data-field="place_of_supply" maxlength="40"></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="gi-item-row">
+        <label class="gi-wide">ITEM <input data-item-search placeholder="Type item code or name..." autocomplete="off"><input type="hidden" data-item-code></label>
+        <label>UNIT <input data-item-unit readonly tabindex="-1"></label>
+        <label>HSN NO <input data-item-hsn readonly tabindex="-1"></label>
+        <label>ORD.NO/DT <input data-item-order></label>
+        <label>DIS % <input class="num" data-item-dis value="0.00"></label>
+        <label>QTY <input class="num" data-item-qty></label>
+        <label>RATE <input class="num" data-item-rate></label>
+        <button type="button" class="btn btn--primary" data-item-add>OK</button>
+        <div class="gi-row-error" data-item-error></div>
+      </div>
+
+      <div class="gi-grid gi-items">
+        <table>
+          <thead><tr><th>#</th><th>CODE</th><th>ITEM DESCRIPTION</th><th>HSN CODE</th><th>UNIT</th><th>ORD NO</th>
+            <th class="num">QTY</th><th class="num">RATE</th><th class="num">DIS%</th><th class="num">AMOUNT</th><th class="num">GST%</th></tr></thead>
+          <tbody data-item-rows><tr class="empty"><td colspan="11">No items added. Press Space on a row to remove it, double-click to edit.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="gi-fields" style="margin-top: 6px;">
+        <div class="gi-field-row">
+          <label>E-WAY NUMBER <input data-field="eway_no" maxlength="20"></label>
+          <label>E-WAY DATE <input data-field="eway_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label class="gi-radio">REVERSE CHARGE
+            <span><input type="radio" name="gi-reverse-charge" value="N" checked> N</span>
+            <span><input type="radio" name="gi-reverse-charge" value="Y"> Y</span>
+          </label>
+          <label class="gi-wide">REMARKS <input data-field="remarks" maxlength="40"></label>
+        </div>
+      </div>
+
+      <div class="gi-summary">
+        <label>TOTAL AMOUNT <input class="num" data-total-amount readonly tabindex="-1" value="0.00"></label>
+        <label>GST AMT <input class="num" data-gst-amount readonly tabindex="-1" value="0.00"></label>
+        <label>FREIGHT <input class="num" data-field="freight" value="0.00"></label>
+        <label>GST % <input class="num" data-field="freight_gst_pct" value="0.00"></label>
+        <label>GST ON FREIGHT <input class="num" data-freight-gst readonly tabindex="-1" value="0.00"></label>
+        <div class="gi-summary-adj-row">
+          <select data-adj-sign="0"><option value="A">ADD</option><option value="S">LESS</option></select>
+          <input data-adj-code="0" maxlength="4" placeholder="Ledger" autocomplete="off" title="Type to search the ledger master, or press Enter">
+          <input class="num" data-adj-amount="0" value="0.00" disabled>
+        </div>
+        <div class="gi-summary-adj-row">
+          <select data-adj-sign="1"><option value="A">ADD</option><option value="S">LESS</option></select>
+          <input data-adj-code="1" maxlength="4" placeholder="Ledger" autocomplete="off" title="Type to search the ledger master, or press Enter">
+          <input class="num" data-adj-amount="1" value="0.00" disabled>
+        </div>
+        <label>NET AMOUNT <input class="num" data-net-amount readonly tabindex="-1" value="0.00"></label>
+        <label>NET ROUNDED <input class="num" data-net-rounded readonly tabindex="-1" value="0"></label>
+      </div>
+
+      <div class="gi-footer">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+{% endblock %}

@@ -1,0 +1,55 @@
+/* Party Wise Pending Purchase Order — read-only report. Shared master / toolbar /
+   table styles come from static/css/components.css; only this screen's specifics live here. */
+
+.por-page .master-toolbar {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.por-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.por-filter input {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  width: 140px;
+}
+
+.por-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.8125rem;
+}
+
+.por-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.por-party {
+  display: flex;
+  gap: 6px;
+}
+
+.por-party__code { width: 80px; text-transform: uppercase; }
+.por-party__name { width: 220px; }
+
+.por-quick-search { min-height: 34px; padding: 5px 10px; font-size: 0.875rem; width: 220px; margin-left: auto; }
+
+.por-table { min-width: 1100px; font-size: 0.8125rem; }
+.por-table th, .por-table td { padding: 4px 8px; white-space: nowrap; }
+.por-table .num { text-align: right; font-variant-numeric: tabular-nums; }

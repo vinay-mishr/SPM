@@ -1,0 +1,16 @@
+/* Material Master — list screen. Toolbar, table and search come from the shared
+   "Master screens" styles in static/css/components.css. */
+
+.mat-table {
+  width: auto;
+}
+
+.mat-table td:nth-child(1) {
+  min-width: 140px;
+  white-space: normal;
+}
+
+.mat-table td:nth-child(2),
+.mat-table th:nth-child(2) {
+  width: 70px;
+}

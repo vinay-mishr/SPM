@@ -1,0 +1,58 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Single Job Card Print · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'job_card/css/single_job_card.css' %}">
+{% endblock %}
+
+{% block page_title %}Single Job Card Print{% endblock %}
+{% block page_subtitle %}Job Card &rsaquo; Single Job Card Print{% endblock %}
+
+{% block content %}
+<section class="jc-print-page">
+  <form method="get" class="jc-print-select no-print">
+    <label>JOB CARD NO <input name="job_no" value="{{ job_no }}" maxlength="9" autofocus></label>
+    <button class="btn btn--secondary" type="submit">View</button>
+    <button class="btn btn--secondary" type="button" onclick="window.print()"{% if not job %} disabled{% endif %}>Print</button>
+    <a class="btn btn--secondary" href="{% url 'dashboard:home' %}">Exit</a>
+  </form>
+
+  {% if not_found %}
+    <div class="alert alert--error no-print">Job card {{ job_no }} not found.</div>
+  {% elif job %}
+  <article class="jc-sheet">
+    <header class="jc-letterhead">
+      <img class="jc-logo" src="{% static brand.logo_full %}" alt="{{ company }}">
+      <div>
+        <div class="jc-company">{{ company }}</div>
+        <div class="jc-address">{{ address }}</div>
+      </div>
+    </header>
+    <div class="jc-title">JOB CARD</div>
+    <div class="jc-row"><span>JOB CARD NO :</span><b>{{ job.job_no }}</b><span class="jc-right">JOB CARD DATE &nbsp;: {{ job_date_text }}</span></div>
+    <div class="jc-row"><span>PRODUCT CODE: {{ job.item_code }}</span><span class="jc-right"><b>PRODUCT NAME &nbsp;: {{ job.item_name }}</b></span></div>
+    <div class="jc-row"><span><b>QTY ISSUED : {{ job.qty }}</b></span><span class="jc-right">DATE OF ISSUE &nbsp;:</span></div>
+    <div class="jc-row"><span>QTY REJECTED : {{ job.waste }}</span></div>
+    <div class="jc-row"><span>QTY ACCEPTED: {{ job.received }}</span><span class="jc-right">CLOSING DATE &nbsp;: {{ close_date_text }}</span></div>
+    <div class="jc-row"><span>MAN HOURS : {{ job.time_taken }}</span><span class="jc-right">QTY PROD. &nbsp;:</span></div>
+    <div class="jc-row"><span>CONSUMED</span></div>
+
+    <h4>LINE REJECTION</h4>
+    <table class="jc-grid">
+      <thead><tr><th>S.NO</th><th>CODE</th><th>NAME OF ITEM</th><th>QTY</th><th>REASON OF REJECTION</th><th>PARTY NAME</th></tr></thead>
+      <tbody>{% for _ in "123" %}<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>{% endfor %}</tbody>
+    </table>
+
+    <h4>PRODUCTION RELATED PROBLEMS</h4>
+    <table class="jc-grid">
+      <thead><tr><th>S.NO</th><th>PROBLEM</th><th>QTY</th><th>REMARKS</th></tr></thead>
+      <tbody>{% for _ in "123456" %}<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>{% endfor %}</tbody>
+    </table>
+
+    <div class="jc-signs"><span>PRODUCTION</span><span>Q.C.</span><span>FINISHED STORE</span><span>R.M. STORE</span><span>PROD.HEAD</span></div>
+  </article>
+  {% endif %}
+</section>
+{% endblock %}

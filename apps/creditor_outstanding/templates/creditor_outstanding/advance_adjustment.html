@@ -1,0 +1,48 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Advance Adjustment · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'creditor_outstanding/js/advance_adjustment.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Advance Adjustment{% endblock %}
+{% block page_subtitle %}Creditor Outstanding &rsaquo; Advance Adjustment{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-aa
+         data-parties-url="{% url 'creditor_payment:parties' %}"
+         data-data-url="{% url 'creditor_payment:advance_data' %}"
+         data-save-url="{% url 'creditor_payment:advance_save' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+  <div class="pe-titlebar">ADVANCE ADJUSTMENT</div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--secondary" data-add>ADD</button>
+    <button type="button" class="btn btn--primary" data-confirm hidden>CONFIRM</button>
+    <button type="button" class="btn btn--danger" data-exit hidden>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div data-form hidden>
+  <div class="pe-head">
+    <label class="pe-wide">PARTY
+      <input data-party-search placeholder="Type party name and press Enter" autocomplete="off">
+      <input type="hidden" data-party-code>
+    </label>
+    <label>ADVANCE PAID <input class="num" data-advance readonly tabindex="-1" value="0.00"></label>
+  </div>
+
+  <div class="pe-grid">
+    <table>
+      <thead><tr><th>#</th><th>BILL NO</th><th>BILL DATE</th><th class="num">BILL AMOUNT</th><th class="num">AMOUNT PAID</th><th class="num">BALANCE AMT</th><th class="num">AMOUNT ADJ</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="7">Press ADD, pick a party, then enter the amount to adjust against each bill.</td></tr></tbody>
+    </table>
+  </div>
+  </div>
+</section>
+{% endblock %}

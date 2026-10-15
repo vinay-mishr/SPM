@@ -1,0 +1,21 @@
+/* Marketing Manager — list screen. Toolbar, table and search come from the shared
+   "Master screens" styles in static/css/components.css. */
+
+.mm-table {
+  width: auto;
+}
+
+.mm-table td:nth-child(1) {
+  min-width: 200px;
+  white-space: normal;
+}
+
+.mm-table td:nth-child(2),
+.mm-table th:nth-child(2) {
+  width: 140px;
+}
+
+.mm-table td:nth-child(3),
+.mm-table th:nth-child(3) {
+  width: 90px;
+}
