@@ -25,9 +25,20 @@
 
   const csrfToken = (root.querySelector("input[name=csrfmiddlewaretoken]") || {}).value || "";
 
+  // Editable fields: key in the row data -> { decimals: null for text fields, or
+  // number of decimal places for numeric ones; uppercase: true for text fields that
+  // should be forced uppercase as you type.
+  const FIELDS = {
+    rate: { decimals: 4 },
+    opening_stock: { decimals: 3 },
+    current_stock: { decimals: 0 },
+    gst_percent: { decimals: 2 },
+    location: { decimals: null, uppercase: true },
+  };
+
   let rows = [];
-  const original = new Map(); // code -> original rate string
-  const changed = new Map(); // code -> new rate string
+  const original = new Map(); // code -> { rate, opening_stock, current_stock, gst_percent, location }
+  const changed = new Map(); // code -> { field: newValue, ... } (only edited fields)
 
   function readInitial() {
     const el = document.getElementById("rm-initial-data");
@@ -49,9 +60,15 @@
     }, 3200);
   }
 
-  function fmt(value) {
+  function fmt(value, decimals) {
     const num = Number(value);
-    return Number.isFinite(num) ? num.toFixed(2) : "0.00";
+    return Number.isFinite(num) ? num.toFixed(decimals) : Number(0).toFixed(decimals);
+  }
+
+  function rowValue(row, field) {
+    const edits = changed.get(row.code);
+    if (edits && Object.prototype.hasOwnProperty.call(edits, field)) return edits[field];
+    return row[field];
   }
 
   function updateChangesLabel() {
@@ -67,26 +84,28 @@
       tr.dataset.code = row.code;
       if (changed.has(row.code)) tr.classList.add("is-changed");
 
-      const rateValue = changed.has(row.code) ? changed.get(row.code) : row.rate;
-
       tr.innerHTML =
         "<td>" + escapeHtml(row.code) + "</td>" +
         "<td>" + escapeHtml(row.name) + "</td>" +
-        "<td class=\"rm-cell\"></td>" +
-        "<td class=\"num\">" + escapeHtml(fmt(row.opening_stock)) + "</td>" +
-        "<td class=\"num\">" + escapeHtml(fmt(row.current_stock)) + "</td>" +
-        "<td class=\"num\">" + escapeHtml(fmt(row.gst_percent)) + "</td>" +
-        "<td>" + escapeHtml(row.location) + "</td>";
+        "<td class=\"rm-cell\" data-cell=\"rate\"></td>" +
+        "<td class=\"rm-cell num\" data-cell=\"opening_stock\"></td>" +
+        "<td class=\"rm-cell num\" data-cell=\"current_stock\"></td>" +
+        "<td class=\"rm-cell num\" data-cell=\"gst_percent\"></td>" +
+        "<td class=\"rm-cell\" data-cell=\"location\"></td>";
 
-      const cell = tr.querySelector(".rm-cell");
-      const input = document.createElement("input");
-      input.type = "text";
-      input.inputMode = "decimal";
-      input.className = "rm-rate";
-      input.value = rateValue;
-      input.dataset.code = row.code;
-      if (!canEdit) input.readOnly = true;
-      cell.appendChild(input);
+      Object.keys(FIELDS).forEach(function (field) {
+        const spec = FIELDS[field];
+        const cell = tr.querySelector('[data-cell="' + field + '"]');
+        const input = document.createElement("input");
+        input.type = "text";
+        input.inputMode = spec.decimals === null ? "text" : "decimal";
+        input.className = "rm-rate";
+        input.value = rowValue(row, field);
+        input.dataset.code = row.code;
+        input.dataset.field = field;
+        if (!canEdit) input.readOnly = true;
+        cell.appendChild(input);
+      });
 
       tbody.appendChild(tr);
     });
@@ -105,26 +124,44 @@
     return Number.isFinite(num) ? num : NaN;
   }
 
-  function onRateInput(event) {
+  function onFieldInput(event) {
     const input = event.target;
     if (!input.classList.contains("rm-rate")) return;
     const code = input.dataset.code;
+    const field = input.dataset.field;
+    const spec = FIELDS[field];
     const row = rows.find(function (r) { return r.code === code; });
     if (!row) return;
 
-    const raw = input.value;
-    const parsed = parseNumeric(raw);
-    const invalid = raw.trim() === "" || Number.isNaN(parsed) || parsed < 0;
+    let raw = input.value;
+    let invalid = false;
+
+    if (spec.uppercase && raw !== raw.toUpperCase()) {
+      const pos = input.selectionStart;
+      raw = input.value = raw.toUpperCase();
+      input.setSelectionRange(pos, pos);
+    }
+
+    if (spec.decimals === null) {
+      invalid = false; // text field (location): nothing to validate client-side
+    } else {
+      const parsed = parseNumeric(raw);
+      invalid = raw.trim() === "" || Number.isNaN(parsed) || parsed < 0
+        || (field === "gst_percent" && parsed > 100);
+    }
     input.classList.toggle("is-invalid", invalid);
 
-    const original_ = original.get(code);
-    if (invalid) {
-      // Keep tracked as changed only if it already differs textually; still invalid blocks save.
-      changed.set(code, raw);
-    } else if (fmt(parsed) === fmt(original_)) {
-      changed.delete(code);
-    } else {
-      changed.set(code, raw);
+    const originalRow = original.get(code) || {};
+    const isTextSame = spec.decimals === null && raw === (originalRow[field] || "");
+    const isNumSame = spec.decimals !== null && !invalid && fmt(parseNumeric(raw), spec.decimals) === fmt(originalRow[field], spec.decimals);
+
+    let edits = changed.get(code);
+    if (invalid || !(isTextSame || isNumSame)) {
+      if (!edits) { edits = {}; changed.set(code, edits); }
+      edits[field] = raw;
+    } else if (edits) {
+      delete edits[field];
+      if (Object.keys(edits).length === 0) changed.delete(code);
     }
 
     const tr = input.closest("tr");
@@ -138,7 +175,12 @@
       .then(function (data) {
         rows = data.rows || [];
         original.clear();
-        rows.forEach(function (row) { original.set(row.code, row.rate); });
+        rows.forEach(function (row) {
+          original.set(row.code, {
+            rate: row.rate, opening_stock: row.opening_stock, current_stock: row.current_stock,
+            gst_percent: row.gst_percent, location: row.location,
+          });
+        });
         changed.clear();
         updateChangesLabel();
         applySearch();
@@ -204,14 +246,14 @@
 
     const invalidInput = tbody.querySelector(".rm-rate.is-invalid");
     if (invalidInput) {
-      showToast("Fix the highlighted rate(s) before saving.", "error");
+      showToast("Fix the highlighted value(s) before saving.", "error");
       invalidInput.focus();
       return;
     }
 
     const payload = [];
-    changed.forEach(function (rate, code) {
-      payload.push({ code: code, rate: rate });
+    changed.forEach(function (edits, code) {
+      payload.push(Object.assign({ code: code }, edits));
     });
 
     confirmBtn.disabled = true;
@@ -237,7 +279,12 @@
         }
         rows = result.data.rows || rows;
         original.clear();
-        rows.forEach(function (row) { original.set(row.code, row.rate); });
+        rows.forEach(function (row) {
+          original.set(row.code, {
+            rate: row.rate, opening_stock: row.opening_stock, current_stock: row.current_stock,
+            gst_percent: row.gst_percent, location: row.location,
+          });
+        });
         changed.clear();
         updateChangesLabel();
         applySearch();
@@ -251,18 +298,23 @@
       });
   }
 
-  tbody.addEventListener("input", onRateInput);
+  tbody.addEventListener("input", onFieldInput);
 
   tbody.addEventListener("focusin", function (event) {
     const input = event.target;
     if (!input.classList || !input.classList.contains("rm-rate") || input.readOnly) return;
-    if (parseNumeric(input.value) === 0) input.value = "";
+    const spec = FIELDS[input.dataset.field];
+    if (spec && spec.decimals !== null && parseNumeric(input.value) === 0) input.value = "";
   });
 
   tbody.addEventListener("focusout", function (event) {
     const input = event.target;
     if (!input.classList || !input.classList.contains("rm-rate") || input.readOnly) return;
-    if (input.value.trim() === "") { input.value = "0.00"; onRateInput(event); }
+    const spec = FIELDS[input.dataset.field];
+    if (spec && spec.decimals !== null && input.value.trim() === "") {
+      input.value = Number(0).toFixed(spec.decimals);
+      onFieldInput(event);
+    }
   });
   if (canEdit) confirmBtn.addEventListener("click", onConfirmClick);
   exitBtn.addEventListener("click", onExitClick);
@@ -274,7 +326,12 @@
 
   const initial = readInitial();
   rows = initial.rows || [];
-  rows.forEach(function (row) { original.set(row.code, row.rate); });
+  rows.forEach(function (row) {
+    original.set(row.code, {
+      rate: row.rate, opening_stock: row.opening_stock, current_stock: row.current_stock,
+      gst_percent: row.gst_percent, location: row.location,
+    });
+  });
   render(rows);
   updateChangesLabel();
 })();

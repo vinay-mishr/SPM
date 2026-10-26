@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.db import transaction
 
+from apps.materials.models import Material
 from apps.parties.models import Party
 from config.legacy import fill_blank_columns, tables_using
 
@@ -70,6 +71,11 @@ def list_parts():
     return [serialize(p) for p in Part.objects.order_by("part_number")]
 
 
+def material_names():
+    """Material Master names, for the MATERIAL field's suggestions/Help lookup."""
+    return sorted({n.strip() for n in Material.objects.values_list("name", flat=True) if n and n.strip()})
+
+
 def party_names(codes):
     codes = [c for c in codes if c]
     return dict(Party.objects.filter(party_code__in=codes).values_list("party_code", "name"))
@@ -82,7 +88,10 @@ def search_parties(term, limit=15):
         qs = Party.objects.filter(party_code__istartswith=term) | Party.objects.filter(name__icontains=term)
     else:
         qs = Party.objects.all()
-    return [{"code": c, "name": (n or "").strip()} for c, n in qs.order_by("name").values_list("party_code", "name")[:limit]]
+    return [
+        {"code": c, "name": (n or "").strip(), "city": (city or "").strip()}
+        for c, n, city in qs.order_by("name").values_list("party_code", "name", "city")[:limit]
+    ]
 
 
 def create(data, username=""):

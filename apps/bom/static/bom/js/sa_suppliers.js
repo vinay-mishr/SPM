@@ -99,7 +99,11 @@
   if (window.HelpLookup) {
     window.HelpLookup.attach(partSearch, {
       endpoint: root.dataset.partsUrl, resultsKey: "parts", valueField: "name",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }], title: "Part",
+      filters: { sub_assembly: "1" },
+      displayFields: [
+        { key: "code", label: "Code" }, { key: "name", label: "Name" },
+        { key: "unit", label: "Unit" }, { key: "sub_assembly", label: "Sub Assembly" },
+      ], title: "Part",
       onSelect: function (row) { partCode.value = row.code; partSearch.value = row.name; load(); },
     });
   }

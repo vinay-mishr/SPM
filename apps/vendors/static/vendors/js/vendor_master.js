@@ -12,7 +12,6 @@
   var countNote = root.querySelector("[data-count]");
   var searchBox = root.querySelector("[data-search]");
   var toast = document.querySelector("[data-toast]");
-  var deleteDialog = document.getElementById("vendor-delete-dialog");
   var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
 
   var initial = JSON.parse(document.getElementById("vendor-initial-data").textContent);
@@ -120,83 +119,13 @@
       });
   }
 
-  /* --- Delete dialog ---------------------------------------------------------- */
-
-  function details(vendor) {
-    var address = [vendor.address_1, vendor.address_2, vendor.address_3].filter(Boolean).join(", ");
-    return [
-      ["Vendor Code", vendor.party_code], ["Name", vendor.name], ["Address", address],
-      ["City", vendor.city + (vendor.pin ? " - " + vendor.pin : "")], ["State", stateLabel(vendor)],
-      ["GST No.", vendor.gst_no], ["GST Category", vendor.gst_category],
-      ["Phone", vendor.phone_no], ["Mobile 1", vendor.mobile_1],
-      ["Opening Balance", vendor.opening_balance], ["Transport", vendor.transport],
-      ["Con. Person 1", vendor.contact_person_1], ["Mobile Person 1", vendor.mobile_person_1],
-      ["Con. Person 2", vendor.contact_person_2], ["Mobile Person 2", vendor.mobile_person_2],
-      ["Email", vendor.email], ["Cr Days", vendor.credit_days], ["Association", vendor.association],
-      ["Grade", vendor.grade],
-      ["W / I", vendor.supply_type === "W" ? "Within" : vendor.supply_type === "I" ? "Interstate" : ""],
-      ["Active", vendor.is_active ? "Yes" : "No"]
-    ];
-  }
-
-  function openDelete(vendor) {
-    var list = deleteDialog.querySelector("[data-delete-details]");
-    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
-    list.textContent = "";
-    details(vendor).forEach(function (pair) {
-      var dt = document.createElement("dt");
-      var dd = document.createElement("dd");
-      dt.textContent = pair[0];
-      dd.textContent = pair[1] || "—";
-      list.append(dt, dd);
-    });
-    alertBox.hidden = true;
-    deleteDialog.querySelector("[data-delete-confirm]").disabled = false;
-    deleteDialog.showModal();
-    deleteDialog.querySelector(".modal__footer [data-delete-cancel]").focus();
-  }
-
-  function confirmDelete() {
-    var vendor = selectedVendor();
-    var button = deleteDialog.querySelector("[data-delete-confirm]");
-    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
-    if (!vendor) return;
-    button.disabled = true;
-
-    fetch(root.dataset.deleteUrl.replace("/0/", "/" + encodeURIComponent(vendor.id) + "/"), {
-      method: "POST",
-      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" },
-      credentials: "same-origin"
-    })
-      .then(function (response) {
-        return response.json().catch(function () { return {}; }).then(function (body) {
-          return { ok: response.ok, body: body };
-        });
-      })
-      .then(function (result) {
-        if (result.ok) {
-          deleteDialog.close();
-          state.selectedId = null;
-          showToast(result.body.message);
-          return refresh();
-        }
-        alertBox.textContent = result.body.message || "The vendor could not be deleted.";
-        alertBox.hidden = false;
-      })
-      .catch(function () {
-        alertBox.textContent = "Could not reach the server. Please try again.";
-        alertBox.hidden = false;
-        button.disabled = false;
-      });
-  }
-
   /* --- Actions ------------------------------------------------------------------ */
 
   var actions = {
     add: function () { SPVendorForm.open("add", null); },
     modify: function () { var v = selectedVendor(); if (v) SPVendorForm.open("modify", v); },
     view: function () { var v = selectedVendor(); if (v) SPVendorForm.open("view", v); },
-    "delete": function () { var v = selectedVendor(); if (v) openDelete(v); },
+    "delete": function () { var v = selectedVendor(); if (v) SPVendorForm.open("delete", v); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
 
@@ -245,20 +174,22 @@
     }
   });
 
-  deleteDialog.querySelectorAll("[data-delete-cancel]").forEach(function (btn) {
-    btn.addEventListener("click", function () { deleteDialog.close(); });
-  });
-  deleteDialog.querySelector("[data-delete-confirm]").addEventListener("click", confirmDelete);
-
   SPVendorForm.init({
     createUrl: root.dataset.createUrl,
     updateUrl: root.dataset.updateUrl,
+    deleteUrl: root.dataset.deleteUrl,
     csrfToken: csrfToken,
     companyStateCode: initial.company_state_code,
     nextCodeUrl: root.dataset.nextCodeUrl,
+    gstinLookupUrl: root.dataset.gstinLookupUrl,
     onSaved: function (vendor, message) {
       showToast(message);
       refresh(vendor.id);
+    },
+    onDeleted: function (message) {
+      state.selectedId = null;
+      showToast(message);
+      refresh();
     }
   });
 

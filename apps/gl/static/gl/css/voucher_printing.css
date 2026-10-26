@@ -1,0 +1,22 @@
+/* Accounts > Data Entry > Voucher Printing -- the on-screen voucher layout
+   reuses apps.creditor_outstanding's own .rm-page print-letter styling
+   (same box/table look, just under a vp- prefix since it isn't that app's
+   stylesheet). */
+.vp-letter { margin-top: 16px; }
+.vp-page { background: #fff; border: 1px solid #000; padding: 18px; font-size: 13px; max-width: 780px; }
+.vp-head { text-align: center; margin-bottom: 10px; }
+.vp-brand { font-weight: 700; font-size: 16px; }
+.vp-meta { margin-bottom: 12px; }
+.vp-meta p { margin: 2px 0; font-weight: 700; }
+.vp-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.vp-table th, .vp-table td { border: 1px solid #000; padding: 4px 6px; font-size: 13px; }
+.vp-table th { background: #bfe0c9; text-transform: uppercase; }
+.vp-table td.num, .vp-table th.num { text-align: right; }
+.vp-table tr.vp-narration td { border-top: none; font-style: italic; color: #374151; }
+.vp-total-label { text-align: right; font-weight: 700; text-transform: uppercase; }
+.vp-sign { display: flex; justify-content: space-between; margin-top: 40px; font-weight: 700; }
+@media print {
+  body * { visibility: hidden; }
+  .vp-page, .vp-page * { visibility: visible; }
+  .vp-page { position: absolute; left: 0; top: 0; border: 0; }
+}

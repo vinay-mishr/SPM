@@ -20,8 +20,8 @@ BORDER = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
 
 # kind -> (settings key for the ledger group code, column-5 heading, column widths A..J)
 LAYOUTS = {
-    "debtors": ("PARTY_DEBTOR_CODE", "PHONE NO./MOBILE/EMAIL", [3, 5, 5, 30, 35, 8, 4, 7, 16, 30]),
-    "creditors": ("PARTY_CREDITOR_CODE", "PHONE NO./MOBILE", [3, 5, 5, 35, 35, 5, 4, 7, 16, 30]),
+    "debtors": ("PARTY_DEBTOR_CODE", "PHONE NO./MOBILE/EMAIL", [3, 5, 5, 30, 35, 8, 16, 30]),
+    "creditors": ("PARTY_CREDITOR_CODE", "PHONE NO./MOBILE", [3, 5, 5, 35, 35, 5, 16, 30]),
 }
 COLUMNS = ["code", "ccode", "cname", "cphno", "mobile", "cr_days", "pdc", "rpermit",
            "gst_no", "gsname", "stname", "cadd1", "cadd2", "cadd3", "cbadd3"]
@@ -66,7 +66,7 @@ def build_workbook(kind, parties, company_name):
 
     header_row = 4
     headings = ["SNO", "CODE", "CODE", "PARTY NAME /ADDRESS", phone_heading,
-                "CR.DAYS", "PDC", "PERMIT", "GSTIN.", "GST STATE"]
+                "CR.DAYS", "GSTIN.", "GST STATE"]
     for col, (heading, width) in enumerate(zip(headings, widths), start=1):
         put(header_row, col, heading, bold=True)
         ws.column_dimensions[chr(64 + col)].width = width
@@ -77,13 +77,12 @@ def build_workbook(kind, parties, company_name):
         state = "-".join(v for v in (_text(p["gsname"]), _text(p["stname"])) if v)
         cr_days = p["cr_days"]
         values = [sno, _text(p["code"]), _text(p["ccode"]), _text(p["cname"]), phone,
-                  int(cr_days) if cr_days is not None else None, _text(p["pdc"]),
-                  _text(p["rpermit"]), _text(p["gst_no"]), state]
+                  int(cr_days) if cr_days is not None else None, _text(p["gst_no"]), state]
         for col, value in enumerate(values, start=1):
             cell = put(row, col, value)
             if col == 1:
                 cell.number_format = "0"
-            if col == 9:
+            if col == 7:
                 cell.number_format = "@"  # GSTIN kept as text
         row += 1
 
@@ -96,9 +95,9 @@ def build_workbook(kind, parties, company_name):
                 put(row, 4, _text(p[field]))
                 row += 1
 
-    # Borders from the heading row to the last row, columns A..J (as the old sheet).
+    # Borders from the heading row to the last row, columns A..H.
     for r in range(header_row, row + 1):
-        for c in range(1, 11):
+        for c in range(1, 9):
             cell = ws.cell(row=r, column=c)
             cell.border = BORDER
             if cell.font is None or cell.font.name != FONT_NAME:

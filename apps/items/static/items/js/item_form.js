@@ -12,9 +12,10 @@
     "unit", "hsn_code", "gst_percent", "rate", "opening_balance"
   ];
   var NUMERIC = { gst_percent: "GST %", rate: "Rate", opening_balance: "Opening balance" };
-  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View" };
+  var UPPERCASE_FIELDS = { item_name_1: true, item_name_2: true, item_name_3: true, unit: true, hsn_code: true };
+  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
 
-  var dialog, form, alertBox, discard, confirmBtn, options;
+  var dialog, form, alertBox, discard, discardTitle, discardCancelBtn, discardConfirmBtn, confirmBtn, options;
   var state = { mode: "add", item: null, snapshot: "", saving: false };
 
   function input(name) {
@@ -92,11 +93,15 @@
     state.mode = mode;
     dialog.dataset.mode = mode;
     dialog.querySelector("[data-mode-label]").textContent = MODE_LABELS[mode];
-    FIELDS.forEach(function (name) { input(name).readOnly = mode === "view"; });
+    var readOnlyMode = mode === "view" || mode === "delete";
+    FIELDS.forEach(function (name) { input(name).readOnly = readOnlyMode; });
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
   }
 
   function isDirty() {
-    return state.mode !== "view" && JSON.stringify(values()) !== state.snapshot;
+    return state.mode !== "view" && state.mode !== "delete" && JSON.stringify(values()) !== state.snapshot;
   }
 
   function close() {
@@ -108,8 +113,58 @@
     close();
   }
 
+  function performDelete() {
+    if (state.saving || !state.item) return;
+    state.saving = true;
+    confirmBtn.disabled = true;
+    fetch(options.deleteUrl.replace("/0/", "/" + encodeURIComponent(state.item.id) + "/"), {
+      method: "POST",
+      headers: { "X-CSRFToken": options.csrfToken, "X-Requested-With": "XMLHttpRequest" },
+      credentials: "same-origin"
+    })
+      .then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (body) {
+          return { ok: response.ok, status: response.status, body: body };
+        });
+      })
+      .then(function (result) {
+        if (result.ok) {
+          close();
+          options.onDeleted(result.body.message);
+        } else {
+          alertBox.textContent = result.body.message || "Could not delete.";
+          alertBox.hidden = false;
+        }
+      })
+      .catch(function () {
+        alertBox.textContent = "Could not reach the server. Nothing was deleted.";
+        alertBox.hidden = false;
+      })
+      .finally(function () {
+        state.saving = false;
+        confirmBtn.disabled = false;
+      });
+  }
+
+  // The discard box is reused as a generic "are you sure?" prompt -- its own
+  // title text, button labels and confirm action are swapped per use (discard
+  // unsaved changes on EXIT vs delete the selected record), so there's one
+  // small confirm dialog in this form, not two.
+  function askDiscard(title, onConfirm, labels) {
+    discardTitle.textContent = title;
+    discardCancelBtn.textContent = labels ? labels.cancel : "Cancel";
+    discardConfirmBtn.textContent = labels ? labels.confirm : "Exit";
+    state.onDiscardConfirm = onConfirm;
+    discard.hidden = false;
+  }
+
   function save() {
-    if (state.saving || state.mode === "view") return;
+    if (state.saving) return;
+    if (state.mode === "delete") {
+      askDiscard("Are you sure you want to delete this item?", performDelete, { cancel: "No", confirm: "Yes" });
+      return;
+    }
+    if (state.mode === "view") return;
     clearErrors();
 
     var clientErrors = validate();
@@ -208,6 +263,9 @@
     form = dialog.querySelector("[data-item-form]");
     alertBox = dialog.querySelector("[data-form-alert]");
     discard = dialog.querySelector("[data-discard]");
+    discardTitle = discard.querySelector("#discard-title");
+    discardCancelBtn = dialog.querySelector("[data-discard-cancel]");
+    discardConfirmBtn = dialog.querySelector("[data-discard-confirm]");
     confirmBtn = dialog.querySelector("[data-form-confirm]");
 
     form.addEventListener("submit", function (event) {
@@ -224,6 +282,14 @@
 
     form.addEventListener("focusout", formatDecimals);
     form.addEventListener("focusin", clearZeroOnFocus);
+    form.addEventListener("input", function (event) {
+      var field = event.target;
+      if (UPPERCASE_FIELDS[field.dataset.field] && field.value !== field.value.toUpperCase()) {
+        var pos = field.selectionStart;
+        field.value = field.value.toUpperCase();
+        field.setSelectionRange(pos, pos);
+      }
+    });
     form.addEventListener("input", function (event) {
       var name = event.target.dataset.field;
       var holder = event.target.closest(".mform__field");
@@ -249,7 +315,12 @@
     dialog.querySelector("[data-discard-cancel]").addEventListener("click", function () {
       discard.hidden = true;
     });
-    dialog.querySelector("[data-discard-confirm]").addEventListener("click", close);
+    dialog.querySelector("[data-discard-confirm]").addEventListener("click", function () {
+      discard.hidden = true;
+      var onConfirm = state.onDiscardConfirm || close;
+      state.onDiscardConfirm = null;
+      onConfirm();
+    });
   }
 
   function open(mode, item, nextCode) {
@@ -260,7 +331,7 @@
     discard.hidden = true;
     state.snapshot = JSON.stringify(values());
     dialog.showModal();
-    var first = mode === "view" ? dialog.querySelector("[data-form-exit].btn") : input("item_name_1");
+    var first = mode === "view" ? dialog.querySelector("[data-form-exit].btn") : mode === "delete" ? confirmBtn : input("item_name_1");
     first.focus();
   }
 

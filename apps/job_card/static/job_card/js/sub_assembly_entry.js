@@ -13,6 +13,14 @@
   var mode = null;
   var alertTimer = null;
 
+  var tbody = root.querySelector("[data-rows]");
+  var emptyNote = root.querySelector("[data-empty]");
+  var startDate = root.querySelector("[data-start-date]");
+  var endDate = root.querySelector("[data-end-date]");
+  var listSearch = root.querySelector("[data-search]");
+  var initial = JSON.parse(document.getElementById("sa-initial-data").textContent);
+  var listState = { rows: [], selectedNumber: null };
+
   function f(name) { return root.querySelector('[data-field="' + name + '"]'); }
 
   function show(msg) {
@@ -84,6 +92,62 @@
     });
   }
 
+  /* --- List ----------------------------------------------------------------- */
+
+  function cell(text, className) {
+    var td = document.createElement("td");
+    td.textContent = text == null ? "" : text;
+    if (className) td.className = className;
+    return td;
+  }
+
+  function renderList() {
+    tbody.textContent = "";
+    listState.rows.forEach(function (row) {
+      var tr = document.createElement("tr");
+      tr.dataset.number = row.number;
+      tr.tabIndex = 0;
+      if (row.number === listState.selectedNumber) tr.classList.add("is-selected");
+      tr.append(cell(row.job_no), cell(dmy(row.job_date)), cell(row.item_name),
+        cell(row.qty, "num"), cell(row.produced, "num"), cell(row.issued ? "Y" : "N"), cell(row.closed ? "Y" : "N"));
+      tbody.appendChild(tr);
+    });
+    emptyNote.hidden = listState.rows.length > 0;
+  }
+
+  function selectListRow(number) {
+    listState.selectedNumber = number;
+    tbody.querySelectorAll("tr").forEach(function (tr) { tr.classList.toggle("is-selected", tr.dataset.number === number); });
+  }
+
+  function refreshList() {
+    var params = new URLSearchParams();
+    params.set("start_date", window.DateMask.toIso(startDate.value));
+    params.set("end_date", window.DateMask.toIso(endDate.value));
+    params.set("search", listSearch.value.trim());
+    return getJson(root.dataset.listUrl + "?" + params.toString()).then(function (res) {
+      if (!res.ok) { show(res.body.message || "Could not load job entries."); return; }
+      listState.rows = res.body.rows || [];
+      if (!listState.rows.some(function (r) { return r.number === listState.selectedNumber; })) listState.selectedNumber = null;
+      renderList();
+    });
+  }
+
+  tbody.addEventListener("click", function (e) {
+    var tr = e.target.closest("tr[data-number]");
+    if (tr) selectListRow(tr.dataset.number);
+  });
+
+  startDate.value = window.DateMask.toDisplay(initial.start_date);
+  endDate.value = window.DateMask.toDisplay(initial.end_date);
+  startDate.addEventListener("change", function () { refreshList(); });
+  endDate.addEventListener("change", function () { refreshList(); });
+  var listSearchTimer = null;
+  listSearch.addEventListener("input", function () {
+    clearTimeout(listSearchTimer);
+    listSearchTimer = setTimeout(refreshList, 250);
+  });
+
   var focusOrder = [numberInput, f("job_date"), itemSearch, f("qty"), f("produced"), f("finish_rejection"), f("close_date")];
 
   root.addEventListener("keydown", function (e) {
@@ -124,14 +188,21 @@
       var a = btn.dataset.act;
       show("");
       if (a === "add") startAdd();
-      else if (a === "modify") { clearForm(); numberInput.value = ""; setMode("modify"); numberInput.focus(); }
-      else if (a === "close") { clearForm(); numberInput.value = ""; setMode("close"); numberInput.focus(); }
+      else if (a === "modify") {
+        clearForm(); numberInput.value = listState.selectedNumber || ""; setMode("modify");
+        if (listState.selectedNumber) load(); else numberInput.focus();
+      }
+      else if (a === "close") {
+        clearForm(); numberInput.value = listState.selectedNumber || ""; setMode("close");
+        if (listState.selectedNumber) load(); else numberInput.focus();
+      }
       else if (a === "delete") {
-        clearForm(); numberInput.value = ""; setMode("delete");
+        clearForm(); numberInput.value = listState.selectedNumber || ""; setMode("delete");
         numberInput.focus();
       }
       else if (a === "confirm") confirm();
       else if (a === "exit" || a === "cancel") { setMode(null); clearForm(); numberInput.value = ""; }
+      else if (a === "refresh") refreshList();
     });
   });
 
@@ -161,8 +232,10 @@
     setMode(null);
     clearForm();
     numberInput.value = "";
+    refreshList();
   }
 
   setMode(null);
   if (!canEdit) root.querySelectorAll('[data-act="add"]').forEach(function (b) { b.disabled = true; });
+  refreshList();
 })();

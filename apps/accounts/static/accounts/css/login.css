@@ -298,6 +298,33 @@
   transform: translateX(-50%);
 }
 
+.auth-panel__credit {
+  margin-top: 10px;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.auth-panel__credit-line {
+  display: inline-block;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+
+.auth-panel__credit strong {
+  color: var(--primary-dark);
+}
+
+.auth-panel__credit a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.auth-panel__credit a:hover {
+  text-decoration: underline;
+}
+
 /* --- Form ---------------------------------------------------------------- */
 
 .field {
@@ -618,6 +645,10 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+}
+
+.auth-footer__address {
+  white-space: nowrap;
 }
 
 /* --- Tablet ---------------------------------------------------------------- */

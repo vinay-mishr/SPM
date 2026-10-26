@@ -1,0 +1,57 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Party Ledger Graphical · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/voucher_printing.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/cash_book.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <script src="{% static 'gl/js/party_ledger_graphical.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Party Ledger{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Ledger Printing &rsaquo; Party Ledger Graphical{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-party-ledger-graphical
+         data-data-url="{% url 'gl:party_ledger_data' %}"
+         data-parties-url="{% url 'gl:party_ledger_parties' %}"
+         data-export-url="{% url 'gl:party_ledger_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-brand-name="{{ brand.name }}"
+         data-brand-address="{{ brand.address_line1 }}">
+  <div class="pe-titlebar">PARTY LEDGER PRINTING</div>
+
+  <div class="ml-head">
+    <label class="ml-row"><span>ALL/SINGLE</span>
+      <select data-mode>
+        <option value="A">A</option>
+        <option value="S" selected>S</option>
+      </select></label>
+    <label class="ml-row"><span>PARTY NAME</span>
+      <input data-party-name placeholder="Type party name and press Enter" autocomplete="off">
+      <input type="hidden" data-ccode></label>
+    <label class="ml-row ml-row--date"><span>START DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label class="ml-row ml-row--date"><span>END DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-end-date data-date-mask></label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--primary" data-view>VIEW</button>
+    <button type="button" class="btn btn--secondary" data-print disabled>PRINT</button>
+    <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div class="vp-letter" data-result hidden>
+    <div class="vp-page cb-page ml-page" data-blocks></div>
+  </div>
+</section>
+
+{{ initial_data|json_script:"plg-initial-data" }}
+{% endblock %}

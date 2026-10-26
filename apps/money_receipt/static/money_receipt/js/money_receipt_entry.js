@@ -32,6 +32,7 @@
   var billRows = form.querySelector("[data-bill-rows]");
   var partySearch = form.querySelector("[data-party-search]");
   var partyCodeDisplay = form.querySelector("[data-party-code-display]");
+  var partyCityDisplay = form.querySelector("[data-party-city-display]");
   var bankSearch = form.querySelector("[data-bank-search]");
   var modeSelect = form.querySelector("[data-mode]");
 
@@ -350,8 +351,11 @@
       field("party_code").value = p.code;
       partySearch.value = p.name;
       partyCodeDisplay.value = p.code;
+      partyCityDisplay.value = p.city || "";
       field("prev_adv").value = f2(num(p.previous_advance));
-      form.querySelector("[data-ledger-balance]").value = f2(num(p.ledger_balance));
+      // Ledger Balance logic parked for now (project owner to specify) -- shown
+      // as 0.00 rather than the raw trans-derived figure until then.
+      form.querySelector("[data-ledger-balance]").value = "0.00";
       var totalOut = (p.pending_bills || []).reduce(function (s, r) { return s + num(r.balance_amt); }, 0);
       form.querySelector("[data-total-outstanding]").value = f2(totalOut);
       state.bills = (p.pending_bills || []).map(function (r) {
@@ -413,6 +417,7 @@
     form.reset();
     partySearch.value = "";
     partyCodeDisplay.value = "";
+    partyCityDisplay.value = "";
     bankSearch.value = "";
     state.bills = [];
     state.selectedBillIndex = -1;
@@ -460,6 +465,7 @@
       field("party_code").value = d.party_code;
       partySearch.value = d.party_name;
       partyCodeDisplay.value = d.party_code;
+      partyCityDisplay.value = d.party_city || "";
       bankSearch.value = d.bank_code;
       field("bank_code").value = d.bank_code;
       field("prev_adv").value = d.prev_adv;

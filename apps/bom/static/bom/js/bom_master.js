@@ -142,7 +142,6 @@
   var partCode = dialog.querySelector('[data-field="part_code"]');
   var partSearch = dialog.querySelector("[data-part-search]");
   var partList = dialog.querySelector("[data-part-list]");
-  var parentUnit = dialog.querySelector("[data-parent-unit]");
   var rowItemCode = dialog.querySelector("[data-row-item-code]");
   var rowItemSearch = dialog.querySelector("[data-row-item-search]");
   var itemList = dialog.querySelector("[data-item-list]");
@@ -302,7 +301,6 @@
       var hit = formState.parts[q.toUpperCase()];
       partCode.value = hit.code;
       partSearch.value = hit.name;
-      parentUnit.value = hit.unit || "";
       return;
     }
     clearTimeout(partSearchTimer);
@@ -314,7 +312,6 @@
     loadParts(code).then(function (list) {
       var hit = list.find(function (p) { return p.code === code; });
       partSearch.value = hit ? hit.name : "";
-      parentUnit.value = hit ? (hit.unit || "") : "";
     });
     loadExistingComponentsIfAny(code);
   });
@@ -348,12 +345,15 @@
       endpoint: root.dataset.partsUrl,
       resultsKey: "parts",
       valueField: "code",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "unit", label: "Unit" }],
+      filters: { sub_assembly: "1" },
+      displayFields: [
+        { key: "code", label: "Code" }, { key: "name", label: "Name" },
+        { key: "sub_assembly", label: "Sub Assembly" },
+      ],
       title: "Part",
       onSelect: function (row) {
         formState.parts[row.code] = row;
         partSearch.value = row.name;
-        parentUnit.value = row.unit || "";
         loadExistingComponentsIfAny(row.code);
       },
     });
@@ -361,12 +361,15 @@
       endpoint: root.dataset.partsUrl,
       resultsKey: "parts",
       valueField: "name",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "unit", label: "Unit" }],
+      filters: { sub_assembly: "1" },
+      displayFields: [
+        { key: "code", label: "Code" }, { key: "name", label: "Name" },
+        { key: "sub_assembly", label: "Sub Assembly" },
+      ],
       title: "Part",
       onSelect: function (row) {
         formState.parts[row.code] = row;
         partCode.value = row.code;
-        parentUnit.value = row.unit || "";
         loadExistingComponentsIfAny(row.code);
       },
     });
@@ -375,7 +378,10 @@
       endpoint: root.dataset.partsUrl,
       resultsKey: "parts",
       valueField: "code",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "unit", label: "Unit" }],
+      displayFields: [
+        { key: "code", label: "Code" }, { key: "name", label: "Name" },
+        { key: "unit", label: "Unit" }, { key: "sub_assembly", label: "Sub Assembly" },
+      ],
       title: "Part",
       onSelect: function (row) {
         formState.items[row.code] = row;
@@ -387,7 +393,10 @@
       endpoint: root.dataset.partsUrl,
       resultsKey: "parts",
       valueField: "name",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "unit", label: "Unit" }],
+      displayFields: [
+        { key: "code", label: "Code" }, { key: "name", label: "Name" },
+        { key: "unit", label: "Unit" }, { key: "sub_assembly", label: "Sub Assembly" },
+      ],
       title: "Part",
       onSelect: function (row) {
         formState.items[row.code] = row;
@@ -439,15 +448,20 @@
   dialog.querySelector("[data-row-add]").addEventListener("click", addRow);
   rowQty.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addRow(); } });
 
+  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
+
   function setMode(mode) {
     formState.mode = mode;
     dialog.dataset.mode = mode;
-    dialog.querySelector("[data-mode-label]").textContent = mode === "add" ? "Add" : mode === "modify" ? "Modify" : "View";
-    var readOnly = mode === "view";
+    dialog.querySelector("[data-mode-label]").textContent = MODE_LABELS[mode];
+    var readOnly = mode === "view" || mode === "delete";
     partCode.readOnly = readOnly || mode === "modify";
     partSearch.readOnly = readOnly || mode === "modify";
     dialog.querySelector(".bom-add-row").hidden = readOnly;
-    confirmBtn.hidden = readOnly;
+    confirmBtn.hidden = mode === "view";
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
   }
 
   function snapshot() {
@@ -455,11 +469,11 @@
   }
 
   function isDirty() {
-    return formState.mode !== "view" && snapshot() !== formState.snapshot;
+    return formState.mode !== "view" && formState.mode !== "delete" && snapshot() !== formState.snapshot;
   }
 
   function openForm(mode) {
-    var parent = selectedParent();
+    var parent = mode === "add" ? null : selectedParent();
     clearErrors();
     confirmBox.hidden = true;
     formState.parts = {};
@@ -471,20 +485,12 @@
 
     partCode.value = parent ? parent.part_code : "";
     partSearch.value = parent ? parent.part_name : "";
-    parentUnit.value = "";
     if (parent) formState.parts[parent.part_code] = { code: parent.part_code, name: parent.part_name, is_duplicate: parent.is_duplicate };
     rowItemCode.value = "";
     rowItemSearch.value = "";
     rowQty.value = "";
     rowUnit.value = "";
     rowError.textContent = "";
-
-    if (parent) {
-      loadParts(parent.part_code).then(function (list) {
-        var hit = list.find(function (p) { return p.code === parent.part_code; });
-        if (hit) parentUnit.value = hit.unit || "";
-      });
-    }
 
     var ready = mode === "add" ? Promise.resolve() : fetchJson(root.dataset.detailUrlTemplate.replace("__CODE__", encodeURIComponent(parent.part_code)))
       .then(function (res) {
@@ -497,7 +503,7 @@
       renderGrid();
       formState.snapshot = snapshot();
       dialog.showModal();
-      (mode === "add" ? partSearch : rowItemSearch).focus();
+      (mode === "add" ? partSearch : mode === "delete" ? confirmBtn : rowItemSearch).focus();
     });
   }
 
@@ -542,8 +548,27 @@
     });
   }
 
+  function performDelete() {
+    var parent = selectedParent();
+    if (!parent) return;
+    confirmBtn.disabled = true;
+    postForm(root.dataset.deleteUrlTemplate.replace("__CODE__", encodeURIComponent(parent.part_code))).then(function (res) {
+      if (res.ok) {
+        dialog.close();
+        showToast(res.body.message);
+        state.selected = null;
+        refresh();
+      } else {
+        alertBox.textContent = res.body.message || "Could not delete.";
+        alertBox.hidden = false;
+        confirmBtn.disabled = false;
+      }
+    });
+  }
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (formState.mode === "delete") { ask("Are you sure you want to delete this record?", performDelete); return; }
     if (formState.mode === "view") return;
     ask("Are you sure?", save);
   });
@@ -558,51 +583,13 @@
     else requestExit();
   });
 
-  /* --- Delete ------------------------------------------------------------------- */
-
-  var delDialog = document.getElementById("bom-delete-dialog");
-  function openDelete(parent) {
-    var dl = delDialog.querySelector("[data-delete-details]");
-    dl.textContent = "";
-    [["Part Code", parent.part_code], ["Item Name", parent.part_name], ["Quantity", Number(parent.component_count).toFixed(3)]]
-      .forEach(function (p) {
-        var dt = document.createElement("dt"), dd = document.createElement("dd");
-        dt.textContent = p[0]; dd.textContent = p[1];
-        dl.append(dt, dd);
-      });
-    delDialog.querySelector("[data-delete-alert]").hidden = true;
-    delDialog.querySelector("[data-delete-yes]").disabled = false;
-    delDialog.showModal();
-    delDialog.querySelector("[data-delete-no]").focus();
-  }
-  delDialog.querySelector("[data-delete-no]").addEventListener("click", function () { delDialog.close(); });
-  delDialog.querySelector("[data-delete-yes]").addEventListener("click", function () {
-    var parent = selectedParent();
-    var btn = delDialog.querySelector("[data-delete-yes]");
-    var alertBox2 = delDialog.querySelector("[data-delete-alert]");
-    if (!parent) return;
-    btn.disabled = true;
-    postForm(root.dataset.deleteUrlTemplate.replace("__CODE__", encodeURIComponent(parent.part_code))).then(function (res) {
-      if (res.ok) {
-        delDialog.close();
-        showToast(res.body.message);
-        state.selected = null;
-        refresh();
-      } else {
-        alertBox2.textContent = res.body.message || "Could not delete.";
-        alertBox2.hidden = false;
-        btn.disabled = false;
-      }
-    });
-  });
-
   /* --- Toolbar ------------------------------------------------------------------ */
 
   var actions = {
     add: function () { openForm("add"); },
     modify: function () { if (selectedParent()) openForm("modify"); },
     view: function () { if (selectedParent()) openForm("view"); },
-    "delete": function () { var p = selectedParent(); if (p) openDelete(p); },
+    "delete": function () { if (selectedParent()) openForm("delete"); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
   root.querySelectorAll("[data-action]").forEach(function (btn) {

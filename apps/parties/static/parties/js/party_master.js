@@ -12,7 +12,6 @@
   var countNote = root.querySelector("[data-count]");
   var searchBox = root.querySelector("[data-search]");
   var toast = document.querySelector("[data-toast]");
-  var deleteDialog = document.getElementById("party-delete-dialog");
   var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
 
   var initial = JSON.parse(document.getElementById("party-initial-data").textContent);
@@ -26,10 +25,6 @@
 
   function phone(party) {
     return party.phone_1 || party.mobile_1 || party.mobile_2 || "";
-  }
-
-  function stateLabel(party) {
-    return party.state_code ? party.state_name + " (" + party.state_code + ")" : "";
   }
 
   function showToast(message, kind) {
@@ -114,85 +109,13 @@
       });
   }
 
-  /* --- Delete dialog ---------------------------------------------------------- */
-
-  function details(party) {
-    var address = [party.address_1, party.address_2, party.address_3].filter(Boolean).join(", ");
-    var partyType = { SD: "Sundry Debtor", SC: "Sundry Creditor" }[party.party_type] || "";
-    return [
-      ["Party Code", party.party_code], ["Name", party.name], ["Address", address],
-      ["City", party.city + (party.pin ? " - " + party.pin : "")], ["State", stateLabel(party)],
-      ["GST No.", party.gst_no], ["GST Category", party.gst_category],
-      ["Mkt Manager", party.mkt_manager_name || party.mkt_manager],
-      ["Rep Code", party.rep_name || party.rep_code],
-      ["Con. Person 1", party.contact_person_1], ["Mobile 1", party.mobile_1],
-      ["Con. Person 2", party.contact_person_2], ["Mobile 2", party.mobile_2],
-      ["Email", party.email], ["Party Type", partyType], ["Transport", party.transport],
-      ["Cr Days", party.credit_days], ["Active", party.is_active ? "Yes" : "No"],
-      ["Association", party.association],
-      ["W / I", party.supply_type === "W" ? "Within" : party.supply_type === "I" ? "Interstate" : ""],
-      ["Permit", party.permit ? "Yes" : "No"]
-    ];
-  }
-
-  function openDelete(party) {
-    var list = deleteDialog.querySelector("[data-delete-details]");
-    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
-    list.textContent = "";
-    details(party).forEach(function (pair) {
-      var dt = document.createElement("dt");
-      var dd = document.createElement("dd");
-      dt.textContent = pair[0];
-      dd.textContent = pair[1] || "—";
-      list.append(dt, dd);
-    });
-    alertBox.hidden = true;
-    deleteDialog.querySelector("[data-delete-confirm]").disabled = false;
-    deleteDialog.showModal();
-    deleteDialog.querySelector(".modal__footer [data-delete-cancel]").focus();
-  }
-
-  function confirmDelete() {
-    var party = selectedParty();
-    var button = deleteDialog.querySelector("[data-delete-confirm]");
-    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
-    if (!party) return;
-    button.disabled = true;
-
-    fetch(root.dataset.deleteUrl.replace("/0/", "/" + encodeURIComponent(party.id) + "/"), {
-      method: "POST",
-      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" },
-      credentials: "same-origin"
-    })
-      .then(function (response) {
-        return response.json().catch(function () { return {}; }).then(function (body) {
-          return { ok: response.ok, body: body };
-        });
-      })
-      .then(function (result) {
-        if (result.ok) {
-          deleteDialog.close();
-          state.selectedId = null;
-          showToast(result.body.message);
-          return refresh();
-        }
-        alertBox.textContent = result.body.message || "The party could not be deleted.";
-        alertBox.hidden = false;
-      })
-      .catch(function () {
-        alertBox.textContent = "Could not reach the server. Please try again.";
-        alertBox.hidden = false;
-        button.disabled = false;
-      });
-  }
-
   /* --- Actions ------------------------------------------------------------------ */
 
   var actions = {
     add: function () { SPPartyForm.open("add", null); },
     modify: function () { var p = selectedParty(); if (p) SPPartyForm.open("modify", p); },
     view: function () { var p = selectedParty(); if (p) SPPartyForm.open("view", p); },
-    "delete": function () { var p = selectedParty(); if (p) openDelete(p); },
+    "delete": function () { var p = selectedParty(); if (p) SPPartyForm.open("delete", p); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
 
@@ -241,20 +164,22 @@
     }
   });
 
-  deleteDialog.querySelectorAll("[data-delete-cancel]").forEach(function (btn) {
-    btn.addEventListener("click", function () { deleteDialog.close(); });
-  });
-  deleteDialog.querySelector("[data-delete-confirm]").addEventListener("click", confirmDelete);
-
   SPPartyForm.init({
     createUrl: root.dataset.createUrl,
     updateUrl: root.dataset.updateUrl,
+    deleteUrl: root.dataset.deleteUrl,
     csrfToken: csrfToken,
     companyStateCode: initial.company_state_code,
     nextCodeUrl: root.dataset.nextCodeUrl,
+    gstinLookupUrl: root.dataset.gstinLookupUrl,
     onSaved: function (party, message) {
       showToast(message);
       refresh(party.id);
+    },
+    onDeleted: function (message) {
+      state.selectedId = null;
+      showToast(message);
+      refresh();
     }
   });
 

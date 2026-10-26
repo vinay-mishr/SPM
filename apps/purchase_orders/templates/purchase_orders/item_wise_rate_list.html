@@ -23,14 +23,16 @@
   <div class="master-toolbar iwr-toolbar" role="toolbar" aria-label="Item wise rate list filters">
     <fieldset class="iwr-mode">
       <legend class="visually-hidden">All / Single item</legend>
-      <label><input type="radio" name="iwr-mode" value="all" checked> All Item</label>
-      <label><input type="radio" name="iwr-mode" value="single"> Single Item</label>
+      <label><input type="radio" name="iwr-mode" value="all" checked> All</label>
+      <label><input type="radio" name="iwr-mode" value="single"> Single</label>
     </fieldset>
 
     <div class="iwr-item">
       <span class="iwr-item__label">Item Name</span>
-      <input class="form-control iwr-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search disabled>
-      <input class="form-control iwr-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+      <div class="iwr-item__row">
+        <input class="form-control iwr-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search disabled>
+        <input class="form-control iwr-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+      </div>
     </div>
 
     <label class="iwr-filter">Start Date

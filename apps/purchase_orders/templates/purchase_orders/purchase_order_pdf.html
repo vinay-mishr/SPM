@@ -62,7 +62,7 @@
       <thead>
         <tr>
           <th>#</th><th>Description</th><th>Part No.</th><th>HSN</th><th>Unit</th>
-          <th class="num">Qty</th><th class="num">Rate</th><th class="num">Disc %</th>
+          <th class="num">PO Qty</th><th class="num">Rate</th><th class="num">Disc %</th>
           <th class="num">GST %</th><th class="num">Amount</th>
         </tr>
       </thead>
@@ -74,7 +74,7 @@
           <td>{{ line.part_code }}</td>
           <td>{{ line.hsn_code }}</td>
           <td>{{ line.unit }}</td>
-          <td class="num">{{ line.quantity }}</td>
+          <td class="num">{{ line.po_qty }}</td>
           <td class="num">{{ line.rate|floatformat:2 }}</td>
           <td class="num">{{ line.discount_percent }}</td>
           <td class="num">{{ line.gst_percent }}</td>

@@ -5,6 +5,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import TemplateView
 
+from apps.parties import services as party_services
 from apps.parties.choices import GstCategory, SupplyType
 
 from . import exports, services
@@ -51,6 +52,20 @@ def vendor_next_code(request):
         return JsonResponse({"code": services.next_party_code(request.GET.get("name", ""))})
     except services.PartyCodeError as exc:
         return JsonResponse({"code": "", "message": str(exc)})
+
+
+@login_required
+@require_GET
+def vendor_gstin_lookup(request):
+    """GST No. auto-fill for the Add/Modify form: reuses the Customer Master's
+    provider lookup and returns only Name, Address and PIN."""
+    gstin = (request.GET.get("gstin") or "").strip()
+    try:
+        fields = party_services.lookup_gstin_details(gstin)
+    except party_services.GstinLookupError as exc:
+        return JsonResponse({"message": str(exc)}, status=400)
+    wanted = ("name", "address_1", "address_2", "pin")
+    return JsonResponse({"fields": {key: fields[key] for key in wanted if key in fields}})
 
 
 @login_required

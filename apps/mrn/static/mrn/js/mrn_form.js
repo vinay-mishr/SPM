@@ -40,6 +40,7 @@
   var rowDisAmt = dialog.querySelector("[data-row-dis-amt]");
   var rowGst = dialog.querySelector("[data-row-gst]");
   var rowSize = dialog.querySelector("[data-row-size]");
+  var rowPartCode = dialog.querySelector("[data-row-part-code]");
   var rowPoDate = dialog.querySelector("[data-row-po-date]");
   var rowQtyReceived = dialog.querySelector("[data-row-qty-received]");
   var rowQtyRejected = dialog.querySelector("[data-row-qty-rejected]");
@@ -47,6 +48,10 @@
   var rowError = dialog.querySelector("[data-row-error]");
   var lineFieldset = dialog.querySelector("[data-line-fieldset]");
   var partCode = ""; // resolved from the part-search HelpLookup selection, not a visible field
+  // Mirrors partCode into the no-label code span above SIZE, since the Item
+  // Description box itself only shows the part's name.
+  function setPartCode(code) { partCode = code; rowPartCode.value = code || ""; }
+  var partName = ""; // the picked part's name, kept apart from the "NAME (CODE)" shown in the box
 
   var gridBody = dialog.querySelector("[data-grid-rows]");
   var totalAmount = dialog.querySelector("#mrn-total-amount");
@@ -85,7 +90,7 @@
       title: "Party",
       onSelect: function (row) {
         partyCode.value = row.code;
-        partyName.value = row.name;
+        partyName.value = row.city || "";
         // Per the form's Enter sequence, PARTY is followed by CHALLAN NO, not
         // straight into the item row (there is no City/State field on this
         // form to fill in -- Party Name and Code are the only party details shown).
@@ -96,7 +101,12 @@
       endpoint: root.dataset.partsUrl, resultsKey: "parts", valueField: "name",
       displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "material", label: "Material" }, { key: "gst_percent", label: "GST %" }],
       title: "Part",
-      onSelect: function (row) { partCode = row.code; fillPartReference(row.code); },
+      onSelect: function (row) {
+        setPartCode(row.code);
+        partName = row.name;
+        rowPartSearch.value = partDisplayText(row.name, row.code);
+        fillPartReference(row.code);
+      },
     });
   }
 
@@ -112,7 +122,6 @@
       rowRate.value = pending.rate;
       rowRate.readOnly = true;
       rowDiscount.value = pending.discount_percent;
-      rowDiscount.readOnly = true;
       // Dis Amt is Qty x Rate x Disc% -- with no quantity typed yet it's correctly
       // 0 no matter the discount, which reads as a bug ("10% discount but Dis Amt
       // shows 0"). Default Inv Qty to the full pending quantity, same as Rate/Disc%
@@ -139,9 +148,18 @@
       // already has its own Yes/No confirm box (used by the Save button); use
       // that instead so the prompt reliably shows and "Continue Anyway" reliably keeps the item.
       ask("No Order for this Item, Continue Anyway?", function () {}, function () {
-        rowPartSearch.value = ""; partCode = "";
+        rowPartSearch.value = ""; setPartCode(""); partName = "";
       });
     });
+  }
+
+  // "NAME (CODE)" in the Item Description box once a part is picked, so the
+  // code stays visible (it otherwise lives only in the hidden partCode).
+  function partDisplayText(name, code) {
+    name = (name || "").trim();
+    code = (code || "").trim();
+    if (!name) return code;
+    return code ? name + " (" + code + ")" : name;
   }
 
   function fillPartReference(code) {
@@ -160,12 +178,19 @@
 
   /* --- Live calculations: Dis Amt, Qty Rej, grand totals ---------------------------- */
 
+  // Dis Amt is the per-unit discount (Rate x Disc% / 100) -- e.g. Rate 200 at
+  // 10% shows Dis Amt 20, and the line Amount comes out to (Rate - Dis Amt) x Qty.
   function updateDisAmt() {
-    var gross = n(rowInvoiceQty.value || rowQtyAccepted.value) * n(rowRate.value);
-    rowDisAmt.value = money(gross * n(rowDiscount.value) / 100);
+    rowDisAmt.value = money(n(rowRate.value) * n(rowDiscount.value) / 100);
   }
-  [rowInvoiceQty, rowQtyAccepted, rowRate, rowDiscount].forEach(function (el) {
+  [rowRate, rowDiscount].forEach(function (el) {
     el.addEventListener("input", updateDisAmt);
+  });
+  // Dis Amt can also be typed directly -- back-calculate Disc % from it (per unit,
+  // same basis as updateDisAmt), so the two stay consistent either way.
+  rowDisAmt.addEventListener("input", function () {
+    var rate = n(rowRate.value);
+    rowDiscount.value = rate ? money(n(rowDisAmt.value) / rate * 100) : "0.00";
   });
 
   // Qty Acpt always follows Qty Recd: typing Qty Recd sets Qty Acpt to match it
@@ -245,21 +270,22 @@
     if (formState.mode === "view") return;
     var row = formState.lines[index];
     formState.editingIndex = index;
-    partCode = row.part_code;
-    rowPartSearch.value = row.part_name;
+    setPartCode(row.part_code);
+    partName = row.part_name;
+    rowPartSearch.value = partDisplayText(row.part_name, row.part_code);
     rowPoNo.value = row.po_no; rowPoDate.value = window.DateMask.toDisplay(row.po_date);
     rowSize.value = row.size; rowUnit.value = row.unit;
     rowInvoiceQty.value = row.invoice_qty; rowQtyReceived.value = row.qty_received;
     rowQtyAccepted.value = row.qty_accepted; rowQtyRejected.value = row.qty_rejected;
     rowRate.value = row.rate; rowDiscount.value = row.discount_percent; rowGst.value = row.gst_percent;
-    rowDisAmt.value = money(row.discount_amount);
+    updateDisAmt();
     renderGrid();
     rowPartSearch.focus();
   }
 
   function cancelEdit() {
     formState.editingIndex = -1;
-    partCode = "";
+    setPartCode(""); partName = "";
     rowPartSearch.value = ""; rowPoNo.value = ""; rowPoDate.value = ""; rowPendingQty.value = "";
     rowSize.value = ""; rowUnit.value = ""; rowInvoiceQty.value = ""; rowQtyReceived.value = "";
     rowQtyAccepted.value = ""; rowQtyRejected.value = ""; rowRate.value = ""; rowRate.readOnly = false;
@@ -278,14 +304,16 @@
       return;
     }
     var line = {
-      part_code: partCode, part_name: rowPartSearch.value.trim() || partCode,
+      part_code: partCode, part_name: partName || partCode,
       po_div: formState.poMatched ? formState.poMatched.div : "",
       po_no: rowPoNo.value.trim(), po_date: formState.poMatched ? formState.poMatched.po_date : null,
       size: rowSize.value.trim(), unit: rowUnit.value.trim(),
       invoice_qty: rowInvoiceQty.value.trim() || "0", qty_received: rowQtyReceived.value.trim() || "0",
       qty_accepted: qtyAccepted, qty_rejected: rowQtyRejected.value.trim() || "0",
       rate: rowRate.value.trim() || "0", discount_percent: rowDiscount.value.trim() || "0",
-      discount_amount: rowDisAmt.value.trim() || "0", gst_percent: rowGst.value.trim() || "0",
+      // rowDisAmt shows the PER-UNIT discount; the line/total math (lineAmount(),
+      // computeTotals()) and the server both expect the TOTAL discount amount.
+      discount_amount: money(n(rowDisAmt.value) * n(qtyAccepted)), gst_percent: rowGst.value.trim() || "0",
     };
     if (formState.editingIndex > -1) formState.lines[formState.editingIndex] = line;
     else formState.lines.push(line);
@@ -363,7 +391,7 @@
     mrnDate.value = window.DateMask.toDisplay(row ? row.mrn_date : new Date().toISOString().slice(0, 10));
     partyCode.value = row ? row.party_code : "";
     partySearch.value = row ? (row.party_name || "") : "";
-    partyName.value = row ? (row.party_name || "") : "";
+    partyName.value = row ? (row.city || "") : "";
     checkPo.value = "Y";
     remarks.value = ""; oc1.value = "0.00"; oc2.value = "0.00";
     cancelEdit();

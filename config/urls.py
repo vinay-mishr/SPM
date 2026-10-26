@@ -9,6 +9,8 @@ from apps.purchase_orders.views import pending_order_letter_share_pdf as pol_sha
 from apps.purchase_orders.views import pending_order_letter_share_view as pol_share_view
 from apps.mrn.views import mrn_share_pdf, mrn_share_view
 from apps.returnable_challan.views import challan_share_pdf, challan_share_view
+from apps.gst_invoice.views import gi_share_pdf, gi_share_view
+from apps.spare_invoice.views import si_share_pdf, si_share_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -38,6 +40,7 @@ urlpatterns = [
     path("creditor-payment/", include("apps.creditor_outstanding.payment_urls")),
     path("debit-note/", include("apps.debit_note.urls")),
     path("gst-invoice/", include("apps.gst_invoice.urls")),
+    path("eway-bill/", include("apps.eway_bill.urls")),
     path("credit-note/", include("apps.credit_note.urls")),
     path("spare-invoice/", include("apps.spare_invoice.urls")),
     path("proforma-invoice/", include("apps.proforma_invoice.urls")),
@@ -53,6 +56,10 @@ urlpatterns = [
     path("mrn-share/<str:token>/pdf/", mrn_share_pdf, name="mrn_share_pdf"),
     path("challan-share/<str:token>/", challan_share_view, name="challan_share_view"),
     path("challan-share/<str:token>/pdf/", challan_share_pdf, name="challan_share_pdf"),
+    path("gst-invoice-share/<str:token>/", gi_share_view, name="gst_invoice_share_view"),
+    path("gst-invoice-share/<str:token>/pdf/", gi_share_pdf, name="gst_invoice_share_pdf"),
+    path("spare-invoice-share/<str:token>/", si_share_view, name="spare_invoice_share_view"),
+    path("spare-invoice-share/<str:token>/pdf/", si_share_pdf, name="spare_invoice_share_pdf"),
     path("", include("apps.dashboard.urls")),
 ]
 

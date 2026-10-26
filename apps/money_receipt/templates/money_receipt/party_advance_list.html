@@ -1,0 +1,43 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Party Advance List · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'money_receipt/css/party_outstanding.css' %}">
+  <script src="{% static 'money_receipt/js/party_advance_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Party Advance List{% endblock %}
+{% block page_subtitle %}Money Receipts &rsaquo; Party Advance List{% endblock %}
+
+{% block content %}
+<section class="master-page po-page" data-party-advance-list
+         data-data-url="{% url 'money_receipt:party_advance_data' %}"
+         data-export-url="{% url 'money_receipt:party_advance_export' %}"
+         data-exit-url="{% url 'money_receipt:entry' %}">
+  <div class="master-toolbar po-toolbar" role="toolbar" aria-label="Party advance list actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table po-table">
+      <thead><tr><th>PARTY NAME</th><th>CITY</th><th class="num">AMOUNT</th></tr></thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No party has a pending advance.</p>
+  </div>
+
+  <div class="po-summary">
+    <div class="po-summary-row">
+      <label>GRAND TOTAL <input class="num" data-g-total readonly tabindex="-1" value="0.00"></label>
+    </div>
+  </div>
+</section>
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

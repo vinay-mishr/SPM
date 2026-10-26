@@ -33,7 +33,8 @@
 .mpr-error[hidden] { display: none; }
 
 .mpr-table { min-width: 900px; font-size: 0.8125rem; }
-.mpr-table th, .mpr-table td { padding: 4px 8px; white-space: nowrap; }
+.mpr-table th, .mpr-table td { padding: 4px 8px; white-space: nowrap; border-right: 2px solid #000; }
+.mpr-table tbody td { border-bottom: 2px solid #000; }
 .mpr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .mpr-total th,

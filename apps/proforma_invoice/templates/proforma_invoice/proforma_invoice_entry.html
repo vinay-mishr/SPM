@@ -24,7 +24,6 @@
          data-save-url="{% url 'proforma_invoice:api_save' %}"
          data-delete-url="{% url 'proforma_invoice:api_delete' %}"
          data-print-url-template="{% url 'proforma_invoice:print' bill_no='__NO__' %}"
-         data-new-item-url="{% url 'items:master' %}"
          data-new-party-url="{% url 'parties:master' %}"
          data-exit-url="{% url 'dashboard:home' %}"
          data-can-edit="{{ can_edit|yesno:'1,0' }}">
@@ -63,25 +62,24 @@
     <div class="gi-body">
       <div class="gi-alert" role="alert" data-form-alert hidden></div>
 
-      <div class="gi-fields">
-        <div class="gi-field-row">
-          <label>PERFORMA NO <input data-field="bill_no" readonly tabindex="-1"></label>
-          <label>DATE <input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-          <label>CA/CR <select data-ca-cr><option value="CR" selected>CR</option><option value="CA">CA</option></select></label>
-          <label>GST(Y/N) <select data-field="gst_enabled"><option value="Y" selected>Y</option><option value="N">N</option></select></label>
-          <label class="gi-radio">SUPPLY
-            <span><input type="radio" name="pi-supply" value="W" checked> (W) WITHIN STATE</span>
-            <span><input type="radio" name="pi-supply" value="I"> (I) INTERSTATE</span>
-          </label>
-        </div>
-
-        <div class="gi-field-row">
-          <label class="gi-wide">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
-          <label class="gi-wide">GST NO <input data-field="gst_no" maxlength="16"></label>
-          <label class="gi-wide" data-cash-row hidden>CASH PARTY <input data-field="cash_party_name" maxlength="40"></label>
-          <label data-cash-row hidden>CASH PARTY CITY <input data-field="cash_party_city" maxlength="40"></label>
-          <a class="pi-shortcut" data-new-party target="_blank" rel="noopener">New Party</a>
-        </div>
+      <!-- DOM order matches the required keyboard focus sequence (Performa
+           No -> Date -> Party -> Supply -> Item -> Currency -> HSN No ->
+           Quantity -> Rate -> OK), independent of each field's visual
+           position -- that's still set entirely by the pi-f-* CSS Grid
+           classes in proforma_invoice.css, which are unchanged, so nothing
+           moves on screen. GST(Y/N) and GST No aren't part of the required
+           sequence, so they stay tabindex="-1" (click-only; GST No is still
+           auto-filled from Party) rather than intruding on it. CA/CR and the
+           Cash Party fields are gone from this screen (every invoice now
+           saves as CR); the legacy data/backend for any existing CA invoices
+           is untouched. -->
+      <div class="gi-fields pi-header-grid">
+        <label class="pi-f-billno">PERFORMA NO <input data-field="bill_no" readonly tabindex="-1"></label>
+        <label class="pi-f-date">DATE <input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="gi-wide pi-f-party">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+        <label class="pi-f-gstyn">GST(Y/N) <select data-field="gst_enabled" tabindex="-1"><option value="Y" selected>Y</option><option value="N">N</option></select></label>
+        <label class="gi-wide pi-f-gstno">GST NO <input data-field="gst_no" maxlength="16" tabindex="-1"></label>
+        <label class="pi-f-supply">SUPPLY <select data-supply-type><option value="W" selected>(W) WITHIN STATE</option><option value="I">(I) INTERSTATE</option></select></label>
       </div>
 
       <div class="gi-item-row pi-item-row">
@@ -93,7 +91,10 @@
         <button type="button" class="btn btn--primary" data-item-add>OK</button>
         <div class="gi-row-error" data-item-error></div>
       </div>
-      <a class="pi-shortcut" data-new-item target="_blank" rel="noopener">New Item</a>
+      <div class="gi-narration">
+        <div class="gi-narration-title">Particular</div>
+        <textarea data-item-particular rows="1"></textarea>
+      </div>
 
       <div class="gi-grid gi-items">
         <table>

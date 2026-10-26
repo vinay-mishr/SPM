@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Cash In Hand · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'money_receipt/css/party_outstanding.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/cash_in_hand.css' %}">
+  <script src="{% static 'gl/js/cash_in_hand.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Cash In Hand{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Book Printing &rsaquo; Cash In Hand{% endblock %}
+
+{% block content %}
+<section class="master-page po-page" data-cash-in-hand
+         data-data-url="{% url 'gl:cash_in_hand_data' %}"
+         data-export-url="{% url 'gl:cash_in_hand_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar po-toolbar" role="toolbar" aria-label="Cash in hand filters">
+    <div class="po-filters">
+      <label class="po-filter">START DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="po-filter">END DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table po-table">
+      <thead><tr><th>S.NO</th><th>DATE</th><th class="num">AMOUNT</th><th></th></tr></thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No rows in this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"cih-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

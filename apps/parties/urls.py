@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.PartyMasterView.as_view(), name="master"),
     path("api/", views.party_list, name="api_list"),
     path("api/next-code/", views.party_next_code, name="api_next_code"),
+    path("api/gstin-lookup/", views.party_gstin_lookup, name="api_gstin_lookup"),
     path("api/save/", views.party_save, name="api_create"),
     path("api/<str:pk>/save/", views.party_save, name="api_update"),
     path("api/<str:pk>/delete/", views.party_delete, name="api_delete"),

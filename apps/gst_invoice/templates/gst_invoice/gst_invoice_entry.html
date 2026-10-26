@@ -25,6 +25,8 @@
          data-delete-url="{% url 'gst_invoice:api_delete' %}"
          data-exit-url="{% url 'dashboard:home' %}"
          data-print-url-template="{% url 'gst_invoice:print' bill_no='__NO__' %}"
+         data-pdf-url-template="{% url 'gst_invoice:pdf' bill_no='__NO__' %}"
+         data-share-url-template="{% url 'gst_invoice:share_link' bill_no='__NO__' %}"
          data-can-edit="{{ can_edit|yesno:'1,0' }}">
   {% csrf_token %}
 
@@ -62,38 +64,39 @@
       <div class="gi-alert" role="alert" data-form-alert hidden></div>
 
       <div class="gi-fields">
-        <div class="gi-columns">
-          <div class="gi-column gi-column--invoice">
-            <label>GST BILL NO <input data-field="bill_no" readonly tabindex="-1"></label>
-            <label>DATE <input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-            <label>CA/CR <select data-ca-cr><option value="CR" selected>CR</option><option value="CA">CA</option></select></label>
-            <label>CHK ORDER <select data-chk-order><option value="N" selected>N</option><option value="Y">Y</option></select></label>
-            <label>SUPPLY <select data-supply-type><option value="W" selected>(W) WITHIN STATE</option><option value="I">(I) INTERSTATE</option></select></label>
+        <div class="inv-header">
+          <div class="inv-col inv-col--left">
+            <div class="inv-row inv-row--top">
+              <label class="inv-field inv-field--billno"><span>BILL NO</span><input data-field="bill_no" readonly tabindex="-1"></label>
+              <label class="inv-field inv-field--date"><span>DATE</span><input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+              <label class="inv-field inv-field--cacr"><span>CA/CR</span><select data-ca-cr><option value="CR" selected>CR</option><option value="CA">CA</option></select></label>
+              <label class="inv-field inv-field--chk"><span>CHK ORDER</span><select data-chk-order><option value="N" selected>N</option><option value="Y">Y</option></select></label>
+            </div>
+            <label class="inv-field inv-field--wide"><span>PARTY</span><input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+            <label class="inv-field inv-field--wide" data-cash-row hidden><span>CASH PARTY</span><input data-field="cash_party_name" maxlength="40"></label>
+            <label class="inv-field inv-field--wide" data-cash-row hidden><span>CASH PARTY CITY</span><input data-field="cash_party_city" maxlength="40"></label>
+            <label class="inv-field inv-field--wide" data-party-city-row><span>CITY</span><input data-field="city" readonly tabindex="-1"></label>
+            <label class="inv-field inv-field--wide"><span>GST NO</span><input data-field="gst_no" maxlength="16"></label>
+            <label class="inv-field inv-field--wide"><span>PHONE NO.</span><input data-field="phone" maxlength="25"></label>
+            <label class="inv-field inv-field--supply"><span>(I) INTERSTATE/(W) WITHIN STATE</span><select data-supply-type><option value="W" selected>(W) WITHIN STATE</option><option value="I">(I) INTERSTATE</option></select></label>
+            <label class="inv-field inv-field--wide"><span>CONSIGNEE NAME</span><input data-field="consignee_name" maxlength="40"></label>
+            <label class="inv-field inv-field--wide"><span>CONSIG. ADDRESS</span><input data-field="consignee_address" maxlength="60"></label>
           </div>
 
-          <div class="gi-column gi-column--party">
-            <label>PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
-            <label data-cash-row hidden>CASH PARTY <input data-field="cash_party_name" maxlength="40"></label>
-            <label data-cash-row hidden>CASH PARTY CITY <input data-field="cash_party_city" maxlength="40"></label>
-            <label>GST NO <input data-field="gst_no" maxlength="16"></label>
-            <label>CONSIGNEE NAME <input data-field="consignee_name" maxlength="40"></label>
-            <label>CONSIG. ADDRESS <input data-field="consignee_address" maxlength="60"></label>
-            <label>PHONE NO <input data-field="phone" maxlength="25"></label>
-          </div>
-
-          <div class="gi-column gi-column--other">
-            <label>G.R.NO <input data-field="gr_no" maxlength="20"></label>
-            <label>G.R.DATE <input data-field="gr_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-            <label>VEHICLE NO <input data-field="vehicle_no" maxlength="20"></label>
-            <label>TRANSPORT <input data-field="transport" maxlength="40"></label>
-          </div>
-
-          <div class="gi-column gi-column--supply">
-            <label>ORDER NO <input data-field="order_no" maxlength="20"></label>
-            <label>ORDER DATE <input data-field="order_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-            <label>DATE OF SUPPLY <input data-field="date_of_supply" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-            <label>TIME OF SUPPLY <input data-field="time_of_supply" maxlength="10"></label>
-            <label>PLACE OF SUPPLY <input data-field="place_of_supply" maxlength="40"></label>
+          <div class="inv-col inv-col--right">
+            <div class="inv-row inv-row--pair inv-row--order">
+              <label class="inv-field inv-field--orderno"><span>ORDER NO</span><input data-field="order_no" maxlength="20"></label>
+              <label class="inv-field inv-field--date-right"><span>ORDER DATE</span><input data-field="order_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            </div>
+            <div class="inv-row inv-row--pair">
+              <label class="inv-field"><span>G.R.NO.</span><input data-field="gr_no" maxlength="20"></label>
+              <label class="inv-field inv-field--date-right"><span>G.R.DATE</span><input data-field="gr_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            </div>
+            <label class="inv-field inv-field--wide"><span>VEHICLE NO.</span><input data-field="vehicle_no" maxlength="20"></label>
+            <label class="inv-field inv-field--wide"><span>TRANSPORT</span><input data-field="transport" maxlength="40"></label>
+            <label class="inv-field inv-field--wide"><span>DATE OF SUPPLY</span><input data-field="date_of_supply" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+            <label class="inv-field inv-field--wide"><span>TIME OF SUPPLY</span><input data-field="time_of_supply" maxlength="10"></label>
+            <label class="inv-field inv-field--wide"><span>PLACE OF SUPPLY</span><input data-field="place_of_supply" maxlength="40"></label>
           </div>
         </div>
       </div>
@@ -118,36 +121,43 @@
         </table>
       </div>
 
-      <div class="gi-fields" style="margin-top: 6px;">
-        <div class="gi-field-row">
-          <label>E-WAY NUMBER <input data-field="eway_no" maxlength="20"></label>
-          <label>E-WAY DATE <input data-field="eway_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-          <label class="gi-radio">REVERSE CHARGE
-            <span><input type="radio" name="gi-reverse-charge" value="N" checked> N</span>
-            <span><input type="radio" name="gi-reverse-charge" value="Y"> Y</span>
-          </label>
-          <label class="gi-wide">REMARKS <input data-field="remarks" maxlength="40"></label>
-        </div>
-      </div>
-
       <div class="gi-summary">
         <label>TOTAL AMOUNT <input class="num" data-total-amount readonly tabindex="-1" value="0.00"></label>
         <label>GST AMT <input class="num" data-gst-amount readonly tabindex="-1" value="0.00"></label>
         <label>FREIGHT <input class="num" data-field="freight" value="0.00"></label>
-        <label>GST % <input class="num" data-field="freight_gst_pct" value="0.00"></label>
+        <label>FREIGHT GST % <input class="num" data-field="freight_gst_pct" value="0.00"></label>
         <label>GST ON FREIGHT <input class="num" data-freight-gst readonly tabindex="-1" value="0.00"></label>
         <div class="gi-summary-adj-row">
+          <span class="gi-adj-label">ADD / LESS 1</span>
           <select data-adj-sign="0"><option value="A">ADD</option><option value="S">LESS</option></select>
-          <input data-adj-code="0" maxlength="4" placeholder="Ledger" autocomplete="off" title="Type to search the ledger master, or press Enter">
-          <input class="num" data-adj-amount="0" value="0.00" disabled>
+          <input class="gi-adj-ledger" data-adj-ledger="0" placeholder="Ledger name..." autocomplete="off" title="Type to search the ledger master, or press Enter">
+          <input type="hidden" data-adj-code="0">
+          <span class="gi-adj-code" data-adj-code-badge="0" title="Ledger code">CODE</span>
+          <input class="num" data-adj-rate="0" placeholder="Rate %" disabled title="% of Total + GST + Freight + GST on Freight -- fills Amt">
+          <input class="num" data-adj-amount="0" placeholder="Amt" disabled>
         </div>
         <div class="gi-summary-adj-row">
+          <span class="gi-adj-label">ADD / LESS 2</span>
           <select data-adj-sign="1"><option value="A">ADD</option><option value="S">LESS</option></select>
-          <input data-adj-code="1" maxlength="4" placeholder="Ledger" autocomplete="off" title="Type to search the ledger master, or press Enter">
-          <input class="num" data-adj-amount="1" value="0.00" disabled>
+          <input class="gi-adj-ledger" data-adj-ledger="1" placeholder="Ledger name..." autocomplete="off" title="Type to search the ledger master, or press Enter">
+          <input type="hidden" data-adj-code="1">
+          <span class="gi-adj-code" data-adj-code-badge="1" title="Ledger code">CODE</span>
+          <input class="num" data-adj-rate="1" placeholder="Rate %" disabled title="% of Total + GST + Freight + GST on Freight -- fills Amt">
+          <input class="num" data-adj-amount="1" placeholder="Amt" disabled>
         </div>
         <label>NET AMOUNT <input class="num" data-net-amount readonly tabindex="-1" value="0.00"></label>
         <label>NET ROUNDED <input class="num" data-net-rounded readonly tabindex="-1" value="0"></label>
+      </div>
+
+      <div class="gi-fields" style="margin-top: -176px;">
+        <div class="gi-field-row">
+          <label>E-WAY NUMBER <input data-field="eway_no" maxlength="20"></label>
+          <label>E-WAY DATE <input data-field="eway_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+          <label>REVERSE CHARGE <select data-reverse-charge><option value="N" selected>N</option><option value="Y">Y</option></select></label>
+        </div>
+        <div class="gi-field-row">
+          <label class="gi-wide">REMARKS <input data-field="remarks" maxlength="40"></label>
+        </div>
       </div>
 
       <div class="gi-footer">
@@ -156,6 +166,49 @@
       </div>
     </div>
   </form>
+</dialog>
+
+<dialog class="modal modal--sm print-options-dialog" id="gi-print-options-dialog" aria-labelledby="gi-print-options-title">
+  <header class="print-options__header">
+    <h2 class="print-options__title" id="gi-print-options-title">PRINT INVOICE</h2>
+  </header>
+  <div class="print-options__body">
+    <div class="print-options__fields">
+      <label><span>BILL NO</span><input type="text" readonly tabindex="-1" data-print-bill-no></label>
+      <label><span>NET AMOUNT</span><input type="text" readonly tabindex="-1" data-print-net-amount></label>
+    </div>
+    <div class="print-options__copies">
+      <label><input type="checkbox" name="gi-copy-type" value="Original For Recipient" checked> Original For Recipient</label>
+      <label><input type="checkbox" name="gi-copy-type" value="Duplicate For Transporter"> Duplicate For Transporter</label>
+      <label><input type="checkbox" name="gi-copy-type" value="Triplicate For Supplier"> Triplicate For Supplier</label>
+    </div>
+    <div class="print-options__grid">
+      <button type="button" data-print-action="preview">VIEW</button>
+      <button type="button" data-print-action="print">PRINT</button>
+      <button type="button" data-print-action="pdf">PRINT PDF</button>
+      <button type="button" data-print-action="whatsapp" class="print-options__whatsapp">WHATSAPP</button>
+      <button type="button" data-print-action="exit" class="print-options__exit">EXIT</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal modal--sm" id="gi-whatsapp-dialog" aria-labelledby="gi-whatsapp-title">
+  <header class="modal__header">
+    <h2 class="modal__title" id="gi-whatsapp-title">WhatsApp</h2>
+  </header>
+  <div class="modal__body">
+    <div class="alert alert--error" role="alert" data-whatsapp-alert hidden></div>
+
+    <label class="mform__label" for="gi-whatsapp-party">Party Name</label>
+    <input class="form-control" id="gi-whatsapp-party" type="text" readonly tabindex="-1" data-whatsapp-party>
+
+    <label class="mform__label" for="gi-whatsapp-mobile">Mobile Number</label>
+    <input class="form-control" id="gi-whatsapp-mobile" type="text" inputmode="tel" autocomplete="off" data-whatsapp-mobile>
+  </div>
+  <footer class="modal__footer">
+    <button class="btn btn--primary" type="button" data-whatsapp-send>Send on WhatsApp</button>
+    <button class="btn btn--secondary" type="button" data-whatsapp-back>Back</button>
+  </footer>
 </dialog>
 
 {% endblock %}

@@ -29,7 +29,7 @@
             <p class="mform__error" data-error-for="mobile_1"></p>
           </div>
 
-          <label class="mform__label" for="v-opening_balance">Opening Balance</label>
+          <label class="mform__label" for="v-opening_balance">Op Bal</label>
           <div class="mform__field">
             <input class="form-control mform__input mform__input--num vform__short" id="v-opening_balance" name="opening_balance" type="number" inputmode="decimal" step="0.01" data-field="opening_balance">
             <p class="mform__error" data-error-for="opening_balance"></p>
@@ -93,13 +93,9 @@
 
         {# ---------------- Right column ---------------- #}
         <div class="mform vform__col">
-          <label class="mform__label" for="v-transport">Transport</label>
-          <div class="mform__field">
-            <input class="form-control mform__input" id="v-transport" name="transport" type="text" maxlength="25" list="vendor-transport-list" autocomplete="off" data-field="transport">
-            <p class="mform__error" data-error-for="transport"></p>
-          </div>
+          <input type="hidden" id="v-transport" name="transport" value="" data-field="transport">
 
-          <label class="mform__label" for="v-contact_person_1">Contact Person 1</label>
+          <label class="mform__label" for="v-contact_person_1">Con. Person1</label>
           <div class="mform__field">
             <input class="form-control mform__input" id="v-contact_person_1" name="contact_person_1" type="text" maxlength="20" autocomplete="off" data-field="contact_person_1">
             <p class="mform__error" data-error-for="contact_person_1"></p>

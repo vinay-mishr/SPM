@@ -1,0 +1,14 @@
+{
+  "name": "SP Machines",
+  "short_name": "SP Machines",
+  "description": "SP Machines — Complete Packaging Solutions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#BDDFC8",
+  "theme_color": "#BDDFC8",
+  "icons": [
+    { "src": "/static/img/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/img/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/static/img/maskable-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

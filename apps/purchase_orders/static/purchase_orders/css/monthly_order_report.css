@@ -38,7 +38,8 @@
   letter-spacing: 0.02em;
 }
 
-.mor-table { min-width: 1000px; font-size: 0.8125rem; }
-.mor-table th, .mor-table td { padding: 4px 8px; white-space: nowrap; }
+.mor-table { min-width: 1000px; width: 100%; font-size: 1rem; }
+.mor-table th, .mor-table td { padding: 6px 14px; white-space: nowrap; border-right: 2px solid #000; }
+.mor-table tbody td { border-bottom: 2px solid #000; }
 .mor-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .mor-table td.num[data-negative] { color: var(--danger); }

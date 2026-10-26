@@ -1,0 +1,70 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Voucher Printing · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/voucher_printing.css' %}">
+  <script src="{% static 'gl/js/voucher_printing.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Voucher Printing{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Data Entry &rsaquo; Voucher Printing{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-voucher-printing
+         data-data-url="{% url 'gl:voucher_printing_data' %}"
+         data-export-url="{% url 'gl:voucher_printing_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-titlebar">VOUCHER PRINTING</div>
+
+  <div class="pe-head" style="grid-template-columns: 180px 220px 160px;">
+    <label>VOUCHER TYPE
+      <select data-ttype>
+        <option value="CV">CV</option>
+        <option value="BV">BV</option>
+        <option value="JV">JV</option>
+      </select>
+    </label>
+    <label>VOUCHER DATE
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-voucher-date data-date-mask>
+    </label>
+    <label>VOUCHER NO
+      <input type="text" data-voucher-no>
+    </label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--primary" data-view>VIEW</button>
+    <button type="button" class="btn btn--secondary" data-print disabled>PRINT</button>
+    <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div class="vp-letter" data-result hidden>
+    <div class="vp-page">
+      <div class="vp-head">
+        <p class="vp-brand">{{ brand.name }}</p>
+        <p>{{ brand.address_line1 }}</p>
+      </div>
+      <div class="vp-meta">
+        <p>VOUCHER DATE <span data-r-date></span></p>
+        <p>VOUCHER NO <span data-r-no></span></p>
+        <p>VOUCHER TYPE <span data-r-label></span></p>
+      </div>
+      <table class="vp-table">
+        <thead><tr><th>CODE</th><th>S.CODE</th><th>A/C DESCRIPTION</th><th class="num">DEBIT</th><th class="num">CREDIT</th></tr></thead>
+        <tbody data-r-rows></tbody>
+        <tfoot><tr><td colspan="3" class="vp-total-label">T O T A L</td><td class="num" data-r-total-debit></td><td class="num" data-r-total-credit></td></tr></tfoot>
+      </table>
+      <div class="vp-sign">
+        <span>Signature</span>
+        <span>Accountant</span>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

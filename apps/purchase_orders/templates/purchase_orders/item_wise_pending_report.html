@@ -16,7 +16,7 @@
          data-data-url="{% url 'purchase_orders:item_wise_pending_report_data' %}"
          data-export-url="{% url 'purchase_orders:item_wise_pending_report_export' %}"
          data-parts-url="{% url 'purchase_orders:api_parts' %}"
-         data-exit-url="{% url 'purchase_orders:master' %}">
+         data-exit-url="{% url 'dashboard:home' %}">
   {% csrf_token %}
 
   <div class="master-toolbar" role="toolbar" aria-label="Item wise pending report filters">
@@ -28,8 +28,10 @@
 
     <div class="iwp-item">
       <span class="iwp-item__label">Item Name</span>
-      <input class="form-control iwp-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search disabled>
-      <input class="form-control iwp-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+      <div class="iwp-item__row">
+        <input class="form-control iwp-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search disabled>
+        <input class="form-control iwp-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+      </div>
     </div>
 
     <label class="iwp-filter">Run Date

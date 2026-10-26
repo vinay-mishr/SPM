@@ -1,0 +1,160 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}GST Account Transfer · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/gst_account_transfer.css' %}">
+  <script src="{% static 'gl/js/gst_account_transfer.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}GST Account Transfer{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Data Entry &rsaquo; GST Account Transfer{% endblock %}
+
+{% block content %}
+<section class="gi-page" data-gat
+         data-list-url="{% url 'gl:gst_account_transfer_list' %}"
+         data-mrn-url="{% url 'gl:gst_account_transfer_mrn' %}"
+         data-latest-mrn-url="{% url 'gl:gst_account_transfer_latest_mrn' %}"
+         data-parties-url="{% url 'gl:gst_account_transfer_parties' %}"
+         data-save-url="{% url 'gl:gst_account_transfer_save' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--primary" data-action="add">ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="gi-search">SEARCH <input class="form-control" type="text" data-search placeholder="Type party name..."></label>
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="gi-grid">
+    <table>
+      <thead><tr><th>GRN NO.</th><th>DATE</th><th>PARTY</th><th>CITY</th><th class="num">NET AMOUNT</th><th>A/C TRANSFER</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="6">No closed MRNs in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="pe-page gat-dialog" data-form>
+  <form novalidate data-gat-form>
+    {% csrf_token %}
+    <div class="pe-titlebar">GST ACCOUNT TRANSFER</div>
+    <div class="gi-alert" role="alert" data-form-alert hidden></div>
+
+    <div class="gat-head">
+      <div class="gat-row-multi">
+        <label class="gat-field gat-field--grno"><span>GRN NO</span>
+          <input data-field="mrn_no" placeholder="MRN/GRN No."></label>
+        <label class="gat-field gat-field--sm"><span>DATE</span>
+          <input data-r-date readonly tabindex="-1"></label>
+        <label class="gat-field gat-field--sm"><span>CA/CR</span>
+          <input data-r-cacr readonly tabindex="-1" value="CR"></label>
+      </div>
+      <div class="gat-row-multi">
+        <label class="gat-field gat-field--half"><span>INV. NO</span>
+          <input data-r-invno readonly tabindex="-1"></label>
+        <label class="gat-field gat-field--sm"><span>DATE</span>
+          <input data-r-invdt readonly tabindex="-1"></label>
+      </div>
+      <div class="gat-row-multi">
+        <label class="gat-field gat-field--party"><span>PARTY</span>
+          <input data-r-party readonly tabindex="-1"></label>
+        <label class="gat-field gat-field--code"><span></span>
+          <input data-r-partycode readonly tabindex="-1"></label>
+        <label class="gat-field gat-field--city"><span></span>
+          <input data-r-city readonly tabindex="-1"></label>
+      </div>
+      <div class="gat-row-multi">
+        <label class="gat-field gat-field--half"><span>G.R. NO</span>
+          <input data-r-grno></label>
+        <label class="gat-field gat-field--sm"><span>GR DATE</span>
+          <input data-r-grdt type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
+      </div>
+      <div class="gat-row-multi">
+        <label class="gat-field gat-field--transport"><span>TRANSPORT</span>
+          <input data-r-transport></label>
+      </div>
+      <div class="gat-row-multi">
+        <label class="gat-field gat-field--duedt"><span>DUE DATE</span>
+          <input data-r-duedt type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
+      </div>
+    </div>
+
+    <div class="gat-grid-wrap">
+      <table class="gat-grid">
+        <thead><tr><th></th><th class="num">PUR AMT</th><th class="num">DIS %</th><th class="num">TAXABLE VAL</th><th class="num">CGST AMT</th><th class="num">SGST AMT</th><th class="num">IGST AMT</th></tr></thead>
+        <tbody data-rate-rows>
+          <tr data-rate="0"><td>PUR 0%</td>
+            <td class="num"><input class="num" data-pur value="0.00"></td>
+            <td class="num"><input class="num" data-dis value="0.00"></td>
+            <td class="num"><input class="num" data-taxable readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-cgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-sgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-igst readonly tabindex="-1" value="0.00"></td></tr>
+          <tr data-rate="5"><td>PUR 5%</td>
+            <td class="num"><input class="num" data-pur value="0.00"></td>
+            <td class="num"><input class="num" data-dis value="0.00"></td>
+            <td class="num"><input class="num" data-taxable readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-cgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-sgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-igst readonly tabindex="-1" value="0.00"></td></tr>
+          <tr data-rate="12"><td>PUR 12%</td>
+            <td class="num"><input class="num" data-pur value="0.00"></td>
+            <td class="num"><input class="num" data-dis value="0.00"></td>
+            <td class="num"><input class="num" data-taxable readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-cgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-sgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-igst readonly tabindex="-1" value="0.00"></td></tr>
+          <tr data-rate="18"><td>PUR 18%</td>
+            <td class="num"><input class="num" data-pur value="0.00"></td>
+            <td class="num"><input class="num" data-dis value="0.00"></td>
+            <td class="num"><input class="num" data-taxable readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-cgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-sgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-igst readonly tabindex="-1" value="0.00"></td></tr>
+          <tr data-rate="28"><td>PUR 28%</td>
+            <td class="num"><input class="num" data-pur value="0.00"></td>
+            <td class="num"><input class="num" data-dis value="0.00"></td>
+            <td class="num"><input class="num" data-taxable readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-cgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-sgst readonly tabindex="-1" value="0.00"></td>
+            <td class="num"><input class="num" data-igst readonly tabindex="-1" value="0.00"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gat-bottom">
+      <div class="gat-actions">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+      <div class="gat-totals">
+        <label><span>TOTAL AMOUNT</span> <input class="num" data-t-total readonly tabindex="-1" value="0.00"></label>
+        <label><span>GST AMOUNT</span> <input class="num" data-t-gst readonly tabindex="-1" value="0.00"></label>
+        <label><span>ADD/LESS</span>
+          <select data-adj-sign="1"><option value="A">ADD</option><option value="L">LESS</option></select>
+          <input data-adj-name="1" placeholder="Account"> <input class="num" data-adj-amt="1" value="0.00"></label>
+        <label><span>ADD/LESS</span>
+          <select data-adj-sign="2"><option value="A">ADD</option><option value="L">LESS</option></select>
+          <input data-adj-name="2" placeholder="Account"> <input class="num" data-adj-amt="2" value="0.00"></label>
+        <label><span>NET AMOUNT</span> <input class="num" data-t-net readonly tabindex="-1" value="0.00"></label>
+        <label><span>NET ROUNDED</span> <input class="num" data-t-rounded readonly tabindex="-1" value="0.00"></label>
+      </div>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

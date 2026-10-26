@@ -34,6 +34,7 @@ urlpatterns = [
     path("pending-jobs/data/", pending.pending_job_data, name="pending_job_data"),
     path("pending-jobs/export/", pending.pending_job_export, name="pending_job_export"),
     path("sub-assembly/", sub_assembly_views.SubAssemblyEntryView.as_view(), name="sub_assembly"),
+    path("sub-assembly/list/", sub_assembly_views.sa_list, name="sa_list"),
     path("sub-assembly/next-no/", sub_assembly_views.sa_next, name="sa_next"),
     path("sub-assembly/api/<str:number>/", sub_assembly_views.sa_detail, name="sa_detail"),
     path("sub-assembly/save/", sub_assembly_views.sa_save, name="sa_save"),

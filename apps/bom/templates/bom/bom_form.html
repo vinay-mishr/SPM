@@ -23,28 +23,27 @@
         </div>
       </div>
 
-      <div class="mform bom-parent">
-        <label class="mform__label" for="bom-parent-unit">Unit</label>
-        <div class="mform__field">
-          <input class="form-control mform__input bom-unit" id="bom-parent-unit" type="text" readonly tabindex="-1" data-parent-unit>
-        </div>
-      </div>
-
       <fieldset class="bom-add-row">
-        <legend class="mform__label">Part Description</legend>
         <div class="bom-add-row__fields">
+          <span class="bom-add-row__num" aria-hidden="true"></span>
           <div class="bom-search-row bom-add-row__desc">
-            <input class="form-control bom-code" type="text" maxlength="10" list="bom-item-list"
-                   autocomplete="off" placeholder="Code" data-row-item-code>
-            <input class="form-control bom-search" type="text" autocomplete="off"
-                   placeholder="Type part code or description to search…" list="bom-item-list" data-row-item-search aria-label="Search component part by code or description">
+            <label class="bom-add-row__code bom-add-row__inline">
+              <span>Part No</span>
+              <input class="form-control bom-code" type="text" maxlength="10" list="bom-item-list"
+                     autocomplete="off" placeholder="Part No" data-row-item-code>
+            </label>
+            <label class="bom-add-row__name bom-add-row__inline">
+              <span>Part Name</span>
+              <input class="form-control bom-search" type="text" autocomplete="off"
+                     placeholder="Type part no or description to search…" list="bom-item-list" data-row-item-search aria-label="Search component part by part no or description">
+            </label>
           </div>
           <datalist id="bom-item-list" data-item-list></datalist>
-          <label class="bom-add-row__qty">
+          <label class="bom-add-row__qty bom-add-row__inline">
             <span>QTY</span>
             <input class="form-control mform__input--num" type="text" inputmode="decimal" autocomplete="off" data-row-qty>
           </label>
-          <label class="bom-add-row__unit">
+          <label class="bom-add-row__unit bom-add-row__inline">
             <span>UNIT</span>
             <input class="form-control" type="text" maxlength="3" autocomplete="off" data-row-unit>
           </label>
@@ -55,10 +54,17 @@
 
       <div class="master-table-wrap bom-grid-wrap">
         <table class="table master-table bom-grid-table">
+          <colgroup>
+            <col class="bom-grid-table__col-num">
+            <col class="bom-grid-table__col-code">
+            <col>
+            <col class="bom-grid-table__col-qty">
+            <col class="bom-grid-table__col-unit">
+          </colgroup>
           <thead>
             <tr>
               <th scope="col" class="num">#</th>
-              <th scope="col">Code</th>
+              <th scope="col">Part No</th>
               <th scope="col">Part Description</th>
               <th scope="col" class="num">Quantity</th>
               <th scope="col">Unit</th>

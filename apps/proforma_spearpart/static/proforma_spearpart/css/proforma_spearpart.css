@@ -12,9 +12,88 @@
 .pfs-form-modal[open] { display: flex; flex-direction: column; }
 .pfs-form-modal::backdrop { background: rgba(0, 0, 0, 0.35); }
 .pfs-item-row { grid-template-columns: 2fr 90px 1fr 1fr 1fr auto !important; }
-.pfs-shortcut { display: inline-block; margin: 2px 0 8px; font-size: 12px; font-weight: 700; color: #1d4ed8; text-decoration: underline; cursor: pointer; }
 
 /* Field labels are 15px throughout this screen. */
 .pfs-form-modal label {
   font-size: 15px;
+}
+
+/* Typed-in values bold, matching apps.gst_invoice's .gi-form-modal rule
+   (this dialog uses .pfs-form-modal instead, so it never inherited it). */
+.pfs-form-modal input,
+.pfs-form-modal select {
+  font-weight: 700;
+}
+
+/* Header field layout only -- two columns (left: Performa No/Date, Party,
+   GST No, Supply; right: Order No, Order Date+GST(Y/N), PL No, PL Date+
+   Others), kept compact so the dialog doesn't grow tall enough to scroll.
+   The HTML keeps its original field order (see the template comment); this
+   only repositions each field with CSS Grid, so native Tab order is
+   untouched -- each field keeps its own .gi-fields label/input styling
+   (font, borders, bold entries) as before. */
+.pfs-header-grid {
+  display: grid;
+  grid-template-columns: minmax(100px, auto) minmax(150px, auto) 40px minmax(130px, auto) minmax(100px, auto);
+  column-gap: 12px;
+  row-gap: 6px;
+}
+.pfs-header-grid > label {
+  min-width: 0;
+  /* Inline labels: label text beside its input/select instead of stacked
+     above it (overrides .gi-fields label's flex-direction: column). Grid
+     placement above is untouched, so every field stays in its existing
+     row/column -- only the label-to-control relationship changes. */
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+/* Under row direction, an input/select's own `width` becomes its flex-basis
+   (not a fraction of the container), so the fixed/100% widths used for the
+   previous stacked layout would overflow the row or fight the label for
+   space. Let each control stretch to fill whatever room is left next to its
+   label instead, keeping the same overall field width as before. */
+.pfs-header-grid > label input,
+.pfs-header-grid > label select,
+.pfs-header-grid > label .dm-field {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+/* Performa No is explicitly narrow (readonly auto-number) -- keep it from
+   stretching to fill the row like the other controls. */
+.pfs-f-billno input {
+  flex: 0 0 70px;
+}
+.pfs-f-billno   { grid-column: 1; grid-row: 1; }
+.pfs-f-date     { grid-column: 2; grid-row: 1; }
+.pfs-f-orderno  { grid-column: 4 / 6; grid-row: 1; }
+.pfs-f-party    { grid-column: 1 / 3; grid-row: 2; }
+.pfs-f-orderdate{ grid-column: 4; grid-row: 2; }
+.pfs-f-gstyn    { grid-column: 5; grid-row: 2; }
+.pfs-f-gstno    { grid-column: 1 / 3; grid-row: 3; }
+.pfs-f-plno     { grid-column: 4 / 6; grid-row: 3; }
+.pfs-f-supply   { grid-column: 1 / 3; grid-row: 4; }
+.pfs-f-pldate   { grid-column: 4; grid-row: 4; }
+.pfs-f-others   { grid-column: 5; grid-row: 4; }
+
+/* --- Summary/totals block: tighter rows, single-line labels ------------- */
+.pfs-form-modal .gi-summary {
+  gap: 2px;
+  margin-top: 8px;
+}
+.pfs-form-modal .gi-summary label {
+  gap: 10px;
+  width: 360px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.pfs-form-modal .gi-summary input {
+  height: 24px;
+  width: 150px;
+}
+.pfs-form-modal .gi-summary-row,
+.pfs-form-modal .gi-summary-adj-row {
+  gap: 2px;
 }

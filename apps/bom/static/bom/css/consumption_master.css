@@ -2,6 +2,7 @@
    static/css/components.css; only this screen's specifics live here. */
 
 .cm-toolbar {
+  flex-wrap: nowrap;
   align-items: center;
   gap: 16px;
 }
@@ -10,7 +11,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1 1 420px;
+  flex: 1 1 480px;
+  min-width: 0;
+}
+
+.cm-toolbar .master-toolbar__actions {
+  flex: none;
+}
+
+.cm-item .form-control {
+  font-weight: 700;
 }
 
 .cm-item__label {
@@ -23,6 +33,7 @@
 
 .cm-item__name {
   flex: 1;
+  min-width: 260px;
 }
 
 .cm-item__code {
@@ -69,7 +80,7 @@
 .cm-table th,
 .cm-table td {
   white-space: nowrap;
-  padding: 4px 8px;
+  padding: 2px 6px;
 }
 
 .cm-table thead th {

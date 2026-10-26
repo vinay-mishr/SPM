@@ -3,13 +3,15 @@ from io import BytesIO
 
 from openpyxl import Workbook
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
-from openpyxl.styles import Font
+from openpyxl.styles import Border, Font, Side
 from openpyxl.utils import get_column_letter
 
 from . import services
 from .models import Part
 
 FONT_NAME = "Arial"
+THICK = Side(style="thick", color="000000")
+BORDER = Border(left=THICK, right=THICK, top=THICK, bottom=THICK)
 COLUMNS = [
     ("Part Number", "part_number", 16, "@"),
     ("Part Description 1", "description_1", 30, "@"),
@@ -58,7 +60,8 @@ def build_workbook():
 
     for col, (heading, _field, width, _fmt) in enumerate(COLUMNS, start=1):
         cell = ws.cell(row=1, column=col, value=heading)
-        cell.font = Font(name=FONT_NAME, size=10, bold=True)
+        cell.font = Font(name=FONT_NAME, size=12, bold=True)
+        cell.border = BORDER
         ws.column_dimensions[get_column_letter(col)].width = width
 
     row = 2
@@ -76,6 +79,7 @@ def build_workbook():
             cell = ws.cell(row=row, column=col, value=value if value != "" else None)
             cell.font = Font(name=FONT_NAME, size=10)
             cell.number_format = fmt
+            cell.border = BORDER
         row += 1
 
     ws.freeze_panes = "A2"

@@ -51,6 +51,55 @@ class GstinTests(TestCase):
         self.assertEqual(services.normalize_mobile("09876543210"), "9876543210")
 
 
+class GstinLookupTests(TestCase):
+    """lookup_gstin_details() never fabricates a result -- it either maps real
+    provider fields or raises GstinLookupError; the provider call itself is
+    mocked so these don't reach the network."""
+
+    def test_invalid_gstin_rejected_before_any_provider_call(self):
+        with mock.patch("apps.eway_bill.provider.lookup_gstin") as mocked:
+            with self.assertRaises(services.GstinLookupError):
+                services.lookup_gstin_details("03ABC")
+            mocked.assert_not_called()
+
+    def test_maps_only_fields_the_provider_actually_returns(self):
+        # Real field names and flat (non-nested) shape, confirmed live
+        # (2026-10-21) against the actual provider.
+        with mock.patch("apps.eway_bill.provider.lookup_gstin") as mocked:
+            mocked.return_value = {
+                "Gstin": VALID_GSTIN, "LegalName": "Acme Traders Pvt Ltd", "TradeName": "Acme",
+                "AddrBno": "12", "AddrBnm": "Industrial Estate", "AddrSt": "Main Road", "AddrLoc": "Mohali",
+                "AddrPncd": "160055", "StateCode": 3,
+            }
+            fields = services.lookup_gstin_details(VALID_GSTIN)
+        self.assertEqual(fields["name"], "ACME")  # TradeName preferred over LegalName
+        self.assertEqual(fields["pin"], "160055")
+        self.assertEqual(fields["state_code"], "03")  # derived from the GSTIN's own "03" prefix
+        # GST registration data never includes phone/email -- never invented.
+        self.assertNotIn("mobile_1", fields)
+        self.assertNotIn("email", fields)
+
+    def test_provider_failure_surfaces_as_lookup_error_not_a_blank_result(self):
+        from apps.eway_bill.provider import ProviderError
+        with mock.patch("apps.eway_bill.provider.lookup_gstin", side_effect=ProviderError("No GST details found.")):
+            with self.assertRaises(services.GstinLookupError):
+                services.lookup_gstin_details(VALID_GSTIN)
+
+    def test_view_requires_login(self):
+        res = self.client.get(reverse("parties:api_gstin_lookup"), {"gstin": VALID_GSTIN})
+        self.assertEqual(res.status_code, 302)
+
+    def test_view_returns_mapped_fields(self):
+        User = get_user_model()
+        user = User.objects.create_user(username="party_tester", password="x")
+        self.client.force_login(user)
+        with mock.patch("apps.eway_bill.provider.lookup_gstin") as mocked:
+            mocked.return_value = {"Gstin": VALID_GSTIN, "LegalName": "Acme Traders"}
+            res = self.client.get(reverse("parties:api_gstin_lookup"), {"gstin": VALID_GSTIN})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["fields"]["name"], "ACME TRADERS")
+
+
 @override_settings(COMPANY_STATE_CODE="03", PARTY_DEBTOR_CODE="S001", PARTY_CREDITOR_CODE="S002")
 class PartyMasterTests(CustMstTableMixin, TestCase):
     @classmethod
@@ -191,10 +240,10 @@ class PartyExportTests(TestCase):
         ws = load_workbook(BytesIO(exports.build_workbook("debtors", rows, "SP MACHINES"))).active
         self.assertEqual(ws["A1"].value, "SP MACHINES")
         self.assertEqual([c.value for c in ws[5]],
-                         [1, "S001", "A034", "A&I ENGINEERS", "0172-2661100 9780496006", 30, None, "N",
+                         [1, "S001", "A034", "A&I ENGINEERS", "0172-2661100 9780496006", 30,
                           "03BSMPA1149R1ZK", "03-PUNJAB"])
         self.assertEqual((ws["D6"].value, ws["E6"].value, ws["D7"].value), ("PLOT 12", "a@b.in", "MOHALI"))
-        self.assertEqual((ws["I5"].number_format, ws["D5"].font.name, ws.column_dimensions["D"].width),
+        self.assertEqual((ws["G5"].number_format, ws["D5"].font.name, ws.column_dimensions["D"].width),
                          ("@", "Arial Narrow", 30))
 
     def test_export_needs_legacy_db(self):

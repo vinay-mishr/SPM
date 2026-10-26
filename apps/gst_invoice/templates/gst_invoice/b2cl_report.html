@@ -1,0 +1,37 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}B2CL Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <script src="{% static 'gst_invoice/js/b2cl_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Business to Consumer Large (B2CL){% endblock %}
+{% block page_subtitle %}GST Reports &rsaquo; Business to Consumer Large (B2CL){% endblock %}
+
+{% block content %}
+<section class="pe-page" data-b2cl-report
+         data-export-url="{% url 'gst_invoice:b2cl_report_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-titlebar">B2CL</div>
+
+  <div class="ml-head">
+    <label class="ml-row ml-row--date"><span>START DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label class="ml-row ml-row--date"><span>END DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-end-date data-date-mask></label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+</section>
+
+{{ initial_data|json_script:"b2cl-initial-data" }}
+{% endblock %}

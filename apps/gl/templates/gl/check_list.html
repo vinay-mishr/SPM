@@ -1,0 +1,55 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Check-List Printing · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'money_receipt/css/party_outstanding.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/check_list.css' %}">
+  <script src="{% static 'gl/js/check_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Check-List Printing{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Data Entry &rsaquo; Check-List Printing{% endblock %}
+
+{% block content %}
+<section class="master-page po-page" data-check-list
+         data-data-url="{% url 'gl:check_list_data' %}"
+         data-export-url="{% url 'gl:check_list_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar po-toolbar" role="toolbar" aria-label="Check-list filters">
+    <div class="po-filters">
+      <label class="po-filter">VOUCHER TYPE
+        <select class="form-control" data-ttype>
+          <option value="CV">CV</option>
+          <option value="BV">BV</option>
+          <option value="JV">JV</option>
+        </select>
+      </label>
+      <label class="po-filter">START DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="po-filter">END DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table po-table">
+      <thead><tr><th>VOU. DATE</th><th>V.NO.</th><th>NARRATION</th><th>CODE</th><th>SCODE</th><th>D/C</th>
+        <th class="num">AMOUNT</th><th>ERROR MESSAGE</th></tr></thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No rows in this date range.</p>
+  </div>
+</section>
+
+{{ initial_data|json_script:"cl-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

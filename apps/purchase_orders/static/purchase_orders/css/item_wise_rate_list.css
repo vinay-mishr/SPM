@@ -13,7 +13,8 @@
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 0.8125rem;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .iwr-mode label {
@@ -21,22 +22,30 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .iwr-item {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .iwr-item__label {
-  font-size: 0.75rem;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.iwr-item__name { width: 260px; }
+.iwr-item__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iwr-item__name { width: 380px; min-height: 40px; font-size: 1rem; }
 .iwr-item__code { width: 90px; text-transform: uppercase; }
 
 .iwr-filter {
@@ -65,8 +74,9 @@
 
 .iwr-error[hidden] { display: none; }
 
-.iwr-table { min-width: 800px; font-size: 0.8125rem; }
-.iwr-table th, .iwr-table td { padding: 4px 8px; white-space: nowrap; }
+.iwr-table { min-width: 800px; width: 100%; font-size: 1rem; }
+.iwr-table th, .iwr-table td { padding: 6px 14px; white-space: nowrap; border-right: 2px solid #000; }
+.iwr-table tbody td { border-bottom: 2px solid #000; }
 .iwr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .iwr-item-row td {

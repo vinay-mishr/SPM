@@ -23,8 +23,10 @@
   <div class="master-toolbar ipl-toolbar" role="toolbar" aria-label="Itemwise party list filters">
     <div class="ipl-item">
       <span class="ipl-item__label">Item Name</span>
-      <input class="form-control ipl-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search>
-      <input class="form-control ipl-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+      <div class="ipl-item__row">
+        <input class="form-control ipl-item__name" type="text" autocomplete="off" placeholder="Type item code or name to search…" data-item-search>
+        <input class="form-control ipl-item__code" type="text" maxlength="10" autocomplete="off" placeholder="Code" data-item-code readonly tabindex="-1">
+      </div>
     </div>
 
     <div class="master-toolbar__actions">

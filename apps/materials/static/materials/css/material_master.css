@@ -5,6 +5,11 @@
   width: auto;
 }
 
+.mat-table th,
+.mat-table td {
+  padding: 2px 6px;
+}
+
 .mat-table td:nth-child(1) {
   min-width: 140px;
   white-space: normal;

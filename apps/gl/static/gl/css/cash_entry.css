@@ -1,0 +1,129 @@
+/* Accounts > Data Entry > Cash Entry -- the ADD/MODIFY/DELETE/VIEW list
+   reuses apps.gst_invoice's own .gi-* classes (same as every other VFP-style
+   list+dialog screen in this project); the form dialog reuses
+   apps.creditor_outstanding's .pe-* input/label styling, with this file
+   adding only the bits specific to this screen's own line-entry row and
+   double-entry grid. */
+[data-ce] { zoom: 1; }
+
+/* Centered, auto-dismissing popup for a validation/error message, shown
+   alongside the inline red banner -- shared by Cash/Bank/Journal Entry
+   (see each one's own show()/centerPopup() in its JS). */
+.ce-center-popup {
+  /* Cancels the dialog's own zoom (.ce-dialog[open]) so this doesn't render
+     doubly-scaled as its descendant -- position:fixed still places it
+     relative to the viewport either way. */
+  zoom: 1;
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.96);
+  z-index: 10000; max-width: 480px; padding: 16px 24px; border-radius: 8px;
+  background: #dc2626; color: #fff; font-weight: 700; font-size: 16px; text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  opacity: 0; pointer-events: none; transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.ce-center-popup.is-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+.ce-dialog {
+  /* Base size is pre-divided by the 1.35 zoom below, so the zoomed-in box
+     still lands at ~1680px / 96vw / ~90vh -- zoom scales this element's own
+     box, so an un-divided size here would render ~35% past the viewport. */
+  width: min(1244px, 71.1vw);
+  max-height: 79.2vh;
+  padding: 0;
+  border: 2px solid #4b5563;
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.ce-dialog[open] { display: block; overflow-y: auto; overflow-x: hidden; zoom: 1.2; }
+.ce-dialog * { box-sizing: border-box; }
+.ce-dialog::backdrop { background: rgba(0, 0, 0, 0.35); }
+.ce-dialog form { padding-bottom: 6px; }
+.ce-dialog .pe-titlebar {
+  display: flex; flex-direction: row; align-items: center; justify-content: center; text-align: center;
+  height: 44px; padding: 0 14px; line-height: normal; font-weight: 700; font-size: 20px; gap: 10px;
+}
+.ce-title-main { line-height: 1; }
+.ce-title-mode { font-size: 15px; color: #b91c1c; font-style: italic; }
+.ce-dates-row { display: flex; align-items: center; gap: 18px; padding: 2px 12px 0; }
+.ce-dates-row label { display: flex; flex-direction: row; align-items: center; gap: 6px; font-weight: 700;
+  font-size: 15px; text-transform: uppercase; white-space: nowrap; }
+.ce-dates-row label > span { width: 135px; flex: none; }
+.ce-dates-row input { height: 32px; border: 2px solid #000; border-radius: 4px; padding: 1px 4px;
+  font-size: 14px; font-weight: 700; }
+.ce-dates-row input[data-field="ent_dt"] { width: 130px; }
+.ce-dates-row input[data-field="vou_no"] { width: 80px; }
+
+/* Two-column layout matching the real VFP CASH ENTRY form: DR/CR, LEDGER,
+   PARTY, NARRATION stacked on the left (LEDGER/PARTY each paired with a
+   read-only code box); MAIN LEDGER/PARTY LEDGER balances + AMOUNT/OK
+   stacked on the right, level with LEDGER/PARTY/NARRATION respectively. */
+.ce-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 20px;
+  padding: 0 12px 6px;
+}
+.ce-fg-left, .ce-fg-right { display: flex; flex-direction: column; gap: 3px; }
+.ce-fg-row { display: grid; grid-template-columns: 135px 1fr; align-items: center; gap: 6px; }
+.ce-fg-row > span { font-weight: 700; font-size: 15px; text-transform: uppercase; white-space: nowrap; }
+.ce-fg-row input, .ce-fg-row select, .ce-fg-row textarea {
+  height: 34px; border: 2px solid #000; border-radius: 4px; padding: 1px 4px; font-size: 14px; font-weight: 700;
+}
+.ce-fg-row textarea { height: auto; min-height: 60px; resize: vertical; font-family: inherit; grid-column: 2 / -1; }
+.ce-fg-narration { align-items: start; }
+.ce-dc { width: 60px; text-align: center; text-transform: uppercase; }
+.ce-wide { flex: 1; min-width: 0; }
+.ce-fg-row:has(.ce-wide) { grid-template-columns: 135px 1fr 70px; }
+.ce-code { width: 70px; background: #e5e7eb !important; text-align: center; }
+.ce-fg-row input.num { text-align: right; background: #eef1f4; }
+[data-ledger-balance], [data-party-balance] { width: 29%; justify-self: start; }
+.ce-amount-input { width: 29%; justify-self: start; background: #fff !important; }
+.ce-ok-row { display: flex; justify-content: flex-start; padding-left: 141px; margin-top: 2px; }
+.ce-ok-row .mr-vfp-ok {
+  height: 44px; width: 110px; border: 1px solid #000; border-radius: 4px;
+  background: #22c55e; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.ce-ok-row .mr-vfp-ok:hover:not(:disabled) { background: #16a34a; }
+.ce-ok-row .mr-vfp-ok:disabled { background: #e5e7eb; color: #9ca3af; cursor: default; }
+
+.ce-grid-wrap {
+  margin: 0 12px 0; border: 1px solid #000; border-bottom: none; border-radius: 4px 4px 0 0; background: #fff;
+  overflow-x: hidden; overflow-y: scroll; min-height: 280px; max-height: 520px;
+  /* Always reserve the scrollbar's own width, shown or not, so this table's
+     columns land at the same x as the total bar's identical table below it
+     (which has no scrollbar of its own) -- see .ce-total-bar. */
+  scrollbar-gutter: stable;
+}
+table.ce-grid { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+table.ce-grid thead th { position: sticky; top: 0; background: #bfe0c9; color: #000; font-weight: 700;
+  text-transform: uppercase; padding: 4px 6px; text-align: left; white-space: nowrap; border-bottom: 1px solid #000; }
+table.ce-grid td { padding: 2px 6px; border-bottom: 1px solid #e5e7eb; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; }
+table.ce-grid tbody tr.empty { cursor: default; color: #6b7280; }
+/* Column widths live on <colgroup><col> (identical in both the scrolling
+   grid and the total bar below it), not th/td:nth-child -- the total bar's
+   own row uses colspan=4 for its "TOTAL" label, which breaks nth-child's
+   column mapping (its 2nd/3rd <td> would land in the #/D-C columns instead
+   of DEBIT/CREDIT). colgroup widths apply by actual column position
+   regardless of how a row's own cells are merged. */
+.ce-col-no { width: 32px; }
+.ce-col-dc { width: 50px; }
+.ce-col-amt { width: 110px; }
+table.ce-grid th.num, table.ce-grid td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.ce-grid tbody tr:not(.empty) { cursor: pointer; }
+table.ce-grid tbody tr.is-selected { background: #fef9c3; }
+.ce-total-bar {
+  margin: 0 12px 10px; border: 1px solid #000; border-top: none; border-radius: 0 0 4px 4px;
+  background: #eef1f4; overflow: hidden;
+  /* Matches .ce-grid-wrap's always-reserved scrollbar track, so column 5
+     (DEBIT) starts at the same x in both tables. */
+  padding-right: 17px;
+}
+.ce-total-bar table.ce-grid { table-layout: fixed; }
+.ce-total-row .ce-total-label { text-align: right; font-weight: 700; text-transform: uppercase; border: none;
+  background: transparent; padding-right: 10px; }
+.ce-total-row td.num { background: #e5e7eb; border: 1px solid #9ca3af; font-weight: 700; }
+.ce-total-row td:last-child { border: none; background: transparent; }
+
+.ce-footer { display: flex; justify-content: center; align-items: center; padding: 0 12px; }
+.ce-actions { display: flex; gap: 10px; }

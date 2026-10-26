@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "sp-machines",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": "C:\\Users\\Vinay Mishra\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
       "runtimeArgs": ["manage.py", "runserver", "8765"],
       "port": 8765
     }

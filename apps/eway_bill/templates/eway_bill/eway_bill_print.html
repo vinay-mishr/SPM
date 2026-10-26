@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>E-Way Bill {{ eway.eway_bill_no }}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 13px; color: #000; margin: 24px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { border: 1px solid #000; padding: 4px 8px; text-align: left; font-size: 12px; }
+  .label { font-weight: bold; width: 180px; background: #f0faf4; }
+  .notice { margin-top: 16px; font-size: 11px; color: #444; }
+</style>
+</head>
+<body>
+  <h1>{{ brand_name }} &mdash; E-Way Bill</h1>
+  <div>Generated via {{ eway.provider }} ({{ eway.environment }})</div>
+
+  <table>
+    <tr><td class="label">E-Way Bill No</td><td>{{ eway.eway_bill_no }}</td>
+        <td class="label">Valid Upto</td><td>{{ eway.valid_upto }}</td></tr>
+    <tr><td class="label">IRN</td><td colspan="3">{{ eway.irn }}</td></tr>
+    <tr><td class="label">Invoice No / Date</td><td>{{ invoice.bill_no }} / {{ invoice.date }}</td>
+        <td class="label">Ack No / Date</td><td>{{ eway.ack_no }} / {{ eway.ack_date }}</td></tr>
+    <tr><td class="label">Party</td><td>{{ invoice.party_name|default:invoice.cash_party_name }}</td>
+        <td class="label">GSTIN</td><td>{{ invoice.gst_no }}</td></tr>
+    <tr><td class="label">Transporter</td><td>{{ eway.transporter_name }}</td>
+        <td class="label">Vehicle No</td><td>{{ eway.vehicle_no|default:invoice.vehicle_no }}</td></tr>
+    <tr><td class="label">Distance (km)</td><td>{{ eway.distance_km }}</td>
+        <td class="label">Net Amount</td><td>{{ invoice.net_amount }}</td></tr>
+  </table>
+
+  <table>
+    <thead><tr><th>#</th><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Amount</th><th>GST%</th></tr></thead>
+    <tbody>
+      {% for line in invoice.items %}
+      <tr><td>{{ forloop.counter }}</td><td>{{ line.item_name }}</td><td>{{ line.hsn_code }}</td>
+          <td>{{ line.qty }}</td><td>{{ line.rate }}</td><td>{{ line.amount }}</td><td>{{ line.gst_pct }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="notice">
+    This is an internal print of the E-Way Bill details as confirmed by the provider at generation time.
+    It is not a substitute for the official document available on the government e-way bill portal.
+  </p>
+</body>
+</html>

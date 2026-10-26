@@ -31,6 +31,7 @@ class PartMasterView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         parts = services.list_parts()
         context["initial_data"] = {"parts": parts}
+        context["material_suggestions"] = services.material_names()
         return context
 
 

@@ -1,0 +1,5 @@
+/* Accounts > Data Entry > Journal Entry -- reuses apps.gl.cash_entry's own
+   .ce-* dialog chrome unchanged (identical layout, no BANK row). This file
+   only sets the page-level zoom (cash_entry.css's own zoom rule is scoped
+   to [data-ce], not this screen's [data-je]). */
+[data-je] { zoom: 1.25; }

@@ -32,8 +32,8 @@
 
 .srr-error[hidden] { display: none; }
 
-.srr-table { min-width: 700px; font-size: 0.8125rem; }
-.srr-table th, .srr-table td { padding: 4px 8px; white-space: nowrap; }
+.srr-table { min-width: 700px; font-size: 1.0625rem; }
+.srr-table th, .srr-table td { padding: 2px 6px; white-space: nowrap; }
 .srr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .srr-page fieldset.srr-filter { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 2px 8px; }
 .srr-page fieldset.srr-filter legend { font-size: 12px; font-weight: 700; }

@@ -1,0 +1,94 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Cheque Printing · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'money_receipt/js/cheque_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Cheque Printing{% endblock %}
+{% block page_subtitle %}Money Receipts &rsaquo; Cheque Printing{% endblock %}
+
+{% block content %}
+<section class="gi-page" data-cm
+         data-list-url="{% url 'money_receipt:cheque_master_list' %}"
+         data-detail-url="{% url 'money_receipt:cheque_master_detail' %}"
+         data-parties-url="{% url 'money_receipt:api_parties' %}"
+         data-save-url="{% url 'money_receipt:cheque_master_save' %}"
+         data-delete-url="{% url 'money_receipt:cheque_master_delete' %}"
+         data-exit-url="{% url 'money_receipt:entry' %}">
+  {% csrf_token %}
+
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--primary" data-action="add">ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="gi-grid">
+    <table>
+      <thead><tr><th>CHEQUE NO</th><th>CHEQUE DATE</th><th>PARTY NAME</th><th class="num">AMOUNT</th><th>BANK</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="5">No cheques in this date range.</td></tr></tbody>
+    </table>
+  </div>
+  <div class="pe-summary" style="text-align:right;margin-top:8px;">
+    <label>TOTAL <input class="num" data-g-total readonly tabindex="-1" value="0.00" style="width:140px;"></label>
+  </div>
+</section>
+
+<dialog class="pe-page" data-form style="max-width:520px;">
+  <form novalidate data-cm-form>
+    {% csrf_token %}
+    <div class="pe-titlebar">CHEQUE PRINTING <span data-mode-label></span></div>
+    <div class="gi-alert" role="alert" data-form-alert hidden></div>
+
+    <div class="pe-head" style="grid-template-columns:1fr 1fr;">
+      <label>CHEQUE NO. <input data-field="chq_no"></label>
+      <label>CHEQUE DATE <input data-field="chq_dt" type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
+    </div>
+    <div class="pe-head" style="grid-template-columns:1fr;">
+      <label>PARTY NAME
+        <input data-party-search placeholder="Type party name and press Enter" autocomplete="off">
+        <input type="hidden" data-field="party_code">
+      </label>
+    </div>
+    <div class="pe-head" style="grid-template-columns:1fr 1fr;">
+      <label>BANK NAME
+        <select data-field="bank">
+          <option value="">Select...</option>
+          <option value="SBI BANK">SBI BANK</option>
+          <option value="HDFC BANK">HDFC BANK</option>
+        </select>
+      </label>
+      <label>AMOUNT <input class="num" data-field="amount" value="0.00"></label>
+    </div>
+
+    <div class="pe-toolbar master-toolbar" style="margin-top:12px;">
+      <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+      <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="gi-confirm" data-confirm-dialog>
+  <p data-confirm-message>Are You Sure?</p>
+  <div class="gi-footer">
+    <button type="button" class="btn btn--primary" data-confirm-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-confirm-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

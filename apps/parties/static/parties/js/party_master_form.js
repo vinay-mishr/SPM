@@ -12,17 +12,21 @@
     "name", "address_1", "address_2", "address_3", "city", "pin",
     "gst_no", "gst_category", "state_code", "mkt_manager", "rep_code",
     "contact_person_1", "mobile_1", "contact_person_2", "mobile_2", "email",
-    "transport", "credit_days", "is_active", "association", "supply_type", "permit"
+    "credit_days", "is_active", "association", "supply_type"
   ];
   var DEFAULTS = {
     gst_category: "REGULAR", credit_days: "0",
-    is_active: "true", supply_type: "W", permit: "false"
+    is_active: "true", supply_type: "W"
   };
-  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View" };
+  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
+  var UPPERCASE_FIELDS = {
+    name: true, address_1: true, address_2: true, address_3: true, city: true,
+    contact_person_1: true, contact_person_2: true, association: true
+  };
   var GSTIN_RE = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  var dialog, form, alertBox, discard, confirmBtn, stateCodeBox, options;
+  var dialog, form, alertBox, discard, discardTitle, discardCancelBtn, discardConfirmBtn, confirmBtn, stateCodeBox, options;
   var state = { mode: "add", party: null, snapshot: "", saving: false };
 
   function input(name) {
@@ -139,6 +143,42 @@
     }
   }
 
+  /* GST details auto-fill: once the GSTIN is syntactically valid (same check
+   * used for client-side validation above), fetch the registered business's
+   * details from the configured GST provider and fill in whatever fields it
+   * actually returns -- never overwriting a field the user already typed.
+   * Triggered on the same "change" (blur) event as stateFromGst(), so it
+   * fires once the user leaves the field rather than on every keystroke. */
+  function showGstStatus(message, isError) {
+    alertBox.className = "alert form-alert" + (message ? (isError ? " alert--error" : " alert--info") : " alert--error");
+    alertBox.textContent = message;
+    alertBox.hidden = !message;
+  }
+
+  function autofillFromGstin() {
+    if (!options.gstinLookupUrl) return;
+    var gst = input("gst_no").value.replace(/\s/g, "").toUpperCase();
+    if (!GSTIN_RE.test(gst)) return;
+    showGstStatus("Fetching GST details…", false);
+    fetch(options.gstinLookupUrl + "?gstin=" + encodeURIComponent(gst), { credentials: "same-origin" })
+      .then(function (r) { return r.json().then(function (body) { return { ok: r.ok, body: body }; }); })
+      .then(function (result) {
+        if (input("gst_no").value.replace(/\s/g, "").toUpperCase() !== gst) return; // field changed again meanwhile
+        if (!result.ok) { showGstStatus(result.body.message || "Could not fetch GST details.", true); return; }
+        var fields = result.body.fields || {};
+        Object.keys(fields).forEach(function (key) {
+          if (key === "state_code") {
+            if (!input("state_code").value) { input("state_code").value = fields.state_code; syncState(true); }
+            return;
+          }
+          var el = input(key);
+          if (el && !el.value) el.value = fields[key];
+        });
+        showGstStatus("", false);
+      })
+      .catch(function () { showGstStatus("Could not reach the server for GST lookup.", true); });
+  }
+
   /* --- Fill / mode ---------------------------------------------------------------- */
 
   function previewCode() {
@@ -158,6 +198,13 @@
       if (party) {
         value = party[name];
         if (typeof value === "boolean") value = value ? "true" : "false";
+        // Many legacy parties keep their only number in the phone column (cphno),
+        // which is what the list shows -- surface it here when Mobile 1 is empty
+        // and it's a valid 10-digit number (anything else would fail validation on save).
+        if (name === "mobile_1" && !String(value || "").replace(/[\s.]/g, "") &&
+            /^\d{10}$/.test(mobileDigits(party.phone_1 || ""))) {
+          value = mobileDigits(party.phone_1);
+        }
       } else {
         value = DEFAULTS[name] || "";
       }
@@ -179,15 +226,19 @@
     state.mode = mode;
     dialog.dataset.mode = mode;
     dialog.querySelector("[data-mode-label]").textContent = MODE_LABELS[mode];
+    var readOnlyMode = mode === "view" || mode === "delete";
     FIELDS.forEach(function (name) {
       var el = input(name);
-      if (el.tagName === "SELECT") el.disabled = mode === "view";
-      else el.readOnly = mode === "view";
+      if (el.tagName === "SELECT") el.disabled = readOnlyMode;
+      else el.readOnly = readOnlyMode;
     });
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
   }
 
   function isDirty() {
-    return state.mode !== "view" && JSON.stringify(values()) !== state.snapshot;
+    return state.mode !== "view" && state.mode !== "delete" && JSON.stringify(values()) !== state.snapshot;
   }
 
   function close() {
@@ -201,8 +252,58 @@
 
   /* --- Save ------------------------------------------------------------------------ */
 
+  function performDelete() {
+    if (state.saving || !state.party) return;
+    state.saving = true;
+    confirmBtn.disabled = true;
+    fetch(options.deleteUrl.replace("/0/", "/" + encodeURIComponent(state.party.id) + "/"), {
+      method: "POST",
+      headers: { "X-CSRFToken": options.csrfToken, "X-Requested-With": "XMLHttpRequest" },
+      credentials: "same-origin"
+    })
+      .then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (body) {
+          return { ok: response.ok, status: response.status, body: body };
+        });
+      })
+      .then(function (result) {
+        if (result.ok) {
+          close();
+          options.onDeleted(result.body.message);
+        } else {
+          alertBox.textContent = result.body.message || "Could not delete.";
+          alertBox.hidden = false;
+        }
+      })
+      .catch(function () {
+        alertBox.textContent = "Could not reach the server. Nothing was deleted.";
+        alertBox.hidden = false;
+      })
+      .finally(function () {
+        state.saving = false;
+        confirmBtn.disabled = false;
+      });
+  }
+
+  // The discard box is reused as a generic "are you sure?" prompt -- its own
+  // title text, button labels and confirm action are swapped per use (discard
+  // unsaved changes on EXIT vs delete the selected record), so there's one
+  // small confirm dialog in this form, not two.
+  function askDiscard(title, onConfirm, labels) {
+    discardTitle.textContent = title;
+    discardCancelBtn.textContent = labels ? labels.cancel : "Cancel";
+    discardConfirmBtn.textContent = labels ? labels.confirm : "Exit";
+    state.onDiscardConfirm = onConfirm;
+    discard.hidden = false;
+  }
+
   function save() {
-    if (state.saving || state.mode === "view") return;
+    if (state.saving) return;
+    if (state.mode === "delete") {
+      askDiscard("Are you sure you want to delete this record?", performDelete, { cancel: "No", confirm: "Yes" });
+      return;
+    }
+    if (state.mode === "view") return;
     clearErrors();
 
     var clientErrors = validate();
@@ -304,6 +405,9 @@
     form = dialog.querySelector("[data-party-form]");
     alertBox = dialog.querySelector("[data-form-alert]");
     discard = dialog.querySelector("[data-discard]");
+    discardTitle = discard.querySelector("#party-discard-title");
+    discardCancelBtn = dialog.querySelector("[data-discard-cancel]");
+    discardConfirmBtn = dialog.querySelector("[data-discard-confirm]");
     confirmBtn = dialog.querySelector("[data-form-confirm]");
     stateCodeBox = dialog.querySelector("[data-state-code-display]");
 
@@ -317,19 +421,26 @@
     // searchable grid (arrow keys + Enter) instead of opening the native <select> list.
     if (window.HelpLookup) {
       [
-        ["gst_category", "GST Category"], ["state_code", "State"], ["mkt_manager", "Mkt Manager"],
+        ["gst_category", "GST Category"], ["mkt_manager", "Mkt Manager"],
         ["rep_code", "Rep Code"], ["is_active", "Active"],
-        ["supply_type", "Within / Interstate"], ["permit", "Permit"],
+        ["supply_type", "Within / Interstate"],
       ].forEach(function (pair) {
         window.HelpLookup.attachSelect(input(pair[0]), { title: pair[1] });
       });
-      window.HelpLookup.attachDatalist(input("transport"), { title: "Transport" });
-      window.HelpLookup.attachDatalist(input("association"), { title: "Association" });
+      window.HelpLookup.attachSelect(input("state_code"), { title: "State", selectedFirst: true });
     }
 
     input("state_code").addEventListener("change", function () { syncState(true); });
-    input("gst_no").addEventListener("change", stateFromGst);
+    input("gst_no").addEventListener("change", function () { stateFromGst(); autofillFromGstin(); });
     input("name").addEventListener("change", previewCode);
+    form.addEventListener("input", function (event) {
+      var field = event.target;
+      if (UPPERCASE_FIELDS[field.dataset.field] && field.value !== field.value.toUpperCase()) {
+        var pos = field.selectionStart;
+        field.value = field.value.toUpperCase();
+        field.setSelectionRange(pos, pos);
+      }
+    });
     form.addEventListener("input", function (event) {
       var name = event.target.dataset.field;
       var holder = event.target.closest(".mform__field");
@@ -353,7 +464,12 @@
     dialog.querySelector("[data-discard-cancel]").addEventListener("click", function () {
       discard.hidden = true;
     });
-    dialog.querySelector("[data-discard-confirm]").addEventListener("click", close);
+    dialog.querySelector("[data-discard-confirm]").addEventListener("click", function () {
+      discard.hidden = true;
+      var onConfirm = state.onDiscardConfirm || close;
+      state.onDiscardConfirm = null;
+      onConfirm();
+    });
   }
 
   function open(mode, party) {
@@ -364,7 +480,7 @@
     discard.hidden = true;
     state.snapshot = JSON.stringify(values());
     dialog.showModal();
-    var first = mode === "view" ? dialog.querySelector(".modal__footer [data-form-exit]") : input("name");
+    var first = mode === "view" ? dialog.querySelector(".modal__footer [data-form-exit]") : mode === "delete" ? confirmBtn : input("name");
     first.focus();
   }
 

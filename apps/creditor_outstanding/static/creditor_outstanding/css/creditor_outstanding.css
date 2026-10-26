@@ -27,12 +27,12 @@
 
 .co-table {
   min-width: 820px;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
 }
 
 .co-table th,
 .co-table td {
-  padding: 6px 10px;
+  padding: 4px 8px;
 }
 
 .co-table td:nth-child(5) {
@@ -60,17 +60,23 @@
 /* --- Form -------------------------------------------------------------------- */
 
 .co-form-modal {
-  width: min(680px, calc(100vw - 32px));
+  width: min(820px, calc(100vw - 32px));
 }
 
 .co-form {
   grid-template-columns: 120px minmax(0, 1fr);
-  gap: 10px 12px;
+  gap: 7px 12px;
+}
+
+.co-form .mform__label {
+  font-size: 1.0625rem;
 }
 
 .co-form .mform__input.form-control {
-  min-height: 34px;
-  padding: 5px 10px;
+  min-height: 42px;
+  padding: 4px 8px;
+  font-size: 1.0625rem;
+  font-weight: 700;
 }
 
 .co-short { max-width: 70px; text-transform: uppercase; }

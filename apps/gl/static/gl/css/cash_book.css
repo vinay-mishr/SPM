@@ -1,0 +1,19 @@
+/* Accounts > Book Printing > Cash Book -- reuses apps.gl.voucher_printing's
+   own .vp-* print-letter styling for the page/table shell; the classes below
+   (cb-*) only add the day-grouped rows (opening/closing/narration/totals)
+   this report needs on top of that. */
+.cb-page { max-width: 820px; }
+.cb-range { font-weight: 700; margin-top: 4px; }
+.cb-table td, .cb-table th { font-size: 12px; }
+.cb-table tr.cb-balance td { font-weight: 700; background: #f3f4f6; border-top: 1px solid #000; }
+.cb-table tr.cb-narration td { border-top: none; font-style: italic; color: #374151; }
+.cb-table tr.cb-total td { font-weight: 700; border-top: 1px solid #000; }
+.cb-table tr.cb-empty td { text-align: center; color: #6b7280; padding: 16px 6px; }
+
+@media print {
+  body * { visibility: hidden; }
+  .cb-page, .cb-page * { visibility: visible; }
+  .cb-page { position: absolute; left: 0; top: 0; border: 0; max-width: none; }
+  .cb-table thead { display: table-header-group; }
+  .cb-table tr { page-break-inside: avoid; }
+}

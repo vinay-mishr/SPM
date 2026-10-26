@@ -195,10 +195,36 @@ def party_outstanding_report(run_date, party_code=None):
     the Money Receipt Entry screen's own formula. Flagged for the project
     owner to resolve which is actually correct, not guessed here.
     """
+    # Batched instead of one round-trip per party (previous_advance/ledger_balance/
+    # a bills query each, times every customer) -- with hundreds of customers that
+    # N+1 pattern made ALL PARTY take tens of seconds. Same formulas, same results,
+    # just adv_fil/bill/trans each read once and grouped in Python.
     party_rows = _rows(
-        "SELECT ccode, cname, cadd3, cphno FROM cust_mst" + (" WHERE ccode = %s" if party_code else ""),
+        "SELECT ccode, cname, cadd3, cphno, cyob FROM cust_mst" + (" WHERE ccode = %s" if party_code else ""),
         [party_code] if party_code else [],
     )
+    advances = {_clean(r["p_code"]): _d(r["amount"]) for r in _rows("SELECT p_code, amount FROM adv_fil")}
+
+    bills_by_party = {}
+    bill_sql = "SELECT p_code, bill_no, b_date, n_amount, amt_rcd, c_note1, d_note1, int_amt, c_dis FROM bill WHERE pmt_rcd <> 'Y' AND b_date <= %s"
+    bill_params = [run_date]
+    if party_code:
+        bill_sql += " AND p_code = %s"
+        bill_params.append(party_code)
+    bill_sql += " ORDER BY p_code, b_date"
+    for b in _rows(bill_sql, bill_params):
+        bills_by_party.setdefault(_clean(b["p_code"]), []).append(b)
+
+    ledger_dc = {}
+    trans_sql = "SELECT tccode, tdbcr, SUM(tamt) AS total FROM trans"
+    trans_params = []
+    if party_code:
+        trans_sql += " WHERE tccode = %s"
+        trans_params.append(party_code)
+    trans_sql += " GROUP BY tccode, tdbcr"
+    for r in _rows(trans_sql, trans_params):
+        ledger_dc.setdefault(_clean(r["tccode"]), {})[_clean(r["tdbcr"])] = _d(r["total"])
+
     groups = []
     g_totals = {"below_30": Decimal("0"), "between_31_60": Decimal("0"),
                 "between_61_90": Decimal("0"), "above_90": Decimal("0")}
@@ -207,12 +233,8 @@ def party_outstanding_report(run_date, party_code=None):
 
     for p in party_rows:
         ccode = _clean(p["ccode"])
-        advance = previous_advance(ccode)
-        bills = _rows(
-            "SELECT bill_no, b_date, n_amount, amt_rcd, c_note1, d_note1, int_amt, c_dis "
-            "FROM bill WHERE p_code = %s AND pmt_rcd <> 'Y' AND b_date <= %s ORDER BY b_date",
-            [ccode, run_date],
-        )
+        advance = advances.get(ccode, Decimal("0"))
+        bills = bills_by_party.get(ccode, [])
         if advance == 0 and not bills:
             continue  # posparty: a party contributes nothing to list without either
 
@@ -238,7 +260,8 @@ def party_outstanding_report(run_date, party_code=None):
                 "balance": f"{mbalance:.2f}", "bucket": bucket,
             })
 
-        ledger_bal = ledger_balance(ccode)
+        dc = ledger_dc.get(ccode, {})
+        ledger_bal = _d(p["cyob"]) + dc.get("D", Decimal("0")) - dc.get("C", Decimal("0"))
         groups.append({
             "party_code": ccode, "party_name": _clean(p["cname"]) or "",
             "city": _clean(p["cadd3"]) or "", "phone": _clean(p["cphno"]) or "",

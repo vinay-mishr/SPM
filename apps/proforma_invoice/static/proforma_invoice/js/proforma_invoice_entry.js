@@ -21,7 +21,6 @@
   var itemRows = document.querySelector("[data-item-rows]");
   var itemError = document.querySelector("[data-item-error]");
   var deleteDialog = document.querySelector("[data-delete-dialog]");
-  var cashRows = document.querySelectorAll("[data-cash-row]");
   var state = { rows: [], selected: null, mode: "add", key: null, lines: [], item: null, editIndex: -1 };
   var alertTimer = null;
 
@@ -110,10 +109,17 @@
   }
 
   function field(name) { return form.querySelector('[data-field="' + name + '"]'); }
-  function radio(name) { return form.querySelector('input[name="' + name + '"]:checked'); }
-  function setRadio(name, value) {
-    var el = form.querySelector('input[name="' + name + '"][value="' + value + '"]');
-    if (el) el.checked = true;
+
+  /* Explicit ordered Enter-key navigation (not the browser's default Tab order).
+     Arrow keys / native select behavior are untouched -- only "Enter" is handled. */
+  function onEnterFocus(el, next) {
+    el.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (!next) return;
+      next.focus();
+      if (next.select) next.select();
+    });
   }
 
   function lineAmount(l) { return l.qty * l.rate; }
@@ -173,6 +179,7 @@
     form.querySelector("[data-item-currency]").value = "RS.";
     form.querySelector("[data-item-qty]").value = "1.000";
     form.querySelector("[data-item-rate]").value = "0.00";
+    form.querySelector("[data-item-particular]").value = "";
     itemError.textContent = "";
   }
 
@@ -186,7 +193,7 @@
       form.querySelector("[data-item-hsn]").value = p.hsn;
       form.querySelector("[data-item-rate]").value = p.rate;
       itemError.textContent = "";
-      form.querySelector("[data-item-qty]").focus();
+      form.querySelector("[data-item-currency]").focus();
     });
   }
 
@@ -200,7 +207,8 @@
     var line = { item_code: state.item.code, item_name: state.item.name,
       hsn_code: form.querySelector("[data-item-hsn]").value.trim() || state.item.hsn,
       currency: form.querySelector("[data-item-currency]").value,
-      qty: qty, rate: rate, gst: state.item.gst };
+      qty: qty, rate: rate, gst: state.item.gst,
+      particular: form.querySelector("[data-item-particular]").value.trim() };
     if (state.editIndex >= 0) state.lines[state.editIndex] = line; else state.lines.push(line);
     clearItemRow();
     renderItems();
@@ -219,6 +227,7 @@
     form.querySelector("[data-item-currency]").value = l.currency;
     form.querySelector("[data-item-qty]").value = l.qty;
     form.querySelector("[data-item-rate]").value = l.rate;
+    form.querySelector("[data-item-particular]").value = l.particular || "";
     renderItems();
     form.querySelector("[data-item-qty]").focus();
   });
@@ -256,15 +265,16 @@
       field("party_code").value = p.code;
       partySearch.value = p.name;
       field("gst_no").value = p.gst_no;
-      setRadio("pi-supply", p.supply_type === "I" ? "I" : "W");
+      form.querySelector("[data-supply-type]").value = p.supply_type === "I" ? "I" : "W";
+      // HelpLookup's own focusNext() (called right after this onSelect
+      // callback returns) would still land on GST(Y/N) -- tabindex="-1" keeps
+      // it out of native Tab order but not out of focusNext()'s own
+      // next-focusable-field scan. Override to Supply, the real next step in
+      // the header's Enter chain wired below.
+      setTimeout(function () { form.querySelector("[data-supply-type]").focus(); }, 0);
     });
   }
 
-  function applyCashMode() {
-    var cash = form.querySelector('[data-ca-cr]').value === "CA";
-    cashRows.forEach(function (el) { el.hidden = !cash; });
-  }
-  form.querySelector('[data-ca-cr]').addEventListener("change", applyCashMode);
   field("gst_enabled").addEventListener("change", renderItems);
 
   function setReadonly(on) {
@@ -301,14 +311,12 @@
       var today = pad(now.getDate()) + "/" + pad(now.getMonth() + 1) + "/" + now.getFullYear();
       field("date").value = today;
       partySearch.value = "";
-      form.querySelector('[data-ca-cr]').value = "CR";
       field("gst_enabled").value = "Y";
-      setRadio("pi-supply", "W");
-      applyCashMode();
+      form.querySelector("[data-supply-type]").value = "W";
       setReadonly(false);
       renderItems();
       dialog.showModal();
-      field("date").focus();
+      field("bill_no").focus();
       return;
     }
     getJson(root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.key))).then(function (res) {
@@ -316,19 +324,19 @@
       var d = res.body;
       field("bill_no").value = d.bill_no;
       field("date").value = dmy(d.date);
-      form.querySelector('[data-ca-cr]').value = d.ca_cr;
       field("gst_enabled").value = d.gst_enabled === "N" ? "N" : "Y";
-      setRadio("pi-supply", d.supply_type);
-      applyCashMode();
+      form.querySelector("[data-supply-type]").value = d.supply_type === "I" ? "I" : "W";
+      // d.ca_cr can still be "CA" for an old cash invoice (that data is
+      // untouched), but this screen no longer has CA/CR or Cash Party
+      // controls -- its party fields stay blank here, same as before this
+      // screen ever had cash-invoice UI.
       partySearch.value = d.party_name;
       field("party_code").value = d.party_code;
-      field("cash_party_name").value = d.cash_party_name;
-      field("cash_party_city").value = d.cash_party_city;
       field("gst_no").value = d.gst_no;
       field("remarks").value = d.remarks;
       state.lines = d.items.map(function (i) {
         return { item_code: i.item_code, item_name: i.item_name, hsn_code: i.hsn_code, currency: i.currency,
-          qty: num(i.qty), rate: num(i.rate), gst: num(i.gst_pct) };
+          qty: num(i.qty), rate: num(i.rate), gst: num(i.gst_pct), particular: i.particular || "" };
       });
       renderItems();
       setReadonly(mode === "view");
@@ -342,12 +350,10 @@
     var payload = {
       key: state.mode === "modify" ? state.key : null,
       date: window.DateMask.toIso(field("date").value),
-      ca_cr: form.querySelector('[data-ca-cr]').value,
+      ca_cr: "CR",
       gst_enabled: field("gst_enabled").value,
-      supply_type: radio("pi-supply").value,
+      supply_type: form.querySelector("[data-supply-type]").value,
       party_code: field("party_code").value.trim(),
-      cash_party_name: field("cash_party_name").value.trim(),
-      cash_party_city: field("cash_party_city").value.trim(),
       gst_no: field("gst_no").value.trim(),
       remarks: field("remarks").value.trim(),
       adjustments: [0, 1].map(function (i) {
@@ -358,7 +364,8 @@
         };
       }),
       items: state.lines.map(function (l) {
-        return { item_code: l.item_code, hsn_code: l.hsn_code, currency: l.currency, qty: l.qty, rate: l.rate };
+        return { item_code: l.item_code, hsn_code: l.hsn_code, currency: l.currency, qty: l.qty, rate: l.rate,
+          particular: l.particular || "" };
       }),
     };
     post(root.dataset.saveUrl, payload).then(function (res) {
@@ -378,7 +385,25 @@
     if (window.confirm(message)) onYes();
   }
 
-  form.querySelector("[data-item-add]").addEventListener("click", addItem);
+  var itemAddBtn = form.querySelector("[data-item-add]");
+  itemAddBtn.addEventListener("click", addItem);
+
+  /* Explicit Enter-key focus sequence (per spec): Performa No -> Date ->
+     Party -> Supply -> Item -> Currency -> HSN No -> Quantity -> Rate -> OK
+     (then back to Item). Party and Item are skipped here -- each already
+     moves focus on to the next field itself (Supply / Currency respectively)
+     once HelpLookup.attach()'s own Enter popup resolves a selection; see
+     fillParty()'s explicit override above and fillItem() below. CA/CR,
+     GST(Y/N), GST No and the cash fields are tabindex="-1" and intentionally
+     left out of this chain -- they're not part of the required sequence. */
+  onEnterFocus(field("bill_no"), field("date"));
+  onEnterFocus(field("date"), partySearch);
+  onEnterFocus(form.querySelector("[data-supply-type]"), itemSearch);
+  onEnterFocus(form.querySelector("[data-item-currency]"), form.querySelector("[data-item-hsn]"));
+  onEnterFocus(form.querySelector("[data-item-hsn]"), form.querySelector("[data-item-qty]"));
+  onEnterFocus(form.querySelector("[data-item-qty]"), form.querySelector("[data-item-rate]"));
+  onEnterFocus(form.querySelector("[data-item-rate]"), itemAddBtn);
+
   [0, 1].forEach(function (i) {
     form.querySelector('[data-adj-sign="' + i + '"]').addEventListener("change", updateTotals);
     form.querySelector('[data-adj-amount="' + i + '"]').addEventListener("input", updateTotals);
@@ -389,9 +414,6 @@
   });
   form.querySelectorAll("[data-form-exit]").forEach(function (b) { b.addEventListener("click", function () { dialog.close(); }); });
   dialog.addEventListener("keydown", function (e) { if (e.key === "Escape" && dialog.open) { e.preventDefault(); dialog.close(); } });
-
-  form.querySelector("[data-new-item]").href = root.dataset.newItemUrl;
-  form.querySelector("[data-new-party]").href = root.dataset.newPartyUrl;
 
   root.querySelectorAll("[data-action]").forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -423,6 +445,5 @@
   search.addEventListener("input", function () { clearTimeout(search._t); search._t = setTimeout(refresh, 250); });
   startDate.addEventListener("change", refresh);
   endDate.addEventListener("change", refresh);
-  applyCashMode();
   refresh();
 })();

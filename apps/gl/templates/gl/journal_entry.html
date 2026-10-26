@@ -1,0 +1,141 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Journal Entry · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/cash_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/journal_entry.css' %}">
+  <script src="{% static 'gl/js/journal_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Journal Entry{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Data Entry &rsaquo; Journal Entry{% endblock %}
+
+{% block content %}
+<section class="gi-page" data-je
+         data-list-url="{% url 'gl:journal_entry_list' %}"
+         data-next-no-url="{% url 'gl:journal_entry_next_no' %}"
+         data-ledgers-url="{% url 'gl:journal_entry_ledgers' %}"
+         data-parties-url="{% url 'gl:journal_entry_parties' %}"
+         data-balance-url="{% url 'gl:journal_entry_balance' %}"
+         data-detail-url="{% url 'gl:journal_entry_detail' %}"
+         data-save-url="{% url 'gl:journal_entry_save' %}"
+         data-delete-url="{% url 'gl:journal_entry_delete' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--primary" data-action="add">ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+    </div>
+    <label>START DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>END DATE <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <label class="gi-search">SEARCH <input class="form-control" type="text" data-search placeholder="Type account name..."></label>
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--secondary" data-action="refresh">REFRESH</button>
+      <button type="button" class="btn btn--danger" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="gi-grid">
+    <table>
+      <thead><tr><th>VOU. DATE</th><th>VOU. NO</th><th>ACCOUNT DESCRIPTION</th><th>NARRATION</th><th class="num">DEBIT</th><th class="num">CREDIT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="6">No Journal Entries in this date range.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="pe-page ce-dialog" data-form>
+  <form novalidate data-je-form>
+    {% csrf_token %}
+    <div class="pe-titlebar"><span class="ce-title-main">JOURNAL ENTRY</span><span class="ce-title-mode" data-mode-label></span></div>
+    <div class="gi-alert" role="alert" data-form-alert hidden></div>
+
+    <div class="ce-dates-row">
+      <label><span>ENTRY DATE</span> <input data-field="ent_dt" type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
+      <label><span>VOUCHER NO.</span> <input data-field="vou_no"></label>
+    </div>
+
+    <div class="ce-form-grid">
+      <div class="ce-fg-left">
+        <label class="ce-fg-row">
+          <span>DR/CR</span>
+          <select data-dc class="ce-dc"><option value="D">D</option><option value="C">C</option></select>
+        </label>
+        <label class="ce-fg-row">
+          <span>LEDGER</span>
+          <input data-ledger-search class="ce-wide" placeholder="" autocomplete="off">
+          <input data-ledger-code class="ce-code" readonly tabindex="-1">
+        </label>
+        <label class="ce-fg-row">
+          <span>PARTY</span>
+          <input data-party-search class="ce-wide" placeholder="" autocomplete="off">
+          <input data-party-code class="ce-code" readonly tabindex="-1">
+        </label>
+        <label class="ce-fg-row ce-fg-narration">
+          <span>NARRATION</span>
+          <textarea data-narration rows="3"></textarea>
+        </label>
+      </div>
+      <div class="ce-fg-right">
+        <label class="ce-fg-row">
+          <span>LEDGER BALANCE</span>
+          <input class="num" data-ledger-balance readonly tabindex="-1" value="0.00">
+        </label>
+        <label class="ce-fg-row">
+          <span>PARTY BALANCE</span>
+          <input class="num" data-party-balance readonly tabindex="-1" value="0.00">
+        </label>
+        <label class="ce-fg-row">
+          <span>AMOUNT</span>
+          <input class="num ce-amount-input" data-amount value="0.00">
+        </label>
+        <div class="ce-ok-row">
+          <button type="button" class="mr-vfp-ok" data-ok>OK</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ce-grid-wrap">
+      <table class="ce-grid">
+        <colgroup><col class="ce-col-no"><col class="ce-col-dc"><col><col><col class="ce-col-amt"><col class="ce-col-amt"></colgroup>
+        <thead><tr><th>#</th><th>D/C</th><th>ACCOUNT HEAD</th><th>NARRATION</th><th class="num">DEBIT</th><th class="num">CREDIT</th></tr></thead>
+        <tbody data-grid-rows tabindex="0"><tr class="empty"><td colspan="6">Pick a ledger or party, enter the amount, press OK. Click a row then press Space to remove it.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="ce-total-bar">
+      <table class="ce-grid">
+        <colgroup><col class="ce-col-no"><col class="ce-col-dc"><col><col><col class="ce-col-amt"><col class="ce-col-amt"></colgroup>
+        <tbody><tr class="ce-total-row">
+          <td colspan="4" class="ce-total-label">TOTAL</td>
+          <td class="num" data-total-debit>0.00</td>
+          <td class="num" data-total-credit>0.00</td>
+        </tr></tbody>
+      </table>
+    </div>
+
+    <div class="ce-footer">
+      <div class="ce-actions">
+        <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+        <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="gi-confirm" data-confirm-dialog>
+  <p data-confirm-message>Are You Sure?</p>
+  <div class="gi-footer">
+    <button type="button" class="btn btn--primary" data-confirm-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-confirm-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

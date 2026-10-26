@@ -63,6 +63,30 @@ def _job_no(number):
     return f"{DIV}{number}"
 
 
+def list_entries(start, end, search=""):
+    qs = JobCard.objects.filter(sub_assembly="Y", job_date__gte=start, job_date__lte=end).values(
+        "job_no", "job_date", "item_code", "qty", "received", "close_flag", "issue_flag")
+    names = dict(Part.objects.values_list("part_number", "description_1"))
+    term = (search or "").strip().lower()
+    rows = []
+    for h in qs:
+        job_no = (h["job_no"] or "").strip()
+        number = job_no[len(DIV):] if job_no.startswith(DIV) else job_no
+        name = (names.get((h["item_code"] or "").strip()) or "").strip()
+        if term and term not in job_no.lower() and term not in name.lower():
+            continue
+        rows.append({
+            "number": number, "job_no": job_no,
+            "job_date": h["job_date"].isoformat() if h["job_date"] else "",
+            "item_code": (h["item_code"] or "").strip(), "item_name": name,
+            "qty": f"{(h['qty'] or 0):.3f}", "produced": f"{(h['received'] or 0):.3f}",
+            "closed": (h["close_flag"] or "").strip() == "Y",
+            "issued": (h["issue_flag"] or "").strip() == "Y",
+        })
+    rows.sort(key=lambda r: (r["job_date"], int(r["number"]) if r["number"].isdigit() else 0), reverse=True)
+    return rows
+
+
 def load(number):
     job_no = _job_no(number)
     head = JobCard.objects.filter(job_no=job_no, sub_assembly="Y").values(

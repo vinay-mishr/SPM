@@ -1,6 +1,11 @@
 /* GST Master. Shared master / toolbar / form styles come from static/css/components.css;
    only this screen's specifics live here. */
 
+.gst-table {
+  min-width: 0;
+  width: 240px;
+}
+
 .gst-table th,
 .gst-table td {
   white-space: nowrap;

@@ -21,7 +21,7 @@
   flex-wrap: nowrap;
   justify-content: flex-start;
   gap: 10px 18px;
-  padding: 8px 12px;
+  padding: 6px 10px;
 }
 
 .rm-search__mode {
@@ -37,18 +37,21 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.875rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .rm-search__mode input {
+  width: 18px;
+  height: 18px;
   accent-color: var(--text-primary);
 }
 
 .rm-search__label {
   float: left;
   margin-right: 8px;
-  font-size: 0.75rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -89,7 +92,7 @@
 
 .rm-table {
   min-width: 720px;
-  font-size: 0.8125rem;
+  font-size: 1.0625rem;
   border: 0;
   border-radius: 0;
   border-collapse: separate; /* sticky header needs these two: */
@@ -99,7 +102,7 @@
 
 .rm-table th,
 .rm-table td {
-  padding: 4px 8px;
+  padding: 1px 4px;
   white-space: nowrap;
   border-right: 1px solid var(--border);
 }
@@ -108,7 +111,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border-dark);
@@ -120,7 +123,7 @@
 }
 
 .rm-table td:nth-child(2) {
-  min-width: 220px;
+  min-width: 280px;
   white-space: normal;
 }
 

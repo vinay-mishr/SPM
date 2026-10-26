@@ -93,14 +93,14 @@ class RateModificationTests(TestCase):
         )
         self.assertNotEqual(response.status_code, 200)
 
-    def test_save_changes_only_the_rate_column(self):
+    def test_save_changes_only_the_sent_fields(self):
         before = Part.objects.get(part_number="ABM01_001")
         response = self.save([{"code": "ABM01_001", "rate": "1650.75"}])
         self.assertEqual(response.status_code, 200)
 
         after = Part.objects.get(part_number="ABM01_001")
         self.assertEqual(after.purchase_rate, Decimal("1650.7500"))
-        # Every other field must be byte-for-byte unchanged.
+        # Fields not present in the payload must be byte-for-byte unchanged.
         self.assertEqual(after.description_1, before.description_1)
         self.assertEqual(after.hsn_code, before.hsn_code)
         self.assertEqual(after.gst_percent, before.gst_percent)
@@ -110,6 +110,30 @@ class RateModificationTests(TestCase):
         self.assertEqual(after.supplier_1, before.supplier_1)
         self.assertEqual(after.rate_1, before.rate_1)
         self.assertEqual(after.sale_rate, before.sale_rate)
+
+    def test_save_opening_current_stock_gst_and_location(self):
+        response = self.save([{
+            "code": "ABM01_001", "opening_stock": "12.5", "current_stock": "7",
+            "gst_percent": "12", "location": "rack 3",
+        }])
+        self.assertEqual(response.status_code, 200)
+        after = Part.objects.get(part_number="ABM01_001")
+        self.assertEqual(after.opening_stock, Decimal("12.500"))
+        self.assertEqual(after.current_stock, Decimal("7"))
+        self.assertEqual(after.gst_percent, Decimal("12.00"))
+        self.assertEqual(after.location, "RACK 3")
+        # The rate wasn't sent, so it must be untouched.
+        self.assertEqual(after.purchase_rate, Decimal("1500.0000"))
+
+    def test_save_rejects_gst_percent_over_100(self):
+        response = self.save([{"code": "ABM01_001", "gst_percent": "150"}])
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("ABM01_001", response.json()["errors"])
+
+    def test_save_rejects_negative_stock(self):
+        response = self.save([{"code": "ABM01_001", "opening_stock": "-1"}])
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("ABM01_001", response.json()["errors"])
 
     def test_save_rejects_negative_rate(self):
         response = self.save([{"code": "ABM01", "rate": "-5"}])

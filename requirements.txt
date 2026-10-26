@@ -10,6 +10,9 @@ openpyxl>=3.1
 # Real downloadable PDF for a Purchase Order's public WhatsApp share link.
 xhtml2pdf>=0.2.17
 
+# HTTP client for the E-Way Bill / e-Invoice provider (apps.eway_bill.provider).
+requests>=2.31
+
 # Uncomment the driver if you use one of these databases instead:
 # psycopg[binary]>=3.2      # PostgreSQL
 # mysqlclient>=2.2          # MySQL / MariaDB

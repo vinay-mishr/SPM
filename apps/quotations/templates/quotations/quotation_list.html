@@ -63,7 +63,6 @@
           <th scope="col">Party</th>
           <th scope="col">Quotation</th>
           <th scope="col" class="num">Net Amount</th>
-          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody data-rows>
@@ -74,14 +73,10 @@
             <td>{{ row.party }}</td>
             <td class="quot-table__desc">{{ row.description }}</td>
             <td class="num">{{ row.net_amount }}</td>
-            <td>{% if row.confirmed %}<span class="quot-badge quot-badge--ok">Confirmed</span>{% else %}<span class="quot-badge">Saved</span>{% endif %}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
-    {% if not rows %}
-      <p class="master-table__empty">No quotations between {{ start_date|date:'d/m/Y' }} and {{ end_date|date:'d/m/Y' }}{% if search %} matching “{{ search }}”{% endif %}. Change the dates or click <strong>Add</strong>.</p>
-    {% endif %}
   </div>
 
   <div class="quot-pager">

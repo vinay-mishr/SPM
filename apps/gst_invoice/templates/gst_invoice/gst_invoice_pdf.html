@@ -1,0 +1,164 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tax Invoice {{ note.bill_no }}</title>
+  <style>
+    /* xhtml2pdf's renderer only supports a CSS2-era subset -- no flexbox, no
+       CSS grid. This is deliberately a plain table-based layout, not the same
+       stylesheet as the on-screen/browser-print page (gst_invoice_print.html),
+       which relies on both. Same data, same calculations, simpler presentation
+       -- same convention as apps.purchase_orders' own PDF template. */
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 9px; color: #000; }
+    table.pdf-border { width: 100%; border-collapse: collapse; }
+    table.pdf-border > tr > td { border: 1.5px solid #000; padding: 6px; }
+    .pdf-title { text-align: center; font-size: 16px; font-weight: bold; margin: 0 0 2px; position: relative; }
+    .pdf-copy { text-align: right; font-size: 9px; font-weight: normal; }
+    .pdf-company { text-align: center; font-size: 9px; margin: 0 0 6px; }
+    .pdf-company .name { font-size: 15px; font-weight: bold; }
+    table.pdf-strip { width: 100%; border-top: 1px solid #000; border-bottom: 1px solid #000; margin-bottom: 4px; }
+    table.pdf-strip td { vertical-align: top; font-size: 9px; padding: 3px 6px; }
+    table.pdf-boxes { width: 100%; border-bottom: 1px solid #000; margin-bottom: 4px; }
+    table.pdf-boxes td { vertical-align: top; font-size: 9px; padding: 3px 6px; width: 50%; }
+    table.pdf-boxes h3 { margin: 0 0 2px; font-size: 9px; text-decoration: underline; }
+    table.pdf-refs { width: 100%; border-bottom: 1px solid #000; margin-bottom: 4px; }
+    table.pdf-refs td { font-size: 9px; padding: 3px 6px; width: 33%; }
+    table.pdf-items { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+    .pdf-items th, .pdf-items td { border: 1px solid #000; padding: 3px 4px; font-size: 8px; }
+    .pdf-items th { background: #eee; text-align: center; }
+    .pdf-items .num { text-align: right; }
+    .pdf-items .desc { text-align: left; }
+    table.pdf-lower { width: 100%; }
+    table.pdf-lower td { vertical-align: top; font-size: 9px; }
+    table.pdf-lower .right { width: 220px; }
+    table.pdf-totals { width: 100%; }
+    table.pdf-totals td { font-size: 9px; padding: 1px 0; }
+    table.pdf-totals .num { text-align: right; }
+    table.pdf-totals .net td { font-weight: bold; border-top: 1px solid #000; }
+    .pdf-terms { font-size: 8px; margin-top: 6px; }
+    .pdf-sign { text-align: right; font-size: 9px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <table class="pdf-border"><tr><td>
+    <p class="pdf-title">TAX INVOICE<span class="pdf-copy">{{ copy_label|default:"Original For Recipient" }}</span></p>
+    <div class="pdf-company">
+      <p class="name">{{ brand_name }}</p>
+      {% if brand.address_line1 %}<p>{{ brand.address_line1 }}</p>{% endif %}
+      {% if brand.address_line2 %}<p>{{ brand.address_line2 }}</p>{% endif %}
+      {% if brand.print_mobile %}<p>Mobile No: {{ brand.print_mobile }}</p>{% endif %}
+      <p>{% if brand.email %}Email: {{ brand.email }}{% endif %}{% if brand.website %} &middot; Website: {{ brand.website }}{% endif %}</p>
+    </div>
+
+    <table class="pdf-strip">
+      <tr>
+        <td>
+          <strong>GSTIN:</strong> {{ brand.gstin }}<br>
+          <strong>Invoice Serial Number:</strong> {{ note.bill_no }}<br>
+          <strong>Invoice Date:</strong> {{ note.date }}<br>
+          <strong>Tax Is Payable on Reverse Charge:</strong> {% if note.reverse_charge %}Yes{% else %}No{% endif %}
+        </td>
+        <td>
+          <strong>Transportation Mode:</strong> {{ note.transport }}<br>
+          <strong>Veh. No.:</strong> {{ note.vehicle_no }}<br>
+          <strong>Date &amp; Time of Supply:</strong> {{ note.date_of_supply|default:"-" }} {{ note.time_of_supply }}<br>
+          <strong>Place Of Supply:</strong> {{ note.place_of_supply|default:"-" }}
+        </td>
+      </tr>
+    </table>
+
+    <table class="pdf-boxes">
+      <tr>
+        <td>
+          <h3>Details of Receiver (Billed to)</h3>
+          <strong>Name:</strong> {{ note.party_name|default:note.cash_party_name }}<br>
+          <strong>Address:</strong> {{ note.party_address }}<br>
+          {% if note.city %}{{ note.city }}<br>{% endif %}
+          <strong>State Code:</strong> {{ note.party_state_code }} {{ note.party_state_name }}<br>
+          <strong>GSTIN:</strong> {{ note.gst_no }}
+        </td>
+        <td>
+          <h3>Details of Consignee (Shipped to)</h3>
+          <strong>Name:</strong> {{ note.consignee_name }}<br>
+          <strong>Address:</strong> {{ note.consignee_address }}
+        </td>
+      </tr>
+    </table>
+
+    <table class="pdf-refs">
+      <tr>
+        <td><strong>Order No.:</strong> {{ note.order_no }}<br><strong>Order Date:</strong> {{ note.order_date|default:"-" }}</td>
+        <td><strong>G.R.No.:</strong> {{ note.gr_no }}<br><strong>G.R.Date:</strong> {{ note.gr_date|default:"-" }}</td>
+        <td><strong>E-Way No.:</strong> {{ note.eway_no }}<br><strong>E-Way Date:</strong> {{ note.eway_date|default:"-" }}</td>
+      </tr>
+    </table>
+
+    <table class="pdf-items">
+      <thead>
+        <tr>
+          <th>S.NO</th><th>Description of Goods</th><th>HSN Code</th><th>Qty</th><th>Unit</th><th>Rate</th>
+          <th>Taxable<br>Value</th><th>CGST<br>Rate</th><th>CGST<br>Amt</th><th>SGST<br>Rate</th><th>SGST<br>Amt</th>
+          <th>IGST<br>Rate</th><th>IGST<br>Amt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in note.items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td class="desc">{{ l.item_name }}</td>
+          <td>{{ l.hsn_code }}</td>
+          <td class="num">{{ l.qty }}</td>
+          <td>{{ l.unit }}</td>
+          <td class="num">{{ l.rate }}</td>
+          <td class="num">{{ l.amount }}</td>
+          <td class="num">{{ l.cgst_rate }}</td><td class="num">{{ l.cgst_amt }}</td>
+          <td class="num">{{ l.sgst_rate }}</td><td class="num">{{ l.sgst_amt }}</td>
+          <td class="num">{{ l.igst_rate }}</td><td class="num">{{ l.igst_amt }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <table class="pdf-lower">
+      <tr>
+        <td>
+          <strong>Invoice Value (In Words):</strong> {{ in_words }}<br>
+          {% if note.remarks %}<strong>Remarks:</strong> {{ note.remarks }}<br>{% endif %}
+          <strong>Bank Name:</strong> {{ bank.name }} &nbsp; <strong>A/C No:</strong> {{ bank.account_no }}<br>
+          <strong>IFSC Code:</strong> {{ bank.ifsc }} &nbsp; <strong>Branch:</strong> {{ bank.branch }}
+          {% for r in note.rate_breakdown %}<br>{{ r.label }} @{{ r.rate }}% &nbsp; Rs. {{ r.amount }}{% endfor %}
+        </td>
+        <td class="right">
+          <table class="pdf-totals">
+            <tr><td>Total</td><td class="num">Rs. {{ note.amount }}</td></tr>
+            <tr><td>Add: CGST</td><td class="num">Rs. {{ note.cgst_total }}</td></tr>
+            <tr><td>Add: SGST</td><td class="num">Rs. {{ note.sgst_total }}</td></tr>
+            <tr><td>Add: IGST</td><td class="num">Rs. {{ note.igst_total }}</td></tr>
+            <tr><td>Freight</td><td class="num">Rs. {{ note.freight }}</td></tr>
+            <tr><td>GST on Freight</td><td class="num">Rs. {{ note.freight_gst }}</td></tr>
+            {% for a in note.adjustments %}
+              <tr><td>{% if a.sign == "A" %}Add{% else %}Less{% endif %}: {{ a.name }}</td><td class="num">Rs. {{ a.amount }}</td></tr>
+            {% endfor %}
+            <tr class="net"><td>Invoice Total</td><td class="num">Rs. {{ note.net_amount }}</td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <div class="pdf-terms">
+      <strong>Terms &amp; Conditions:</strong>
+      <ol>
+        <li>All disputes are subjects to Mohali Jurisdiction only.</li>
+        <li>Goods are dispatched at consignee's risk.</li>
+        <li>Interest @18% will be charged if the bill is not paid within 15 days.</li>
+      </ol>
+      E.&amp;O.E.
+    </div>
+
+    <div class="pdf-sign">
+      For {{ brand_name }}<br><br><br>
+      Authorised Signatory
+    </div>
+  </td></tr></table>
+</body>
+</html>

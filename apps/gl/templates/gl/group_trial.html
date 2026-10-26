@@ -1,0 +1,59 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Group Trial · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/voucher_printing.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/cash_book.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <script src="{% static 'gl/js/group_trial.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Group Trial{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Trial Balance &rsaquo; Group Trial{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-group-trial
+         data-data-url="{% url 'gl:group_trial_data' %}"
+         data-export-url="{% url 'gl:group_trial_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-brand-name="{{ brand.name }}"
+         data-brand-address="{{ brand.address_line1 }}">
+  <div class="pe-titlebar">GROUPWISE MAIN TRIAL</div>
+
+  <div class="ml-head">
+    <label class="ml-row ml-row--date"><span>RUN DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-run-date data-date-mask></label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--primary" data-view>VIEW</button>
+    <button type="button" class="btn btn--secondary" data-print disabled>PRINT</button>
+    <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div class="vp-letter" data-result hidden>
+    <div class="vp-page cb-page">
+      <div class="vp-head">
+        <p class="vp-brand">{{ brand.name }}</p>
+        <p>{{ brand.address_line1 }}</p>
+        <p class="cb-range">GROUPWISE MAIN TRIAL AS ON <span data-r-date></span></p>
+      </div>
+      <table class="vp-table cb-table">
+        <thead><tr><th>CODE</th><th>LEDGER DESCRIPTION</th><th class="num">DEBIT</th><th class="num">CREDIT</th></tr></thead>
+        <tbody data-r-rows></tbody>
+        <tfoot><tr class="cb-total"><td></td><td>GRAND TOTAL</td><td class="num" data-r-grand-debit></td><td class="num" data-r-grand-credit></td></tr></tfoot>
+      </table>
+      <p data-r-difference></p>
+      <p>*-Account having Subledger</p>
+    </div>
+  </div>
+</section>
+
+{{ initial_data|json_script:"gt-initial-data" }}
+{% endblock %}

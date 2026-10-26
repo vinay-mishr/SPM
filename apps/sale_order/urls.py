@@ -1,11 +1,13 @@
 from django.urls import path
 
-from . import views
+from . import party_wise_production, views
 
 app_name = "sale_order"
 
 urlpatterns = [
     path("", views.SaleOrderView.as_view(), name="entry"),
+    path("party-wise-production/", party_wise_production.PartyWiseProductionView.as_view(), name="party_wise_production"),
+    path("party-wise-production/export/", party_wise_production.pwp_export, name="party_wise_production_export"),
     path("print/<str:order_no>/", views.SaleOrderPrintView.as_view(), name="print"),
     path("graphical/", views.SaleOrderGraphicalView.as_view(), name="graphical"),
     path("report/", views.SaleReportView.as_view(), name="report"),

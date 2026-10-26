@@ -8,8 +8,9 @@
   "use strict";
 
   var FIELDS = ["name"];
-  var LABELS = { add: "Add", modify: "Modify", view: "View" };
-  var dialog, form, alertBox, discard, confirmBtn, options;
+  var UPPERCASE_FIELDS = { name: true };
+  var LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
+  var dialog, form, alertBox, discard, discardTitle, discardCancelBtn, discardConfirmBtn, confirmBtn, options;
   var state = { mode: "add", supervisor: null, snapshot: "", saving: false };
 
   function input(name) { return form.querySelector('[data-field="' + name + '"]'); }
@@ -65,8 +66,52 @@
       .catch(function () {});
   }
 
+  function performDelete() {
+    if (state.saving || !state.supervisor) return;
+    state.saving = true;
+    confirmBtn.disabled = true;
+    fetch(options.deleteUrl.replace("/00/", "/" + encodeURIComponent(state.supervisor.id) + "/"), {
+      method: "POST", credentials: "same-origin",
+      headers: { "X-CSRFToken": options.csrfToken, "X-Requested-With": "XMLHttpRequest" }
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, status: r.status, body: b }; });
+      })
+      .then(function (res) {
+        if (res.ok) {
+          close();
+          options.onDeleted(res.body.message);
+        } else {
+          alertBox.textContent = res.body.message || "Could not delete.";
+          alertBox.hidden = false;
+        }
+      })
+      .catch(function () {
+        alertBox.textContent = "Could not reach the server. Nothing was deleted.";
+        alertBox.hidden = false;
+      })
+      .finally(function () { state.saving = false; confirmBtn.disabled = false; });
+  }
+
+  // The discard box is reused as a generic "are you sure?" prompt -- its own
+  // title text, button labels and confirm action are swapped per use (discard
+  // unsaved changes on EXIT vs delete the selected record), so there's one
+  // small confirm dialog in this form, not two.
+  function askDiscard(title, onConfirm, labels) {
+    discardTitle.textContent = title;
+    discardCancelBtn.textContent = labels ? labels.cancel : "Cancel";
+    discardConfirmBtn.textContent = labels ? labels.confirm : "Exit";
+    state.onDiscardConfirm = onConfirm;
+    discard.hidden = false;
+  }
+
   function save() {
-    if (state.saving || state.mode === "view") return;
+    if (state.saving) return;
+    if (state.mode === "delete") {
+      askDiscard("Are you sure you want to delete this record?", performDelete, { cancel: "No", confirm: "Yes" });
+      return;
+    }
+    if (state.mode === "view") return;
     clearErrors();
     var v = values();
     var errs = validate(v);
@@ -111,9 +156,20 @@
     form = dialog.querySelector("[data-sv-form]");
     alertBox = dialog.querySelector("[data-form-alert]");
     discard = dialog.querySelector("[data-discard]");
+    discardTitle = discard.querySelector("#sv-discard-title");
+    discardCancelBtn = dialog.querySelector("[data-discard-cancel]");
+    discardConfirmBtn = dialog.querySelector("[data-discard-confirm]");
     confirmBtn = dialog.querySelector("[data-form-confirm]");
 
     form.addEventListener("submit", function (e) { e.preventDefault(); save(); });
+    form.addEventListener("input", function (e) {
+      var field = e.target;
+      if (UPPERCASE_FIELDS[field.dataset.field] && field.value !== field.value.toUpperCase()) {
+        var pos = field.selectionStart;
+        field.value = field.value.toUpperCase();
+        field.setSelectionRange(pos, pos);
+      }
+    });
     form.addEventListener("keydown", function (e) {
       if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
       e.preventDefault();
@@ -126,7 +182,12 @@
       if (!discard.hidden) discard.hidden = true; else requestExit();
     });
     dialog.querySelector("[data-discard-cancel]").addEventListener("click", function () { discard.hidden = true; });
-    dialog.querySelector("[data-discard-confirm]").addEventListener("click", close);
+    dialog.querySelector("[data-discard-confirm]").addEventListener("click", function () {
+      discard.hidden = true;
+      var onConfirm = state.onDiscardConfirm || close;
+      state.onDiscardConfirm = null;
+      onConfirm();
+    });
   }
 
   function open(mode, supervisor) {
@@ -137,13 +198,17 @@
     dialog.dataset.mode = mode;
     dialog.querySelector("[data-mode-label]").textContent = LABELS[mode];
     input("code").value = supervisor ? supervisor.code : "";
+    var readOnlyMode = mode === "view" || mode === "delete";
     FIELDS.forEach(function (n) {
       input(n).value = supervisor ? supervisor[n] || "" : "";
-      input(n).readOnly = mode === "view";
+      input(n).readOnly = readOnlyMode;
     });
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
     state.snapshot = JSON.stringify(values());
     dialog.showModal();
-    (mode === "view" ? dialog.querySelector(".modal__footer [data-form-exit]") : input("name")).focus();
+    (mode === "view" ? dialog.querySelector(".modal__footer [data-form-exit]") : mode === "delete" ? confirmBtn : input("name")).focus();
   }
 
   window.SPSupervisorForm = { init: init, open: open };

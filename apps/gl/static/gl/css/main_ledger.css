@@ -1,0 +1,33 @@
+/* Accounts > Ledger Printing > Main Ledger -- the ALL/SINGLE + DESCRIPTION
+   filter row (ml-*); the printed letter reuses apps.gl.cash_book's own
+   .cb-* row classes (opening/closing/narration/total) inside one block per
+   ledger account. */
+.ml-head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 6px 10px 4px; }
+.ml-row { display: flex; align-items: center; gap: 8px; }
+.ml-row > span { font-weight: 700; font-size: 15px; text-transform: uppercase; white-space: nowrap; }
+
+/* This screen's own VIEW/EXCEL/PRINT/EXIT row -- smaller and tighter than
+   the shared .master-toolbar/.btn defaults (static/css/components.css),
+   scoped here so it doesn't touch any other screen's buttons. */
+[data-main-ledger] .pe-toolbar.master-toolbar { padding: 6px 10px; }
+[data-main-ledger] .pe-toolbar.master-toolbar .btn {
+  min-height: 26px; min-width: 0; padding: 0 12px; font-size: 12px;
+}
+.ml-row select, .ml-row input {
+  height: 28px; border: 2px solid #000; border-radius: 4px; padding: 1px 6px; font-size: 13px; font-weight: 700;
+  background: #fff;
+}
+.ml-row select { width: 64px; }
+.ml-row input { width: 220px; }
+.ml-row--date input { width: 104px; }
+.ml-row [data-description] { width: 420px; }
+
+.ml-page { max-width: 820px; }
+.ml-ledger-block + .ml-ledger-block { margin-top: 24px; border-top: 2px dashed #9ca3af; padding-top: 16px; }
+.ml-ledger-head { margin-bottom: 6px; }
+.ml-ledger-head p { margin: 2px 0; font-weight: 700; }
+.ml-ledger-code { color: #374151; }
+
+@media print {
+  .ml-ledger-block { page-break-inside: avoid; }
+}

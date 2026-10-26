@@ -43,18 +43,12 @@
           <p class="mform__error" data-error-for="party_code"></p>
         </div>
 
-        <label class="mform__label mform__label--required" for="co-net_amount">Balance Amt</label>
-        <div class="mform__field co-pair">
-          <div>
-            <input class="form-control mform__input mform__input--num co-mid" id="co-net_amount" name="net_amount" type="text" inputmode="decimal" autocomplete="off" data-field="net_amount">
-            <p class="mform__error" data-error-for="net_amount"></p>
-          </div>
-          <label class="mform__label co-inline-label" for="co-cash_discount">Cash Dis</label>
-          <div>
-            <input class="form-control mform__input mform__input--num co-mid" id="co-cash_discount" name="cash_discount" type="text" inputmode="decimal" autocomplete="off" data-field="cash_discount">
-            <p class="mform__error" data-error-for="cash_discount"></p>
-          </div>
+        <label class="mform__label mform__label--required" for="co-net_amount">Bal Amt</label>
+        <div class="mform__field">
+          <input class="form-control mform__input mform__input--num co-mid" id="co-net_amount" name="net_amount" type="text" inputmode="decimal" autocomplete="off" data-field="net_amount">
+          <p class="mform__error" data-error-for="net_amount"></p>
         </div>
+        <input type="hidden" id="co-cash_discount" name="cash_discount" value="0.00" data-field="cash_discount">
       </div>
     </div>
 

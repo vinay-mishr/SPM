@@ -1,0 +1,66 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Cheque Dishonour · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'money_receipt/js/dishonour.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Cheque Dishonour{% endblock %}
+{% block page_subtitle %}Money Receipts &rsaquo; Cheque Dishonour{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-cd
+         data-parties-url="{% url 'money_receipt:api_parties' %}"
+         data-cheques-url="{% url 'money_receipt:dishonour_cheques' %}"
+         data-detail-url="{% url 'money_receipt:dishonour_detail' %}"
+         data-save-url="{% url 'money_receipt:dishonour_save' %}"
+         data-exit-url="{% url 'money_receipt:entry' %}">
+  {% csrf_token %}
+  <div class="pe-titlebar">CHEQUE DISHONOUR</div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--secondary" data-add>ADD</button>
+    <button type="button" class="btn btn--primary" data-confirm hidden disabled>CONFIRM</button>
+    <button type="button" class="btn btn--danger" data-exit hidden>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div data-form hidden>
+  <div class="pe-head">
+    <label class="pe-wide">PARTY NAME
+      <input data-party-search placeholder="Type party name and press Enter" autocomplete="off">
+      <input type="hidden" data-party-code>
+    </label>
+    <label>PARTY CITY <input data-party-city readonly tabindex="-1"></label>
+    <label>PREVIOUS ADVANCE <input class="num" data-prev-adv readonly tabindex="-1" value="0.00"></label>
+    <label>TOTAL AMOUNT <input class="num" data-total-amt readonly tabindex="-1" value="0.00"></label>
+  </div>
+
+  <div class="pe-head">
+    <label>CHEQUE NO
+      <select data-chq-select><option value="">Select cheque...</option></select>
+    </label>
+    <label>CHEQUE DATE <input data-chq-dt readonly tabindex="-1"></label>
+    <label>BANK NAME <input data-bank-name readonly tabindex="-1"></label>
+    <label>CHEQUE AMOUNT <input class="num" data-chq-amount readonly tabindex="-1" value="0.00"></label>
+  </div>
+
+  <div class="pe-head">
+    <label>SLIP DATE <input data-slip-dt readonly tabindex="-1"></label>
+    <label>CHEQUE DIS. DATE <input data-chq-dis-dt type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
+    <label>BANK CHARGES <input class="num" data-bank-charges value="0.00"></label>
+  </div>
+
+  <div class="pe-grid">
+    <table>
+      <thead><tr><th>#</th><th>DIV</th><th>BILL NO</th><th>BILL DATE</th><th class="num">BILL AMOUNT</th><th class="num">CASH DIS.</th><th class="num">INTEREST AMT</th><th class="num">AMOUNT ADJ</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="8">Pick a party, then select the dishonoured cheque.</td></tr></tbody>
+    </table>
+  </div>
+  </div>
+</section>
+{% endblock %}

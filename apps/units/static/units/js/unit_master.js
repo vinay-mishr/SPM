@@ -10,7 +10,6 @@
   var countNote = root.querySelector("[data-count]");
   var searchBox = root.querySelector("[data-search]");
   var toast = document.querySelector("[data-toast]");
-  var deleteDialog = document.getElementById("unit-delete-dialog");
   var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
 
   var initial = JSON.parse(document.getElementById("unit-initial-data").textContent);
@@ -99,6 +98,7 @@
   var form = dialog.querySelector("[data-unit-form]");
   var alertBox = dialog.querySelector("[data-form-alert]");
   var discard = dialog.querySelector("[data-discard]");
+  var discardTitle = discard.querySelector("#unit-discard-title");
   var confirmBtn = dialog.querySelector("[data-form-confirm]");
   var nameInput = dialog.querySelector('[data-field="name"]');
   var formState = { mode: "add", unit: null, snapshot: "" };
@@ -128,16 +128,21 @@
     if (first) first.focus();
   }
 
+  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
+
   function setMode(mode) {
     formState.mode = mode;
     dialog.dataset.mode = mode;
-    dialog.querySelector("[data-mode-label]").textContent = mode === "add" ? "Add" : mode === "modify" ? "Modify" : "View";
-    nameInput.readOnly = mode === "view";
+    dialog.querySelector("[data-mode-label]").textContent = MODE_LABELS[mode];
+    nameInput.readOnly = mode === "view" || mode === "delete";
     confirmBtn.hidden = mode === "view";
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
   }
 
   function isDirty() {
-    return formState.mode !== "view" && nameInput.value.trim() !== formState.snapshot;
+    return formState.mode !== "view" && formState.mode !== "delete" && nameInput.value.trim() !== formState.snapshot;
   }
 
   function close() {
@@ -149,7 +154,44 @@
     close();
   }
 
+  function performDelete() {
+    var unit = formState.unit;
+    if (!unit) return;
+    confirmBtn.disabled = true;
+    fetch(root.dataset.deleteUrl.replace("/0/", "/" + encodeURIComponent(unit.id) + "/"), {
+      method: "POST", credentials: "same-origin",
+      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" }
+    })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, body: b }; }); })
+      .then(function (result) {
+        if (result.ok) {
+          close();
+          state.selectedId = null;
+          showToast(result.body.message);
+          return refresh();
+        }
+        alertBox.textContent = result.body.message || "Could not delete.";
+        alertBox.hidden = false;
+      })
+      .catch(function () {
+        alertBox.textContent = "Could not reach the server. Nothing was deleted.";
+        alertBox.hidden = false;
+      })
+      .finally(function () { confirmBtn.disabled = false; });
+  }
+
+  // The discard box is reused as a generic "are you sure?" prompt -- its own
+  // title text and confirm action are swapped per use (discard unsaved
+  // changes on EXIT vs delete the selected record), so there's one small
+  // confirm dialog in this form, not two.
+  function askDiscard(title, onConfirm) {
+    discardTitle.textContent = title;
+    formState.onDiscardConfirm = onConfirm;
+    discard.hidden = false;
+  }
+
   function save() {
+    if (formState.mode === "delete") { askDiscard("Are you sure you want to delete this record?", performDelete); return; }
     if (formState.mode === "view") return;
     clearErrors();
     var data = new FormData();
@@ -191,7 +233,12 @@
     if (!discard.hidden) discard.hidden = true; else requestExit();
   });
   dialog.querySelector("[data-discard-cancel]").addEventListener("click", function () { discard.hidden = true; });
-  dialog.querySelector("[data-discard-confirm]").addEventListener("click", close);
+  dialog.querySelector("[data-discard-confirm]").addEventListener("click", function () {
+    discard.hidden = true;
+    var onConfirm = formState.onDiscardConfirm || close;
+    formState.onDiscardConfirm = null;
+    onConfirm();
+  });
 
   function openForm(mode) {
     var unit = mode === "add" ? null : selectedUnit();
@@ -202,54 +249,9 @@
     discard.hidden = true;
     formState.snapshot = nameInput.value.trim();
     dialog.showModal();
-    (mode === "view" ? dialog.querySelector(".modal__footer [data-form-exit]") : nameInput).focus();
+    (mode === "view" ? dialog.querySelector(".modal__footer [data-form-exit]")
+      : mode === "delete" ? confirmBtn : nameInput).focus();
   }
-
-  /* --- Delete ---------------------------------------------------------------------- */
-
-  function openDelete(unit) {
-    var list = deleteDialog.querySelector("[data-delete-details]");
-    var alertBox2 = deleteDialog.querySelector("[data-delete-alert]");
-    list.textContent = "";
-    var dt = document.createElement("dt"), dd = document.createElement("dd");
-    dt.textContent = "Unit"; dd.textContent = unit.name;
-    list.append(dt, dd);
-    alertBox2.hidden = true;
-    deleteDialog.querySelector("[data-delete-confirm]").disabled = false;
-    deleteDialog.showModal();
-    deleteDialog.querySelector("[data-delete-cancel]").focus();
-  }
-
-  function confirmDelete() {
-    var unit = selectedUnit();
-    var button = deleteDialog.querySelector("[data-delete-confirm]");
-    var alertBox2 = deleteDialog.querySelector("[data-delete-alert]");
-    if (!unit) return;
-    button.disabled = true;
-    fetch(root.dataset.deleteUrl.replace("/0/", "/" + encodeURIComponent(unit.id) + "/"), {
-      method: "POST", credentials: "same-origin",
-      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" }
-    })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, body: b }; }); })
-      .then(function (result) {
-        if (result.ok) {
-          deleteDialog.close();
-          state.selectedId = null;
-          showToast(result.body.message);
-          return refresh();
-        }
-        alertBox2.textContent = result.body.message || "The unit could not be deleted.";
-        alertBox2.hidden = false;
-      })
-      .catch(function () {
-        alertBox2.textContent = "Could not reach the server. Please try again.";
-        alertBox2.hidden = false;
-        button.disabled = false;
-      });
-  }
-
-  deleteDialog.querySelectorAll("[data-delete-cancel]").forEach(function (b) { b.addEventListener("click", function () { deleteDialog.close(); }); });
-  deleteDialog.querySelector("[data-delete-confirm]").addEventListener("click", confirmDelete);
 
   /* --- Toolbar --------------------------------------------------------------------- */
 
@@ -257,7 +259,7 @@
     add: function () { openForm("add"); },
     modify: function () { if (selectedUnit()) openForm("modify"); },
     view: function () { if (selectedUnit()) openForm("view"); },
-    "delete": function () { var u = selectedUnit(); if (u) openDelete(u); },
+    "delete": function () { if (selectedUnit()) openForm("delete"); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
   root.querySelectorAll("[data-action]").forEach(function (btn) {

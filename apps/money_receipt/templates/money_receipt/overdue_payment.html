@@ -1,0 +1,61 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Overdue Payment · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'money_receipt/css/party_outstanding.css' %}">
+  <script src="{% static 'money_receipt/js/overdue_payment.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Overdue Payment{% endblock %}
+{% block page_subtitle %}Money Receipts &rsaquo; Overdue Payment{% endblock %}
+
+{% block content %}
+<section class="master-page po-page" data-overdue-payment
+         data-parties-url="{% url 'money_receipt:api_parties' %}"
+         data-data-url="{% url 'money_receipt:overdue_data' %}"
+         data-export-url="{% url 'money_receipt:overdue_export' %}"
+         data-exit-url="{% url 'money_receipt:entry' %}">
+  <div class="master-toolbar po-toolbar" role="toolbar" aria-label="Overdue payment filters">
+    <div class="po-filters">
+      <fieldset class="po-filter">
+        <label><input type="radio" name="ov-scope" value="all" checked data-scope> ALL</label>
+        <label><input type="radio" name="ov-scope" value="single" data-scope> SINGLE</label>
+      </fieldset>
+      <label class="po-filter po-filter--search">PARTY
+        <input class="form-control" placeholder="Type party name and press Enter" autocomplete="off" disabled data-party-search>
+        <input type="hidden" data-party-code>
+      </label>
+      <label class="po-filter">RUN DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-run-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-view>VIEW</button>
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table po-table">
+      <thead>
+        <tr><th>DIV</th><th>BILL NO</th><th>BILL DATE</th><th class="num">BILL AMOUNT</th>
+          <th class="num">AMT.RECEIVED</th><th class="num">BALANCE</th><th class="num">DELAY DAYS</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No overdue payment as on this date.</p>
+  </div>
+
+  <div class="po-summary">
+    <div class="po-summary-row">
+      <label>GRAND TOTAL <input class="num" data-g-total readonly tabindex="-1" value="0.00"></label>
+    </div>
+  </div>
+</section>
+
+{{ initial_data|json_script:"ov-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}

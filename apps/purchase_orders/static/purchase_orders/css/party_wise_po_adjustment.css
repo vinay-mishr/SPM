@@ -2,8 +2,12 @@
    come from static/css/components.css; only this screen's specifics live here. */
 
 .pwpoa-toolbar {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   width: 100%;
+}
+
+.pwpoa-toolbar .master-toolbar__actions {
+  flex: none;
 }
 
 .pwpoa-mode {
@@ -13,7 +17,8 @@
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 0.8125rem;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .pwpoa-mode label {
@@ -21,23 +26,32 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .pwpoa-party {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .pwpoa-party__label {
-  font-size: 0.75rem;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.pwpoa-party__name { width: 220px; }
-.pwpoa-party__code { width: 70px; text-transform: uppercase; }
+.pwpoa-party__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pwpoa-party__name { width: 330px; min-height: 40px; font-size: 1rem; font-weight: 700; }
+.pwpoa-party__code { width: 90px; min-height: 40px; font-size: 1rem; font-weight: 700; text-transform: uppercase; }
 
 .pwpoa-filter {
   display: flex;
@@ -56,8 +70,9 @@
   width: 130px;
 }
 
-.pwpoa-table { min-width: 800px; font-size: 0.8125rem; }
-.pwpoa-table th, .pwpoa-table td { padding: 4px 8px; white-space: nowrap; }
+.pwpoa-table { min-width: 800px; width: 100%; font-size: 1rem; }
+.pwpoa-table th, .pwpoa-table td { padding: 6px 14px; white-space: nowrap; border-right: 2px solid #000; }
+.pwpoa-table tbody td { border-bottom: 2px solid #000; }
 .pwpoa-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .pwpoa-party-row td {

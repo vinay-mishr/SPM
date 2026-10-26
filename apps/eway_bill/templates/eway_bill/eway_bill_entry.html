@@ -1,0 +1,65 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}E-Way Bill · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'eway_bill/css/eway_bill_entry.css' %}">
+  <script src="{% static 'eway_bill/js/eway_bill_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}E-Way Bill{% endblock %}
+{% block page_subtitle %}Invoice &rsaquo; E-Way Bill{% endblock %}
+
+{% block content %}
+<section class="eb-page" data-eb
+         data-list-url="{% url 'eway_bill:api_list' %}"
+         data-detail-url-template="{% url 'eway_bill:api_detail' bill_no='__NO__' %}"
+         data-transport-url="{% url 'eway_bill:api_save_transport' %}"
+         data-generate-url="{% url 'eway_bill:api_generate' %}"
+         data-json-url-template="{% url 'eway_bill:api_json' bill_no='__NO__' %}"
+         data-token-url="{% url 'eway_bill:api_token' %}"
+         data-print-url-template="{% url 'eway_bill:print' bill_no='__NO__' %}"
+         data-can-edit="{{ can_edit|yesno:'1,0' }}">
+
+  <div class="eb-toolbar">
+    <label>Start Date <input type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label>End Date <input type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-end-date data-date-mask></label>
+    <button type="button" class="btn btn--secondary" data-action="refresh">Refresh</button>
+    <button type="button" class="btn btn--secondary" data-action="json" disabled>JSON</button>
+    <button type="button" class="btn btn--secondary" data-action="token"{% if not can_edit %} disabled{% endif %}>Token</button>
+    <label class="eb-search">Bill No / Party <input type="text" data-search placeholder="Bill no or party name…"></label>
+    <div class="eb-toolbar__spacer"></div>
+    <button type="button" class="btn btn--secondary" data-action="print" disabled>Print</button>
+    <button type="button" class="btn btn--danger" data-action="exit">Exit</button>
+  </div>
+
+  <div class="eb-alert" role="alert" data-alert hidden></div>
+  <div class="eb-token-status" data-token-status hidden></div>
+
+  <div class="eb-columns">
+    <div class="eb-panel eb-panel--list">
+      <header class="eb-panel__head">E-Way Bill List</header>
+      <div class="eb-grid">
+        <table>
+          <thead><tr>
+            <th>S.No</th><th>Bill No</th><th>Bill Date</th><th>Party Name</th>
+            <th class="num">Amount</th><th>E-Way Status</th><th>E-Way Bill No</th><th>Ack No</th>
+          </tr></thead>
+          <tbody data-rows><tr class="empty"><td colspan="8">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="eb-panel eb-panel--detail">
+      <header class="eb-panel__head">E-Way Response / Status</header>
+      <div class="eb-detail" data-detail>
+        <p class="eb-empty">
+          <strong>No bill selected</strong><br>
+          Select a GST invoice from the list to view or generate its e-way bill.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

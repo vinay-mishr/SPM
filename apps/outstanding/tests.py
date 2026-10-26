@@ -125,7 +125,7 @@ class PreviousOutstandingTests(TestCase):
 
     def test_party_search(self):
         response = self.client.get(reverse("outstanding:api_parties"), {"q": "soap"})
-        self.assertEqual(response.json()["parties"], [{"code": "S014", "name": "SUPER SOAPS"}])
+        self.assertEqual(response.json()["parties"], [{"code": "S014", "name": "SUPER SOAPS", "city": ""}])
 
     def test_permission_and_login(self):
         self.client.force_login(self.viewer)

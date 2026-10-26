@@ -40,8 +40,10 @@ def list_bills(div=DEFAULT_DIV):
     return [row for row in bill_services.list_bills(div) if row["party_code"] in codes]
 
 
-def search_parties(term, limit=15):
-    """Party Master lookup restricted to Sundry Creditors (for the PARTY field)."""
+def search_parties(term, limit=3000):
+    """Party Master lookup restricted to Sundry Creditors (for the PARTY field).
+    The limit is high enough to cover the whole table, so Help popups using this
+    (e.g. MRN Entry) can show and scroll through all of them, not just the first few."""
     term = (term or "").strip()
     qs = Party.objects.filter(group_code=settings.PARTY_CREDITOR_CODE)
     if term:

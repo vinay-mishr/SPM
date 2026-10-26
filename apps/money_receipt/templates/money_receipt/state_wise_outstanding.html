@@ -1,0 +1,46 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}State Wise Outstanding · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'money_receipt/css/party_outstanding.css' %}">
+  <script src="{% static 'money_receipt/js/state_wise_outstanding.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}State Wise Outstanding{% endblock %}
+{% block page_subtitle %}Reports &rsaquo; Sales Reports &rsaquo; State Wise Outstanding{% endblock %}
+
+{% block content %}
+<section class="master-page po-page" data-state-wise-outstanding
+         data-states-url="{% url 'money_receipt:state_wise_outstanding_states' %}"
+         data-export-url="{% url 'money_receipt:state_wise_outstanding_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar po-toolbar" role="toolbar" aria-label="State wise outstanding filters">
+    <div class="po-filters">
+      <label class="po-filter">DIVISION
+        <input class="form-control" type="text" maxlength="4" autocomplete="off" placeholder="A = all divisions" data-division>
+      </label>
+      <fieldset class="po-filter">
+        <label><input type="radio" name="swo-scope" value="all" checked data-scope> ALL</label>
+        <label><input type="radio" name="swo-scope" value="single" data-scope> SINGLE</label>
+      </fieldset>
+      <label class="po-filter po-filter--search">STATE
+        <input class="form-control" placeholder="Type state name and press Enter" autocomplete="off" disabled data-state-search>
+        <input type="hidden" data-state-code>
+      </label>
+      <label class="po-filter">RUN DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-run-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <p class="po-table__empty" data-alert hidden></p>
+</section>
+
+{{ initial_data|json_script:"swo-initial-data" }}
+{% endblock %}

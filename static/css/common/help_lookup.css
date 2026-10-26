@@ -3,12 +3,26 @@
 
 .help-lookup-dialog {
   padding: 0;
-  width: min(640px, calc(100vw - 32px));
+  width: min(320px, calc(100vw - 32px));
   max-height: min(560px, calc(100vh - 64px));
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
+}
+
+/* Wider when the grid has more than one display column (e.g. Code + Name
+   lookups like Party Help), so columns don't get cramped into a scrollbar. */
+.help-lookup-dialog--wide {
+  width: min(640px, calc(100vw - 32px));
+}
+
+/* Even wider for grids with 4+ display columns (e.g. Code + Name + Material +
+   GST % + Unit in Part Help), so every column -- including a long Name -- stays
+   visible without a horizontal scrollbar. Bumped from 820px, which was still
+   clipping the last column (GST %) on real part names. */
+.help-lookup-dialog--xwide {
+  width: min(1100px, calc(100vw - 32px));
 }
 
 .help-lookup-dialog::backdrop {
@@ -25,7 +39,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 10px 12px;
   background: var(--bg-mint);
   border-bottom: 1px solid var(--border-mint);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -61,16 +75,16 @@
 .help-lookup__body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px 16px;
+  gap: 6px;
+  padding: 8px 10px 10px;
   min-height: 0;
 }
 
 .help-lookup__search {
   width: 100%;
-  min-height: 40px;
-  padding: 8px 12px;
-  font-size: 0.9375rem;
+  min-height: 50px;
+  padding: 6px 10px;
+  font-size: 1.1875rem;
   font-weight: 700;
   color: #000000;
   background: var(--surface);
@@ -90,15 +104,15 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.875rem;
+  font-size: 1.1875rem;
 }
 
 .help-lookup__grid thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 4px 8px;
-  font-size: 0.75rem;
+  padding: 4px 10px;
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-align: left;
@@ -109,7 +123,7 @@
 }
 
 .help-lookup__grid tbody td {
-  padding: 3px 8px;
+  padding: 1px 6px;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;

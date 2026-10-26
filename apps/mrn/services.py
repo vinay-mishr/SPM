@@ -11,7 +11,8 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import models, transaction
-from django.db.models import F
+from django.db.models import DecimalField, F, Value
+from django.db.models.functions import Coalesce
 
 from apps.bom.services import search_parts  # noqa: F401 -- re-exported for the views
 from apps.creditor_outstanding.services import search_parties  # noqa: F401 -- re-exported
@@ -252,10 +253,15 @@ def pending_po_for(party_code, part_code):
     PO numbers against "order" -- new POs created through this app never show
     up in "torder"), so this intentionally does NOT use it."""
     rows = PurchaseOrderItem.objects.filter(party_code=party_code, part_code=part_code).values(
-        "div", "po_no", "order_date", "quantity", "received_qty", "rate", "size", "discount_percent",
+        "div", "po_no", "order_date", "po_qty", "quantity", "received_qty", "rate", "size", "discount_percent",
     )
     for r in rows:
-        pending = (r["quantity"] or Decimal("0")) - (r["received_qty"] or Decimal("0"))
+        # MRN receives against the P.O. Qty (po_qty / "stock"), not the separate Qty
+        # (stk_qty) -- the two can legitimately differ on a PO line (e.g. P.O. Qty 10,
+        # Qty 100), and the vendor invoices the P.O. Qty at the PO rate. Old lines saved
+        # without a P.O. Qty fall back to Qty so they still show as pending.
+        ordered = r["po_qty"] if r["po_qty"] else (r["quantity"] or Decimal("0"))
+        pending = ordered - (r["received_qty"] or Decimal("0"))
         if pending > 0:
             return {
                 "div": (r["div"] or "").strip(),
@@ -316,9 +322,19 @@ def _apply_po_received(items, sign):
     for item in items:
         if not item["po_no"] or not item["quantity"]:
             continue
+        # Coalesce(received_qty, 0) -- a freshly-created PO line's received_qty is
+        # NULL (never initialised on Confirm; see purchase_orders.services.save()),
+        # and plain F("received_qty") + x against a NULL column evaluates to NULL
+        # in SQL (NULL + anything = NULL), so the UPDATE silently kept writing NULL
+        # back instead of accumulating -- the very first MRN received against a PO
+        # line never actually reduced its pending quantity, and deleting that MRN
+        # then had nothing real to undo either. Coalescing to 0 first fixes both.
         PurchaseOrderItem.objects.filter(
             div=item["po_div"] or DEFAULT_DIV, po_no=item["po_no"], part_code=item["item_code"],
-        ).update(received_qty=F("received_qty") + sign * item["quantity"])
+        ).update(
+            received_qty=Coalesce(F("received_qty"), Value(Decimal("0")), output_field=DecimalField())
+            + sign * item["quantity"]
+        )
 
 
 def save_mrn(div, party_code, mrn_date, items, key=None, bill_no="", bill_date=None,

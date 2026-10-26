@@ -54,9 +54,10 @@ class RepMasterTests(TestCase):
             ("KIRAN KUMAR", "RAM LAL", "H.No. 12", "Phase 3", "Mohali", "Kharar", "9876543210"),
         )
 
-    def test_next_code_skips_codes_used_in_old_bills(self):
-        with mock.patch.object(services, "values_in_use", return_value={"04", "18"}):
-            self.assertEqual(services.next_code(), "19")
+    def test_next_code_ignores_codes_only_used_in_old_bills(self):
+        # Only the Rep table decides the next code; a rep code still referenced by old,
+        # unrelated bills/parties/orders (with no matching Rep record) doesn't block it.
+        self.assertEqual(services.next_code(), "04")
 
     def test_validation(self):
         response = self.post(name=" ", mobile="98765")

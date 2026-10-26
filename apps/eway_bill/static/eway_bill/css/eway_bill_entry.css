@@ -1,0 +1,114 @@
+.eb-page {
+  background: var(--bg-mint);
+  border: 1px solid var(--border-mint);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  min-height: calc(100vh - 150px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+}
+.eb-toolbar label {
+  display: flex; flex-direction: column; gap: 2px;
+  font-weight: 700; font-size: 12px; text-transform: uppercase;
+}
+.eb-toolbar input {
+  height: 32px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px;
+  background: #fff; font-weight: 700; font-size: 14px;
+}
+.eb-search input { width: 240px; }
+.eb-toolbar__spacer { flex: 1; }
+
+.eb-alert {
+  padding: 8px 12px; border-radius: 4px; background: var(--danger-bg);
+  color: var(--danger); font-weight: 700;
+}
+.eb-alert--success { background: var(--success-bg); color: var(--success); }
+
+.eb-token-status {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 12px; border-radius: 4px; background: var(--success-bg);
+  color: var(--text-primary); font-size: 13px;
+}
+.eb-token-status code {
+  font-family: monospace; background: #fff; border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 8px; letter-spacing: 0.04em;
+}
+.eb-token-status button {
+  border: 1px solid var(--border-dark); background: #fff; border-radius: 4px;
+  padding: 2px 10px; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+
+.eb-columns {
+  flex: 1; min-height: 0;
+  display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1100px) {
+  .eb-columns { grid-template-columns: 1fr; }
+}
+
+.eb-panel {
+  background: var(--surface);
+  border: 1px solid var(--border-mint);
+  border-radius: var(--radius-md);
+  display: flex; flex-direction: column; min-height: 0;
+  overflow: hidden;
+}
+.eb-panel__head {
+  background: var(--primary); font-weight: 700; text-transform: uppercase;
+  font-size: 13px; padding: 8px 12px; border-bottom: 1px solid var(--border-mint);
+}
+
+.eb-grid { flex: 1; overflow: auto; }
+.eb-grid table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.eb-grid th {
+  position: sticky; top: 0; background: var(--bg-mint); text-align: left;
+  padding: 6px 8px; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #000;
+}
+.eb-grid td { padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.eb-grid td.num { text-align: right; }
+.eb-grid tbody tr { cursor: pointer; }
+.eb-grid tbody tr:hover { background: var(--surface-hover); }
+.eb-grid tbody tr.is-selected { background: var(--surface-selected); }
+.eb-grid tbody tr.empty { cursor: default; }
+.eb-grid tbody tr.empty td { text-align: center; color: var(--text-muted); white-space: normal; }
+
+.eb-status {
+  display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px;
+  font-weight: 700; text-transform: uppercase;
+}
+.eb-status--not_generated { background: var(--warning-bg); color: var(--warning-text); }
+.eb-status--pending { background: var(--info-bg); color: var(--info); }
+.eb-status--generated { background: var(--success-bg); color: var(--success); }
+.eb-status--failed, .eb-status--cancelled { background: var(--danger-bg); color: var(--danger); }
+
+.eb-detail { flex: 1; overflow: auto; padding: 14px; }
+.eb-empty { text-align: center; color: var(--text-muted); margin-top: 60px; }
+.eb-empty strong { display: block; font-size: 16px; color: var(--text-primary); margin-bottom: 6px; }
+
+.eb-detail h3 { font-size: 13px; text-transform: uppercase; margin: 14px 0 6px; }
+.eb-detail h3:first-child { margin-top: 0; }
+.eb-kv { display: grid; grid-template-columns: 140px 1fr; gap: 4px 8px; font-size: 13px; }
+.eb-kv dt { font-weight: 700; color: var(--text-secondary); }
+.eb-kv dd { margin: 0; }
+
+.eb-form { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.eb-form label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.eb-form input, .eb-form select {
+  height: 30px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; font-weight: 700; font-size: 13px;
+}
+.eb-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.eb-errors { margin: 8px 0; padding: 8px 10px; background: var(--danger-bg); border-radius: 4px; color: var(--danger); font-size: 13px; }
+.eb-errors ul { margin: 4px 0 0; padding-left: 18px; }
+
+.eb-actions { display: flex; gap: 8px; margin-top: 10px; }
+.eb-actions .btn { height: 32px; min-width: 100px; padding: 0 14px; font-size: 13px; }

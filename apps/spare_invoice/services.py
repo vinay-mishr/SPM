@@ -199,15 +199,31 @@ def item_detail(code):
     }
 
 
-def search_parties(q):
+def search_ledgers(q):
     q = (q or "").strip().upper()
     if q:
         rows = _rows(
-            "SELECT ccode, cname, cadd3 FROM cust_mst WHERE UPPER(cname) LIKE %s ORDER BY cname",
-            [f"%{q}%"],
+            "SELECT gcode, gdesc FROM gled_mst WHERE UPPER(gcode) LIKE %s OR UPPER(gdesc) LIKE %s ORDER BY gdesc",
+            [f"%{q}%", f"%{q}%"],
         )
     else:
-        rows = _rows("SELECT ccode, cname, cadd3 FROM cust_mst ORDER BY cname")
+        rows = _rows("SELECT gcode, gdesc FROM gled_mst ORDER BY gdesc")
+    return [{"code": _clean(r["gcode"]), "name": _clean(r["gdesc"]) or ""} for r in rows[:20]]
+
+
+def search_parties(q):
+    """Party lookup for the Add form -- Sundry Debtors only (settings.PARTY_DEBTOR_CODE
+    / "S001"); Sundry Creditors (vendors, "S002") are a purchase-side concept and
+    should never show up when billing a customer."""
+    q = (q or "").strip().upper()
+    if q:
+        rows = _rows(
+            "SELECT ccode, cname, cadd3 FROM cust_mst WHERE code = %s AND UPPER(cname) LIKE %s ORDER BY cname",
+            [settings.PARTY_DEBTOR_CODE, f"%{q}%"],
+        )
+    else:
+        rows = _rows("SELECT ccode, cname, cadd3 FROM cust_mst WHERE code = %s ORDER BY cname",
+                      [settings.PARTY_DEBTOR_CODE])
     return [{"code": _clean(r["ccode"]), "name": _clean(r["cname"]) or "", "city": _clean(r["cadd3"]) or ""}
             for r in rows[:20]]
 
@@ -242,6 +258,11 @@ def _validate(payload):
             errors["party_code"] = "Select the party."
         elif not _rows("SELECT ccode FROM cust_mst WHERE ccode = %s", [party_code]):
             errors["party_code"] = "Party not found."
+
+    if not (payload.get("consignee_name") or "").strip():
+        errors["consignee_name"] = "Consignee name is required."
+    if not (payload.get("consignee_address") or "").strip():
+        errors["consignee_address"] = "Consignee address is required."
 
     lines = []
     for n, row in enumerate(payload.get("items") or [], start=1):
@@ -510,6 +531,28 @@ def get_invoice(bill_no, div=None, vou_no=None):
 
 
 # --- print -------------------------------------------------------------------------------
+
+def get_share_token(bill_no, div=None, vou_no=None):
+    """Token for a public, no-login link to this invoice's PDF (for sharing e.g.
+    over WhatsApp) -- reuses one already issued for this invoice if it's still
+    valid, rather than minting (and invalidating) a new one on every share."""
+    from .models import SpareInvoiceShareLink
+
+    if not get_invoice(bill_no, div, vou_no):
+        return None
+    return SpareInvoiceShareLink.get_or_create_for(bill_no, div, vou_no).token
+
+
+def get_bill_by_share_token(token):
+    """The (bill_no, div, vou_no) a public share link's token points to, or
+    (None, None, None) if the token is unknown, expired, or has been revoked."""
+    from .models import SpareInvoiceShareLink
+
+    link = SpareInvoiceShareLink.objects.filter(token=token).first()
+    if not link or not link.is_valid():
+        return None, None, None
+    return link.bill_no, link.div, link.vou_no
+
 
 def print_data(bill_no, div=None, vou_no=None):
     """Tax Invoice print view: same get_invoice() data, plus each line split into its

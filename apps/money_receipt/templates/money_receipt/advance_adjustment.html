@@ -1,0 +1,77 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Advance Adjustment · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <link rel="stylesheet" href="{% static 'money_receipt/css/money_receipt.css' %}?v=3">
+  <script src="{% static 'money_receipt/js/advance_adjustment.js' %}?v=2" defer></script>
+{% endblock %}
+
+{% block page_title %}Advance Adjustment{% endblock %}
+{% block page_subtitle %}Money Receipts &rsaquo; Advance Adjustment{% endblock %}
+
+{% block content %}
+<section class="aa-page" data-aa
+         data-parties-url="{% url 'money_receipt:api_parties' %}"
+         data-data-url="{% url 'money_receipt:advance_data' %}"
+         data-entry-url="{% url 'money_receipt:advance_entry' %}"
+         data-save-url="{% url 'money_receipt:advance_save' %}"
+         data-delete-url="{% url 'money_receipt:advance_delete' %}"
+         data-exit-url="{% url 'money_receipt:entry' %}">
+  {% csrf_token %}
+  <div class="aa-titlebar">ADVANCE ADJUSTMENT</div>
+
+  <div class="aa-toolbar">
+    <button type="button" class="btn btn--primary" data-add>ADD</button>
+    <button type="button" class="btn btn--secondary" data-delete disabled>DELETE</button>
+    <button type="button" class="btn btn--secondary" data-confirm disabled>CONFIRM</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="aa-head">
+    <label class="aa-head-party">PARTY NAME
+      <input data-party-search placeholder="Type party name and press Enter" autocomplete="off" disabled>
+      <input type="hidden" data-party-code>
+    </label>
+    <label class="aa-head-advance">PENDING ADVANCE <input class="num" data-advance readonly tabindex="-1" value="0.00"></label>
+
+    <label class="aa-head-city">PARTY CITY <input data-party-city readonly tabindex="-1"></label>
+
+    <div class="aa-head-row3">
+      <label>ENTRY NO. <input data-ent-no disabled></label>
+      <label>ENTRY DATE <input data-ent-dt type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask disabled></label>
+    </div>
+  </div>
+
+  <div class="aa-main">
+    <div class="aa-pick">
+      <table class="aa-pick-table">
+        <thead><tr><th>INV.NO</th><th>INV. DATE</th><th class="num">INV. AMOUNT</th><th class="num">BAL. AMOUNT</th></tr></thead>
+        <tbody data-pick-rows><tr class="empty"><td colspan="4">Press ADD, pick a party.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="aa-adjust">
+      <div class="aa-adjust-fields">
+        <label>CASH DIS. <input class="num" data-cash-dis value="0.00" disabled></label>
+        <label>INTEREST AMT <input class="num" data-interest-amt value="0.00" disabled></label>
+        <label>AMT. ADJUSTED <input class="num" data-amt-adjusted value="0.00" readonly tabindex="-1"></label>
+      </div>
+      <div class="aa-ok-row">
+        <button type="button" class="mr-vfp-ok" data-ok disabled>OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="aa-grid-wrap">
+    <table class="aa-grid">
+      <thead><tr><th>#</th><th>DIV</th><th>INV.NO.</th><th>INV. DATE</th><th>INV. AMOUNT</th>
+        <th>BALANCE AMT</th><th>CASH DIS.</th><th>INTEREST AMT</th><th>AMOUNT ADJ</th><th>BALANCE</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="10">&nbsp;</td></tr></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

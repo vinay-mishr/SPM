@@ -31,13 +31,17 @@
   var alertTimer = null;
 
   /* Keyboard focus order (per spec):
-     Header: Date -> CA/CR -> Chk Order -> Supply -> Party -> GST No -> Consignee Name
-       -> Consignee Address -> Phone No -> G.R.No -> G.R.Date -> Vehicle No -> Transport
-       -> Order No -> Order Date -> Date of Supply -> Time of Supply -> Place of Supply
+     Header: Bill No -> Date -> CA/CR -> Chk Order -> Party -> Phone No -> Supply
+       -> Consignee Name -> Consignee Address -> Order No -> Order Date -> G.R.No
+       -> G.R.Date -> Vehicle No -> Transport -> Date of Supply -> Time of Supply
+       -> Place of Supply
      Item entry: Part -> Unit -> HSN -> Ord.No -> Dis % -> Qty -> Rate -> OK (then back
        to Part for the next item).
-     This already matches the existing DOM order field-for-field, so plain Tab /
-     Shift+Tab already visits everything in the right order; only Enter needs wiring. */
+     GST No is intentionally left out of this chain (not part of the spec'd sequence);
+     it keeps its default tabindex so Tab still reaches it, just after everything above.
+     Every field in the chain above also carries an explicit tabindex (1-26, see the
+     template) so plain Tab / Shift+Tab follows this same order regardless of each
+     field's on-screen position; this comment governs Enter only. */
   function onEnterFocus(el, next) {
     el.addEventListener("keydown", function (e) {
       if (e.key !== "Enter") return;
@@ -348,7 +352,7 @@
       field("gst_no").value = p.gst_no;
       field("phone").value = p.phone;
       form.querySelector("[data-supply-type]").value = p.supply_type === "I" ? "I" : "W";
-      field("gst_no").focus();
+      field("phone").focus();
     });
   }
 
@@ -361,23 +365,23 @@
   }
   form.querySelector('[data-ca-cr]').addEventListener("change", applyCashMode);
 
-  // Header focus chain (Date through Place of Supply -- see the onEnterFocus comment
-  // near the top of this file for the full sequence). Party -> GST No is wired via
-  // fillParty() above instead, since that's where the party gets filled in.
+  // Header focus chain (Bill No through Place of Supply -- see the onEnterFocus
+  // comment near the top of this file for the full sequence). Party -> Phone is
+  // wired via fillParty() above instead, since that's where the party gets filled in.
+  onEnterFocus(field("bill_no"), field("date"));
   onEnterFocus(field("date"), form.querySelector('[data-ca-cr]'));
   onEnterFocus(form.querySelector('[data-ca-cr]'), form.querySelector('[data-chk-order]'));
-  onEnterFocus(form.querySelector('[data-chk-order]'), form.querySelector('[data-supply-type]'));
-  onEnterFocus(form.querySelector('[data-supply-type]'), partySearch);
-  onEnterFocus(field("gst_no"), field("consignee_name"));
+  onEnterFocus(form.querySelector('[data-chk-order]'), partySearch);
+  onEnterFocus(field("phone"), form.querySelector('[data-supply-type]'));
+  onEnterFocus(form.querySelector('[data-supply-type]'), field("consignee_name"));
   onEnterFocus(field("consignee_name"), field("consignee_address"));
-  onEnterFocus(field("consignee_address"), field("phone"));
-  onEnterFocus(field("phone"), field("gr_no"));
+  onEnterFocus(field("consignee_address"), field("order_no"));
+  onEnterFocus(field("order_no"), field("order_date"));
+  onEnterFocus(field("order_date"), field("gr_no"));
   onEnterFocus(field("gr_no"), field("gr_date"));
   onEnterFocus(field("gr_date"), field("vehicle_no"));
   onEnterFocus(field("vehicle_no"), field("transport"));
-  onEnterFocus(field("transport"), field("order_no"));
-  onEnterFocus(field("order_no"), field("order_date"));
-  onEnterFocus(field("order_date"), field("date_of_supply"));
+  onEnterFocus(field("transport"), field("date_of_supply"));
   onEnterFocus(field("date_of_supply"), field("time_of_supply"));
   onEnterFocus(field("time_of_supply"), field("place_of_supply"));
   onEnterFocus(field("place_of_supply"), itemSearch);
@@ -393,7 +397,9 @@
     [0, 1].forEach(function (i) {
       form.querySelector('[data-adj-sign="' + i + '"]').value = "A";
       form.querySelector('[data-adj-code="' + i + '"]').value = "";
-      form.querySelector('[data-adj-amount="' + i + '"]').value = "0.00";
+      var amountInput = form.querySelector('[data-adj-amount="' + i + '"]');
+      amountInput.value = "0.00";
+      amountInput.disabled = true;
     });
   }
 
@@ -426,7 +432,7 @@
       setReadonly(false);
       renderItems();
       dialog.showModal();
-      field("date").focus();
+      field("bill_no").focus();
       return;
     }
     var detailUrl = root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.bill_no));
@@ -458,8 +464,6 @@
       field("date_of_supply").value = dmy(d.date_of_supply);
       field("time_of_supply").value = d.time_of_supply;
       field("place_of_supply").value = d.place_of_supply;
-      field("eway_no").value = d.eway_no;
-      field("eway_date").value = dmy(d.eway_date);
       field("remarks").value = d.remarks;
       field("freight").value = d.freight;
       field("freight_gst_pct").value = d.freight_rate;
@@ -502,8 +506,8 @@
       date_of_supply: window.DateMask.toIso(field("date_of_supply").value),
       time_of_supply: field("time_of_supply").value.trim(),
       place_of_supply: field("place_of_supply").value.trim(),
-      eway_no: field("eway_no").value.trim(),
-      eway_date: window.DateMask.toIso(field("eway_date").value),
+      eway_no: "",
+      eway_date: null,
       reverse_charge: form.querySelector("[data-reverse-charge]").value === "Y",
       remarks: field("remarks").value.trim(),
       freight: field("freight").value,
@@ -563,8 +567,39 @@
   field("freight").addEventListener("input", updateTotals);
   field("freight_gst_pct").addEventListener("input", updateTotals);
   [0, 1].forEach(function (i) {
+    var codeInput = form.querySelector('[data-adj-code="' + i + '"]');
+    var amountInput = form.querySelector('[data-adj-amount="' + i + '"]');
+
+    function syncAdjAmountEnabled() {
+      var hasLedger = codeInput.value.trim() !== "";
+      amountInput.disabled = !hasLedger;
+      if (!hasLedger) amountInput.value = "0.00";
+      updateTotals();
+    }
+
+    codeInput.addEventListener("input", function () {
+      codeInput.value = codeInput.value.toUpperCase();
+      codeInput.title = "Type to search the ledger master, or press Enter";
+      syncAdjAmountEnabled();
+    });
+    codeInput.addEventListener("blur", syncAdjAmountEnabled);
+
+    if (window.HelpLookup && root.dataset.ledgersUrl) {
+      window.HelpLookup.attach(codeInput, {
+        endpoint: root.dataset.ledgersUrl, resultsKey: "ledgers", valueField: "code",
+        displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Ledger" }],
+        title: "Ledger",
+        onSelect: function (row) {
+          codeInput.value = row.code;
+          codeInput.title = row.name || "";
+          syncAdjAmountEnabled();
+          amountInput.focus();
+        },
+      });
+    }
+
     form.querySelector('[data-adj-sign="' + i + '"]').addEventListener("change", updateTotals);
-    form.querySelector('[data-adj-amount="' + i + '"]').addEventListener("input", updateTotals);
+    amountInput.addEventListener("input", updateTotals);
   });
 
   form.querySelector("[data-confirm]").addEventListener("click", function () {
@@ -582,14 +617,124 @@
       else if (a === "delete") { if (selectedRow()) deleteDialog.showModal(); }
       else if (a === "print") {
         var row = selectedRow();
-        if (row) {
-          var url = root.dataset.printUrlTemplate.replace("__NO__", encodeURIComponent(row.bill_no));
-          url += "?div=" + encodeURIComponent(row.div) + "&vou_no=" + encodeURIComponent(row.vou_no);
-          window.open(url, "_blank");
-        }
+        if (!row) return;
+        printOptionsDialog.querySelector("[data-print-bill-no]").value = row.bill_no;
+        printOptionsDialog.querySelector("[data-print-net-amount]").value = row.net_amount;
+        printOptionsDialog.showModal();
       }
       else if (a === "refresh") refresh();
       else if (a === "exit") window.location.href = root.dataset.exitUrl;
+    });
+  });
+
+  /* --- Print options dialog (VIEW / PRINT / PRINT PDF / WHATSAPP / EXIT) --------
+     Same popup, same interaction pattern as apps.purchase_orders' own
+     print-options dialog (purchase_order_master.js) and apps.gst_invoice's. */
+  var printOptionsDialog = document.getElementById("si-print-options-dialog");
+  var copyCheckboxes = printOptionsDialog.querySelectorAll('input[name="si-copy-type"]');
+  copyCheckboxes.forEach(function (box) {
+    box.addEventListener("change", function () {
+      if (box.checked) copyCheckboxes.forEach(function (other) { if (other !== box) other.checked = false; });
+      else box.checked = true; // always exactly one selected, never zero
+    });
+  });
+  function copyType() {
+    var checked = Array.prototype.find.call(copyCheckboxes, function (b) { return b.checked; });
+    return checked ? checked.value : "";
+  }
+
+  function printUrl(row, preview) {
+    var url = root.dataset.printUrlTemplate.replace("__NO__", encodeURIComponent(row.bill_no));
+    var params = new URLSearchParams();
+    params.set("div", row.div); params.set("vou_no", row.vou_no);
+    if (preview) params.set("preview", "1");
+    params.set("copy", copyType());
+    return url + "?" + params.toString();
+  }
+
+  function pdfUrl(row) {
+    var url = root.dataset.pdfUrlTemplate.replace("__NO__", encodeURIComponent(row.bill_no));
+    var params = new URLSearchParams();
+    params.set("div", row.div); params.set("vou_no", row.vou_no); params.set("copy", copyType());
+    return url + "?" + params.toString();
+  }
+
+  var whatsappDialog = document.getElementById("si-whatsapp-dialog");
+  var whatsappParty = whatsappDialog.querySelector("[data-whatsapp-party]");
+  var whatsappMobile = whatsappDialog.querySelector("[data-whatsapp-mobile]");
+  var whatsappAlert = whatsappDialog.querySelector("[data-whatsapp-alert]");
+  var whatsappRow = null;
+
+  function normalizeMobile(raw) {
+    var digits = (raw || "").replace(/\D/g, "");
+    if (digits.length === 10) return "91" + digits;
+    if (digits.length === 12 && digits.startsWith("91")) return digits;
+    return null;
+  }
+
+  function openWhatsAppDialog() {
+    var row = selectedRow();
+    if (!row) return;
+    whatsappAlert.hidden = true;
+    whatsappParty.value = row.party || "";
+    whatsappMobile.value = "";
+    whatsappRow = row;
+    var url = root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.bill_no));
+    url += "?div=" + encodeURIComponent(row.div) + "&vou_no=" + encodeURIComponent(row.vou_no);
+    getJson(url).then(function (res) {
+      if (res.ok && whatsappRow === row) whatsappMobile.value = res.body.phone || "";
+    });
+    whatsappDialog.showModal();
+    whatsappMobile.focus();
+  }
+
+  whatsappDialog.querySelector("[data-whatsapp-send]").addEventListener("click", function () {
+    var mobile = normalizeMobile(whatsappMobile.value);
+    if (!mobile) {
+      whatsappAlert.textContent = "Enter a valid 10-digit mobile number.";
+      whatsappAlert.hidden = false;
+      return;
+    }
+    var row = whatsappRow;
+    var shareUrl = root.dataset.shareUrlTemplate.replace("__NO__", encodeURIComponent(row.bill_no));
+    var sendBtn = whatsappDialog.querySelector("[data-whatsapp-send]");
+    sendBtn.disabled = true;
+    var waTab = window.open("", "_blank");
+    post(shareUrl, { div: row.div, vou_no: row.vou_no }).then(function (res) {
+      sendBtn.disabled = false;
+      if (!res.ok) {
+        if (waTab) waTab.close();
+        whatsappAlert.textContent = res.body.message || "Could not create a share link for this invoice.";
+        whatsappAlert.hidden = false;
+        return;
+      }
+      var message = "Dear " + (whatsappParty.value || "Sir/Madam") + ",\n" +
+        "Please find your tax invoice below.\n" +
+        "Invoice No: " + row.bill_no + "\n" +
+        "Download Invoice PDF:\n" + res.body.url + "\n" +
+        "Thank you.\nSP MACHINES";
+      whatsappDialog.close();
+      var waUrl = "https://wa.me/" + mobile + "?text=" + encodeURIComponent(message);
+      if (waTab) waTab.location.href = waUrl; else window.open(waUrl, "_blank");
+    }).catch(function () {
+      sendBtn.disabled = false;
+      if (waTab) waTab.close();
+      whatsappAlert.textContent = "Could not reach the server.";
+      whatsappAlert.hidden = false;
+    });
+  });
+  whatsappDialog.querySelector("[data-whatsapp-back]").addEventListener("click", function () { whatsappDialog.close(); });
+
+  printOptionsDialog.querySelectorAll("[data-print-action]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var action = btn.dataset.printAction;
+      if (action === "exit") { printOptionsDialog.close(); return; }
+      var row = selectedRow();
+      if (!row) return;
+      printOptionsDialog.close();
+      if (action === "whatsapp") openWhatsAppDialog();
+      else if (action === "pdf") window.open(pdfUrl(row), "_blank");
+      else window.open(printUrl(row, action === "preview"), "_blank");
     });
   });
 

@@ -53,11 +53,14 @@ Shared ADD / MODIFY / VIEW form, matching the supplied reference layout exactly
         <label class="r">QTY ACPT</label><input id="mrn-row-qty-acpt" class="num" data-row-qty-accepted>
         <input id="mrn-row-rate" class="num" data-row-rate>
         <input id="mrn-row-disc" class="num" data-row-discount>
-        <input id="mrn-row-dis-amt" class="num" readonly tabindex="-1" data-row-dis-amt>
+        <input id="mrn-row-dis-amt" class="num" data-row-dis-amt>
         <input type="hidden" data-row-gst>
         <button class="ok" type="button" data-row-add>OK</button>
 
-        <div class="sizebox"><label>SIZE</label><input id="mrn-row-size" readonly tabindex="-1" data-row-size><label class="podt">PO.DT</label></div>
+        <div class="sizebox">
+          <input class="partcode" id="mrn-row-part-code" readonly tabindex="-1" data-row-part-code>
+          <div class="sizerow"><label>SIZE</label><input id="mrn-row-size" readonly tabindex="-1" data-row-size><label class="podt">PO.DT</label></div>
+        </div>
         <input id="mrn-row-po-date" readonly tabindex="-1" data-row-po-date>
         <span></span>
         <label class="r">QTY RECD</label><input id="mrn-row-qty-recd" class="num" data-row-qty-received>
@@ -87,10 +90,6 @@ Shared ADD / MODIFY / VIEW form, matching the supplied reference layout exactly
         <div class="ftr-left">
           <label>REMARKS</label><input id="mrn-remarks" data-field="remarks">
           <label>LAST RATE</label><input id="mrn-last-rate" class="num lastrate" value="0.00" readonly tabindex="-1">
-          <div class="links">
-            <a href="{% url 'parts:master' %}" target="_blank" rel="noopener">NEW ITEM</a>
-            <a href="{% url 'parties:master' %}" target="_blank" rel="noopener">NEW PARTY</a>
-          </div>
         </div>
         <div class="totals">
           <label class="r">TOTAL AMOUNT</label><input id="mrn-total-amount" class="num" value="0.00" readonly tabindex="-1">

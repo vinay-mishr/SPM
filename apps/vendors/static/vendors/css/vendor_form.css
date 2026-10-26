@@ -2,7 +2,7 @@
    Field, label, error and modal styles come from static/css/components.css. */
 
 .vendor-form-modal {
-  width: min(1040px, calc(100vw - 32px));
+  width: min(1280px, calc(100vw - 32px));
 }
 
 .vform {
@@ -13,21 +13,39 @@
 }
 
 .vform__col {
-  grid-template-columns: 140px minmax(0, 1fr);
-  gap: 8px 12px;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 6px 12px;
 }
 
 .vform__col .mform__label {
   white-space: nowrap;
+  font-size: 1.0625rem;
 }
 
 .vform .mform__input.form-control {
-  min-height: 36px;
-  padding: 6px 10px;
+  min-height: 48px;
+  padding: 4px 10px;
+  font-size: 1.125rem;
+  font-weight: 700;
 }
 
 .vform .vform__short {
   max-width: 180px;
+}
+
+/* W/I: ~60% narrower than a full-width select. */
+.vform #v-supply_type {
+  max-width: 112px;
+}
+
+/* Active: ~70% narrower than the usual short field. */
+.vform #v-is_active {
+  max-width: 54px;
+}
+
+/* Association: 4-char code field, reduced to 50% of its column width. */
+.vform #v-association {
+  max-width: 50%;
 }
 
 .vform__upper {

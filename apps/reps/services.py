@@ -3,12 +3,12 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
 
-from config.legacy import fill_blank_columns, tables_using, values_in_use
+from config.legacy import fill_blank_columns, tables_using
 
 from .models import Rep
 
 CODE_WIDTH = 2
-# Where a rep code is used: parties, bills, challans and orders.
+# Where a rep code is used: parties, bills, challans and orders (checked on delete).
 USAGE_TABLES = [
     ("cust_mst", "crep"), ("bill", "rep_cod"), ("t_bill", "rep_cod"), ("c_bill", "rep_cod"),
     ("chl_mst", "rep_code"), ("order1", "rep_code"),
@@ -33,11 +33,8 @@ def _forget_party_lookup():
 
 
 def next_code():
-    """One more than the highest numeric code, 2 digits, like the old software.
-    Never reuses a lower free code, so old records pointing at a removed rep stay distinct."""
-    # Also skip codes that old bills / parties / orders still refer to, so a new entry
-    # never "inherits" someone else's history.
-    codes = set(Rep.objects.values_list("code", flat=True)) | values_in_use(_db(), USAGE_TABLES)
+    """One more than the highest numeric code currently in the Rep table, 2 digits."""
+    codes = Rep.objects.values_list("code", flat=True)
     numbers = [int(c) for c in codes if c and c.strip().isdigit()]
     number = max(numbers, default=0) + 1
     if number >= 10 ** CODE_WIDTH:

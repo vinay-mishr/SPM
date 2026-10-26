@@ -1,0 +1,54 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Bank Book · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/voucher_printing.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/cash_book.css' %}">
+  <script src="{% static 'gl/js/bank_book.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Bank Book{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Book Printing &rsaquo; Bank Book{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-bank-book data-data-url="{% url 'gl:bank_book_data' %}" data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-titlebar">BANK BOOK</div>
+
+  <div class="pe-head" style="grid-template-columns: 200px 200px;">
+    <label>START DATE
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-start-date data-date-mask>
+    </label>
+    <label>END DATE
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-end-date data-date-mask>
+    </label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--primary" data-view>VIEW</button>
+    <button type="button" class="btn btn--secondary" data-print disabled>PRINT</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div class="vp-letter" data-result hidden>
+    <div class="vp-page cb-page">
+      <div class="vp-head">
+        <p class="vp-brand">{{ brand.name }}</p>
+        <p>{{ brand.address_line1 }}</p>
+        <p class="cb-range">BANK BOOK FROM <span data-r-start></span> TO <span data-r-end></span></p>
+      </div>
+      <table class="vp-table cb-table">
+        <thead><tr><th>DATE</th><th>DESCRIPTION</th><th class="num">DEBIT</th><th class="num">CREDIT</th></tr></thead>
+        <tbody data-r-body></tbody>
+        <tfoot><tr class="cb-total"><td></td><td>TOTAL</td><td class="num" data-r-total-debit></td><td class="num" data-r-total-credit></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+
+{{ initial_data|json_script:"bb-initial-data" }}
+{% endblock %}

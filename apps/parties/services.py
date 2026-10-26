@@ -143,6 +143,74 @@ def gstin_error(gstin):
     return ""
 
 
+class GstinLookupError(Exception):
+    """Raised when the GSTIN is invalid or the provider has nothing for it --
+    never silently returns an empty/fabricated result."""
+
+
+def lookup_gstin_details(gstin):
+    """Fetches registered business details for a GSTIN from the configured GST
+    provider (apps.eway_bill.provider.lookup_gstin() -- the one endpoint in
+    that integration that's actually been live-confirmed, see its own
+    docstring) and maps only the fields it actually returns onto this form's
+    own field names. Never invents a value: a key the response doesn't carry
+    is simply left out of the result, and the caller (the Customer Master
+    form) only fills in fields that are still blank.
+    """
+    gstin = (gstin or "").replace(" ", "").upper()
+    error = gstin_error(gstin)
+    if error:
+        raise GstinLookupError(error)
+
+    from apps.eway_bill.provider import ProviderError, lookup_gstin
+    try:
+        data = lookup_gstin(gstin)
+    except ProviderError as exc:
+        raise GstinLookupError(str(exc)) from exc
+
+    # Real field names, confirmed live (2026-10-21) against this provider:
+    # {Gstin, TradeName, LegalName, AddrBnm, AddrBno, AddrFlno, AddrSt,
+    # AddrLoc, StateCode (int), AddrPncd (int), TxpType, Status, BlkStatus,
+    # DtReg, DtDReg} -- a flat dict, no nested address object.
+    def first(*keys):
+        for key in keys:
+            value = data.get(key)
+            if value not in (None, ""):
+                return str(value).strip()
+        return ""
+
+    result = {}
+    name = first("TradeName", "LegalName")
+    if name:
+        result["name"] = name.upper()
+
+    bno = first("AddrBno")
+    bnm = first("AddrBnm")
+    flno = first("AddrFlno")
+    st = first("AddrSt")
+    loc = first("AddrLoc")
+    line_1 = ", ".join(p for p in [flno, bno, bnm] if p)
+    line_2 = ", ".join(p for p in [st, loc] if p)
+    if line_1:
+        result["address_1"] = line_1[:50]
+    if line_2:
+        result["address_2"] = line_2[:50]
+    # No separate city/town field in this provider's response -- AddrLoc is
+    # the closest (a locality/phase, not necessarily a city name), already
+    # folded into address_2 above rather than mislabelled as "city".
+
+    pin = first("AddrPncd")
+    if pin and re.fullmatch(r"\d{6}", pin):
+        result["pin"] = pin
+
+    gst_state_code = gstin[:2]
+    gcode = gcode_for_gst_state(gst_state_code)
+    if gcode:
+        result["state_code"] = gcode
+
+    return result
+
+
 def normalize_mobile(value):
     """Strip spaces, dashes and a leading +91 / 91 / 0; return the remaining digits."""
     digits = re.sub(r"[\s\-()]", "", value or "")

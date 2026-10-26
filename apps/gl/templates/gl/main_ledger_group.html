@@ -1,0 +1,49 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Main Ledger Group Wise · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/voucher_printing.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/cash_book.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <script src="{% static 'gl/js/main_ledger_group.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Ledger Printing{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Ledger Printing &rsaquo; Main Ledger Group Wise{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-main-ledger-group
+         data-data-url="{% url 'gl:main_ledger_group_data' %}"
+         data-groups-url="{% url 'gl:main_ledger_group_groups' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-brand-name="{{ brand.name }}"
+         data-brand-address="{{ brand.address_line1 }}">
+  <div class="pe-titlebar">LEDGER PRINTING</div>
+
+  <div class="ml-head">
+    <label class="ml-row"><span>GROUP</span>
+      <input data-group placeholder="Type group name and press Enter" autocomplete="off">
+      <input type="hidden" data-grp-code></label>
+    <label class="ml-row ml-row--date"><span>START DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label class="ml-row ml-row--date"><span>END DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-end-date data-date-mask></label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--primary" data-view>VIEW</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+
+  <div class="vp-letter" data-result hidden>
+    <div class="vp-page cb-page ml-page" data-blocks></div>
+  </div>
+</section>
+
+{{ initial_data|json_script:"mlgr-initial-data" }}
+{% endblock %}

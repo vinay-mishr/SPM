@@ -1,0 +1,40 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}User Wise Report · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'money_receipt/css/party_outstanding.css' %}">
+  <script src="{% static 'dashboard/js/user_report.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}User Wise Report{% endblock %}
+{% block page_subtitle %}Reports &rsaquo; Sales Reports &rsaquo; User Wise Report{% endblock %}
+
+{% block content %}
+<section class="master-page po-page" data-user-report
+         data-export-url="{% url 'dashboard:user_report_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar po-toolbar" role="toolbar" aria-label="User wise report filters">
+    <div class="po-filters">
+      <label class="po-filter">USER
+        <input class="form-control" type="text" maxlength="10" autocomplete="off" data-user>
+      </label>
+      <label class="po-filter">START DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="po-filter">END DATE
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <p class="po-table__empty" data-alert hidden></p>
+</section>
+
+{{ initial_data|json_script:"ur-initial-data" }}
+{% endblock %}

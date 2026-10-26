@@ -211,7 +211,7 @@ html, body {
 .pop-signature {
   flex: 0 0 220px;
   padding: 6px 10px;
-  text-align: right;
+  text-align: center;
   border-left: 1px solid #000;
 }
 .pop-signature p { margin: 2px 0; }

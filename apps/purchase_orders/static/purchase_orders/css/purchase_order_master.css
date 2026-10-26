@@ -12,26 +12,34 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.po-filters__date input {
-  min-height: 34px;
-  padding: 5px 10px;
-  font-size: 0.875rem;
+.po-filters__date input[data-date-mask] {
+  width: 126px;
+  min-height: 28px;
+  padding: 2px 4px;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .po-filters__mode {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 0.8125rem;
+  font-size: 3.25rem;
+  font-weight: 700;
+}
+
+.po-filters__mode input {
+  width: 18px;
+  height: 18px;
 }
 
 .po-filters__mode label {
@@ -41,14 +49,28 @@
   white-space: nowrap;
 }
 
-.po-table td:nth-child(3) { min-width: 220px; white-space: normal; }
+.po-table { width: 100%; min-width: 900px; }
+.po-table td:nth-child(3) { min-width: 340px; white-space: normal; }
 /* Column headings bolder than the 700-weight rows below them. */
 .po-table th { font-weight: 800; color: var(--text-primary); }
+
+/* The shared .master-table-wrap is width: fit-content (components.css), so
+   with every column comfortably under po-table's 900px min-width it stopped
+   there and left a wide blank gap to the right instead of using the page's
+   actual available width. Scoped to this screen only (data-po-master) so
+   other master-list screens keep their own fit-content sizing. */
+[data-po-master] .master-table-wrap {
+  width: 100%;
+  max-width: 100%;
+}
 
 /* --- Add / Modify / View form -------------------------------------------------- */
 
 .po-form-modal {
-  width: min(1320px, calc(100vw - 32px));
+  /* Widened from 1320px -- at 1320px the add-row fieldset's fields ran out of
+     room after Disc. %, so the Rate/OK/Last Rate stack wrapped onto its own
+     line below everything else instead of sitting in the same row. */
+  width: min(1600px, calc(100vw - 32px));
   background: #f2faf5;
 }
 
@@ -86,7 +108,7 @@
      The trailing minmax(0, 1fr) track is unused by PO No/PO Date but is what lets a
      "grid-column: 1 / -1" row actually reach the full modal width -- without at least
      one flexible track, a span only covers the ~354px the 4 fixed tracks add up to. */
-  grid-template-columns: 54px 104px 66px 130px minmax(0, 1fr);
+  grid-template-columns: 70px 104px 90px 130px minmax(0, 1fr);
   gap: 5px 10px;
   margin-bottom: 6px;
 }
@@ -97,7 +119,7 @@
    a plain flex row rather than the .mform label/field grid-cell alternation, which
    would force the label onto its own row once it spans every column. */
 .pof-header__row { display: flex; align-items: center; gap: 8px; }
-.po-form-modal .pof-header__row-label { flex: 0 0 112px; padding-top: 0; }
+.po-form-modal .pof-header__row-label { flex: 0 0 auto; padding-top: 0; white-space: nowrap; }
 
 .pof-short { max-width: 130px; }
 #po-po_no { max-width: 104px; } /* 130px * 0.8 -- 20% narrower, PO Date unchanged */
@@ -105,9 +127,10 @@
 /* Smaller labels throughout this form -- the shared .mform__label default (0.75rem)
    reads oversized next to how compact everything else here has gotten. */
 .po-form-modal .mform__label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   padding-top: 7px;
+  white-space: nowrap;
 }
 
 .pof-add-row legend.mform__label {
@@ -118,13 +141,15 @@
    overrides for the header row and the Part Description add-row below. */
 .po-form-modal .form-control {
   padding: 4px 6px;
-  min-height: 34px;
+  min-height: 36px;
+  font-size: 15px;
+  font-weight: 700;
   border: 2px solid #000;
 }
 
 .po-form-modal .mform__input.form-control {
   padding: 3px 5px;
-  min-height: 32px;
+  min-height: 34px;
 }
 
 /* Fields filled in automatically from Item/Part Master (Material, Unit, HSN, PO
@@ -148,15 +173,15 @@
 /* The party's city, read-only, on its own full-width row under Party Name -- capped
    to roughly half its previous full-row width, same as the party name search above. */
 .pof-party-name {
-  flex: 1 1 180px;
-  max-width: 545px;
+  flex: 1 1 90px;
+  max-width: 272px;
   margin: 0;
-  padding: 4px 6px;
+  padding: 2px 6px;
   min-height: 34px;
   display: flex;
   align-items: center;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   background: var(--bg-secondary);
   border: 2px solid var(--border-dark);
   overflow: hidden;
@@ -201,7 +226,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -210,6 +235,7 @@
 .pof-add-row__field input { width: 110px; }
 .pof-add-row__field--wide { flex: 1 1 312px; } /* 260px * 1.2 -- 20% wider */
 .pof-add-row__field--wide .pof-search { width: 100%; }
+.pof-add-row__field--wide .pof-part-code { width: 88px; margin-top: 3px; }
 /* Inside a column-direction .pof-add-row__stack, flex-basis is read along the
    vertical axis instead of horizontal -- the 260px above would set this field's
    HEIGHT, not its width, ballooning it (and everything stacked below it) to 260px
@@ -238,14 +264,23 @@
    directly, now that the field is nested one level deeper inside a stack div. */
 .pof-add-row__stack--wide { flex: 1 1 260px; }
 
-/* OK sits directly beside the Rate input itself, with Last Rate below the pair. */
+/* OK sits directly beside the Rate input itself, with Last Rate below the pair.
+   nowrap + flex-shrink: 0 on both so they never fall onto separate lines even
+   if this stack gets squeezed for space. */
 .pof-add-row__rate-row {
   display: flex;
+  flex-wrap: nowrap;
   align-items: flex-end;
   gap: 8px;
 }
 
+.pof-add-row__rate-row .pof-add-row__field {
+  flex-shrink: 0;
+}
+
 .pof-add-row__ok {
+  flex-shrink: 0;
+  white-space: nowrap;
   min-height: 28px;
   padding: 0 16px;
   font-size: 0.8125rem;
@@ -331,6 +366,14 @@
   flex: 1;
   min-height: 0;
   padding: 1px 5px;
+}
+
+/* Remarks / Payment boxes reduced to 50% width; Note (its own --note modifier)
+   keeps the full width it had before. */
+.po-form-modal .pof-footer__remarks:not(.pof-footer__remarks--note) textarea,
+.po-form-modal .pof-footer__remarks:not(.pof-footer__remarks--note) input {
+  flex: 0 1 50%;
+  max-width: 50%;
 }
 
 /* Remarks/Payment/Note heights -- 25% shorter than their previous 34px/35px/44px. */

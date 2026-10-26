@@ -187,12 +187,15 @@
     }
   }
 
-  function removeGridRow(index) {
+  // Space toggles a row between active and "marked for removal" -- crossed out with
+  // strikethrough but kept in the grid (and left out of what Confirm actually saves),
+  // so a row marked by mistake comes straight back with another Space instead of being
+  // spliced out and lost for good.
+  function toggleGridRowRemoved(index) {
     if (index < 0 || index >= formState.components.length) return;
-    formState.components.splice(index, 1);
+    formState.components[index].removed = !formState.components[index].removed;
     renderGrid();
-    var next = Math.min(index, formState.components.length - 1);
-    selectGridRow(next);
+    selectGridRow(index);
   }
 
   // Double-click a grid row to pull it back into the Part Description add-row for
@@ -217,23 +220,24 @@
     gridBody.textContent = "";
     formState.components.forEach(function (row, index) {
       var tr = document.createElement("tr");
+      if (row.removed) tr.classList.add("is-removed");
       if (formState.mode !== "view") {
         tr.tabIndex = 0;
         tr.addEventListener("click", function () { selectGridRow(index); });
-        tr.addEventListener("dblclick", function () { editRow(index); });
+        tr.addEventListener("dblclick", function () { if (!row.removed) editRow(index); });
         tr.addEventListener("keydown", function (e) {
           if (e.key === "ArrowDown") { e.preventDefault(); selectGridRow(index + 1); }
           else if (e.key === "ArrowUp") { e.preventDefault(); selectGridRow(index - 1); }
-          else if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); removeGridRow(index); }
-          else if (e.key === "Enter") { e.preventDefault(); editRow(index); }
+          else if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); toggleGridRowRemoved(index); }
+          else if (e.key === "Enter") { e.preventDefault(); if (!row.removed) editRow(index); }
         });
       }
       tr.append(
-        (function () { var td = document.createElement("td"); td.className = "num"; td.textContent = index + 1; return td; })(),
+        (function () { var td = document.createElement("td"); td.className = "num"; td.textContent = row.removed ? "✕" : index + 1; return td; })(),
         (function () { var td = document.createElement("td"); td.textContent = row.part_code; return td; })(),
         (function () { var td = document.createElement("td"); td.textContent = row.part_name; return td; })(),
-        (function () { var td = document.createElement("td"); td.className = "num"; td.textContent = Number(row.quantity).toFixed(3); return td; })(),
-        (function () { var td = document.createElement("td"); td.textContent = row.unit || ""; return td; })()
+        (function () { var td = document.createElement("td"); td.textContent = row.unit || ""; return td; })(),
+        (function () { var td = document.createElement("td"); td.className = "num"; td.textContent = Number(row.quantity).toFixed(3); return td; })()
       );
       gridBody.appendChild(tr);
     });
@@ -368,7 +372,10 @@
       endpoint: root.dataset.partsUrl,
       resultsKey: "parts",
       valueField: "code",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "unit", label: "Unit" }],
+      displayFields: [
+        { key: "code", label: "Code" }, { key: "name", label: "Name" },
+        { key: "unit", label: "Unit" }, { key: "sub_assembly", label: "Sub Assembly" },
+      ],
       title: "Part",
       onSelect: function (row) {
         formState.parts[row.code] = row;
@@ -380,7 +387,10 @@
       endpoint: root.dataset.partsUrl,
       resultsKey: "parts",
       valueField: "name",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "unit", label: "Unit" }],
+      displayFields: [
+        { key: "code", label: "Code" }, { key: "name", label: "Name" },
+        { key: "unit", label: "Unit" }, { key: "sub_assembly", label: "Sub Assembly" },
+      ],
       title: "Part",
       onSelect: function (row) {
         formState.parts[row.code] = row;
@@ -432,15 +442,20 @@
   dialog.querySelector("[data-row-add]").addEventListener("click", addRow);
   rowQty.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addRow(); } });
 
+  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
+
   function setMode(mode) {
     formState.mode = mode;
     dialog.dataset.mode = mode;
-    dialog.querySelector("[data-mode-label]").textContent = mode === "add" ? "Add" : mode === "modify" ? "Modify" : "View";
-    var readOnly = mode === "view";
+    dialog.querySelector("[data-mode-label]").textContent = MODE_LABELS[mode];
+    var readOnly = mode === "view" || mode === "delete";
     itemCode.readOnly = readOnly || mode === "modify";
     itemSearch.readOnly = readOnly || mode === "modify";
     dialog.querySelector(".bom-add-row").hidden = readOnly;
-    confirmBtn.hidden = readOnly;
+    confirmBtn.hidden = mode === "view";
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
   }
 
   function snapshot() {
@@ -448,11 +463,11 @@
   }
 
   function isDirty() {
-    return formState.mode !== "view" && snapshot() !== formState.snapshot;
+    return formState.mode !== "view" && formState.mode !== "delete" && snapshot() !== formState.snapshot;
   }
 
   function openForm(mode) {
-    var parent = selectedParent();
+    var parent = mode === "add" ? null : selectedParent();
     clearErrors();
     confirmBox.hidden = true;
     formState.items = {};
@@ -483,7 +498,7 @@
       renderGrid();
       formState.snapshot = snapshot();
       dialog.showModal();
-      (mode === "add" ? itemSearch : rowPartSearch).focus();
+      (mode === "add" ? itemSearch : mode === "delete" ? confirmBtn : rowPartSearch).focus();
     });
   }
 
@@ -503,12 +518,15 @@
     clearErrors();
     var code = itemCode.value.trim().toUpperCase();
     if (!code) { showErrors({ item_code: "Select an item." }); return; }
-    if (!formState.components.length) { alertBox.textContent = "Add at least one component."; alertBox.hidden = false; return; }
+    // Crossed-out (Space-toggled) rows stay in the grid for the session but are not
+    // part of the Bill of Material being saved.
+    var activeComponents = formState.components.filter(function (r) { return !r.removed; });
+    if (!activeComponents.length) { alertBox.textContent = "Add at least one component."; alertBox.hidden = false; return; }
 
     confirmBtn.disabled = true;
     postJson(root.dataset.saveUrl, {
       item_code: code,
-      components: formState.components.map(function (r) { return { part_code: r.part_code, quantity: r.quantity, unit: r.unit }; })
+      components: activeComponents.map(function (r) { return { part_code: r.part_code, quantity: r.quantity, unit: r.unit }; })
     }).then(function (res) {
       if (res.ok) {
         dialog.close();
@@ -528,8 +546,27 @@
     });
   }
 
+  function performDelete() {
+    var parent = selectedParent();
+    if (!parent) return;
+    confirmBtn.disabled = true;
+    postForm(root.dataset.deleteUrlTemplate.replace("__CODE__", encodeURIComponent(parent.item_code))).then(function (res) {
+      if (res.ok) {
+        dialog.close();
+        showToast(res.body.message);
+        state.selected = null;
+        refresh();
+      } else {
+        alertBox.textContent = res.body.message || "Could not delete.";
+        alertBox.hidden = false;
+        confirmBtn.disabled = false;
+      }
+    });
+  }
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (formState.mode === "delete") { ask("Are you sure you want to delete this record?", performDelete); return; }
     if (formState.mode === "view") return;
     ask("Are you sure?", save);
   });
@@ -544,51 +581,13 @@
     else requestExit();
   });
 
-  /* --- Delete ------------------------------------------------------------------- */
-
-  var delDialog = document.getElementById("bomi-delete-dialog");
-  function openDelete(parent) {
-    var dl = delDialog.querySelector("[data-delete-details]");
-    dl.textContent = "";
-    [["Item Code", parent.item_code], ["Item Name", parent.item_name], ["Quantity", Number(parent.component_count).toFixed(3)]]
-      .forEach(function (p) {
-        var dt = document.createElement("dt"), dd = document.createElement("dd");
-        dt.textContent = p[0]; dd.textContent = p[1];
-        dl.append(dt, dd);
-      });
-    delDialog.querySelector("[data-delete-alert]").hidden = true;
-    delDialog.querySelector("[data-delete-yes]").disabled = false;
-    delDialog.showModal();
-    delDialog.querySelector("[data-delete-no]").focus();
-  }
-  delDialog.querySelector("[data-delete-no]").addEventListener("click", function () { delDialog.close(); });
-  delDialog.querySelector("[data-delete-yes]").addEventListener("click", function () {
-    var parent = selectedParent();
-    var btn = delDialog.querySelector("[data-delete-yes]");
-    var alertBox2 = delDialog.querySelector("[data-delete-alert]");
-    if (!parent) return;
-    btn.disabled = true;
-    postForm(root.dataset.deleteUrlTemplate.replace("__CODE__", encodeURIComponent(parent.item_code))).then(function (res) {
-      if (res.ok) {
-        delDialog.close();
-        showToast(res.body.message);
-        state.selected = null;
-        refresh();
-      } else {
-        alertBox2.textContent = res.body.message || "Could not delete.";
-        alertBox2.hidden = false;
-        btn.disabled = false;
-      }
-    });
-  });
-
   /* --- Toolbar ------------------------------------------------------------------ */
 
   var actions = {
     add: function () { openForm("add"); },
     modify: function () { if (selectedParent()) openForm("modify"); },
     view: function () { if (selectedParent()) openForm("view"); },
-    "delete": function () { var p = selectedParent(); if (p) openDelete(p); },
+    "delete": function () { if (selectedParent()) openForm("delete"); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
   root.querySelectorAll("[data-action]").forEach(function (btn) {

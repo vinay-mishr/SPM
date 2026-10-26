@@ -2,7 +2,7 @@
    Field, label, error and modal styles come from static/css/components.css. */
 
 .party-form-modal {
-  width: min(1040px, calc(100vw - 32px));
+  width: min(1160px, calc(100vw - 32px));
 }
 
 .pform {
@@ -13,18 +13,54 @@
 }
 
 .pform__col {
-  grid-template-columns: 118px minmax(0, 1fr);
-  gap: 8px 12px;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 6px 12px;
+}
+
+.party-form .mform__label {
+  font-size: 0.9375rem;
 }
 
 .pform .mform__input.form-control {
-  min-height: 36px;
+  min-height: 42px;
   padding: 6px 10px;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-/* Short fields (PIN, state code, mobiles, cr days, yes/no) don't need the full width. */
+/* Short fields (PIN, state code, mobiles) don't need the full width. */
 .pform .pform__short {
   max-width: 180px;
+}
+
+/* W/I: 50% narrower than the usual short field. */
+.pform #p-supply_type {
+  max-width: 120px;
+}
+
+/* Active: reduced further to about half of that again. */
+.pform #p-is_active {
+  max-width: 65px;
+}
+
+/* Cr Days: sized to fit a 3-digit number, no up/down spinner. */
+.pform #p-credit_days {
+  max-width: 5.5ch;
+}
+
+.pform #p-credit_days::-webkit-inner-spin-button,
+.pform #p-credit_days::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.pform #p-credit_days {
+  -moz-appearance: textfield;
+}
+
+/* Association: sized to fit its 4-character max length. */
+.pform #p-association {
+  max-width: 6.6ch;
 }
 
 .pform__upper {

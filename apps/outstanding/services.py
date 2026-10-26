@@ -76,7 +76,10 @@ def search_parties(term, limit=15):
     else:
         qs = Party.objects.filter(party_code__istartswith=term) | Party.objects.filter(name__icontains=term)
         qs = qs.order_by("name")
-    return [{"code": c, "name": (n or "").strip()} for c, n in qs.values_list("party_code", "name")[:limit]]
+    return [
+        {"code": c, "name": (n or "").strip(), "city": (city or "").strip()}
+        for c, n, city in qs.values_list("party_code", "name", "city")[:limit]
+    ]
 
 
 def has_receipts(div, bill_no, party_code):

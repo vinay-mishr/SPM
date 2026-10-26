@@ -39,8 +39,9 @@
   width: 130px;
 }
 
-.pol-table { min-width: 800px; font-size: 0.8125rem; }
-.pol-table th, .pol-table td { padding: 4px 8px; white-space: nowrap; }
+.pol-table { min-width: 800px; width: 100%; font-size: 1rem; }
+.pol-table th, .pol-table td { padding: 6px 14px; white-space: nowrap; border-right: 2px solid #000; }
+.pol-table tbody td { border-bottom: 2px solid #000; }
 .pol-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Print button's VIEW / PRINT / PRINT PDF / WHATSAPP / EXIT dialog. */

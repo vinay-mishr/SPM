@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.db import transaction
 from django.db.models import ProtectedError
+from django.db.models.functions import Lower
 
 from config.legacy import fill_blank_columns, tables_using
 
@@ -99,5 +100,6 @@ def serialize_item(item):
 
 
 def list_items():
-    """All items, sorted by item code (as the old list: SET ORDER TO i_code)."""
-    return [serialize_item(item) for item in Item.objects.order_by("item_code")]
+    """All items, sorted alphabetically by item name (case-insensitive), then item code."""
+    items = Item.objects.annotate(name_lower=Lower("item_name_1")).order_by("name_lower", "item_code")
+    return [serialize_item(item) for item in items]

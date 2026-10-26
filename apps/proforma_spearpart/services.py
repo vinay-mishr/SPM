@@ -240,6 +240,7 @@ def _validate(payload):
             "unit": (row.get("unit") or "").strip() or _clean(part[0]["uom"]) or "",
             "qty": qty, "rate": rate, "amount": amount, "gst_pct": gst_pct,
             "gst_amount": _q2(amount * gst_pct / 100),
+            "particular": (row.get("particular") or "").strip()[:100],
         })
     if not lines and "items" not in errors:
         errors["items"] = "Add at least one item."
@@ -304,7 +305,7 @@ def get_invoice(bill_no):
         return None
     h = rows[0]
     items = _rows(
-        "SELECT m.i_code, m.unit, m.qty, m.rate, m.amount, m.gst, m.gst_amt, m.hs_code, "
+        "SELECT m.i_code, m.unit, m.qty, m.rate, m.amount, m.gst, m.gst_amt, m.hs_code, m.particular, "
         "p.ides AS i_name FROM p_mst m LEFT JOIN [part-mst] p ON p.icod = m.i_code "
         "WHERE m.bill_no = %s AND m.bill_type = %s ORDER BY m.sno", [bill_no, BILL_TYPE],
     )
@@ -335,7 +336,7 @@ def get_invoice(bill_no):
             "item_code": _clean(r["i_code"]), "item_name": _clean(r["i_name"]) or "",
             "hsn_code": _clean(r["hs_code"]) or "", "unit": _clean(r["unit"]) or "",
             "qty": f"{_d(r['qty']):.3f}", "rate": f"{_d(r['rate']):.2f}", "gst_pct": f"{_d(r['gst']):.2f}",
-            "amount": f"{_d(r['amount']):.2f}",
+            "amount": f"{_d(r['amount']):.2f}", "particular": _clean(r["particular"]) or "",
         } for r in items],
     }
 
@@ -382,14 +383,14 @@ def save_invoice(payload, key=None, username=""):
             _exec(
                 "INSERT INTO p_mst (bill_no, div, date, p_code, yn, sno, i_code, hs_code, unit, qty, rate, "
                 "amount, gst, gst_amt, cgst_rt, cgst_amt, sgst_rt, sgst_amt, igst_rt, igst_amt, stts, cash, "
-                "bill_type, cstat, uname) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                "bill_type, cstat, uname, particular) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 [bill_no, DIV, bill_date, party_code, "Y" if gst_enabled else "N", n, l["item_code"],
                  l["hsn_code"], l["unit"], l["qty"], l["rate"], l["amount"], l["gst_pct"], l["gst_amount"],
                  detail.get("cgst_rt", Decimal("0")), detail.get("cgst_amt", Decimal("0")),
                  detail.get("sgst_rt", Decimal("0")), detail.get("sgst_amt", Decimal("0")),
                  detail.get("igst_rt", Decimal("0")), detail.get("igst_amt", Decimal("0")),
-                 "B", "", BILL_TYPE, supply_type, username[:10]],
+                 "B", "", BILL_TYPE, supply_type, username[:10], l["particular"]],
             )
 
         amt_cols = {

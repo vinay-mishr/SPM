@@ -155,31 +155,51 @@
   var listSection = root.querySelector("[data-list]");
   var formSection = root.querySelector("[data-form]");
   var listRows = root.querySelector("[data-list-rows]");
+  var listSearch = root.querySelector("[data-list-search]");
   var selectedPayment = null;
+  var allPayments = [];
+
+  function renderList(rows) {
+    listRows.textContent = "";
+    selectedPayment = null;
+    rows.forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.append(cell(dmy(r.date)), cell(r.party_code), cell(r.party_name), cell(r.chq_no), cell(r.amount, "num"));
+      tr.addEventListener("click", function () {
+        listRows.querySelectorAll("tr").forEach(function (x) { x.classList.remove("is-sel"); });
+        tr.classList.add("is-sel");
+        selectedPayment = r;
+      });
+      listRows.appendChild(tr);
+    });
+    if (!rows.length) {
+      var empty = document.createElement("tr");
+      empty.className = "empty";
+      var td = document.createElement("td");
+      td.colSpan = 5;
+      td.textContent = allPayments.length ? "No payments match your search." : "No payments yet. Press ADD to enter one.";
+      empty.appendChild(td);
+      listRows.appendChild(empty);
+    }
+  }
+
+  function applyListSearch() {
+    var q = listSearch.value.trim().toLowerCase();
+    if (!q) { renderList(allPayments); return; }
+    renderList(allPayments.filter(function (r) {
+      return (r.party_code || "").toLowerCase().indexOf(q) !== -1
+        || (r.party_name || "").toLowerCase().indexOf(q) !== -1
+        || (r.chq_no || "").toLowerCase().indexOf(q) !== -1;
+    }));
+  }
+
+  listSearch.addEventListener("input", applyListSearch);
 
   function loadList() {
     getJson(root.dataset.listUrl).then(function (res) {
-      listRows.textContent = "";
-      selectedPayment = null;
-      res.rows.forEach(function (r) {
-        var tr = document.createElement("tr");
-        tr.append(cell(dmy(r.date)), cell(r.party_code), cell(r.party_name), cell(r.chq_no), cell(r.amount, "num"));
-        tr.addEventListener("click", function () {
-          listRows.querySelectorAll("tr").forEach(function (x) { x.classList.remove("is-sel"); });
-          tr.classList.add("is-sel");
-          selectedPayment = r;
-        });
-        listRows.appendChild(tr);
-      });
-      if (!res.rows.length) {
-        var empty = document.createElement("tr");
-        empty.className = "empty";
-        var td = document.createElement("td");
-        td.colSpan = 5;
-        td.textContent = "No payments yet. Press ADD to enter one.";
-        empty.appendChild(td);
-        listRows.appendChild(empty);
-      }
+      allPayments = res.rows;
+      listSearch.value = "";
+      renderList(allPayments);
     });
   }
 

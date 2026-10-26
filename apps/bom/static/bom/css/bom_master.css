@@ -22,10 +22,22 @@
   width: min(900px, calc(100vw - 32px));
 }
 
+.bom-form-modal .form-control {
+  font-weight: 700;
+}
+
 .bom-parent {
-  grid-template-columns: 100px minmax(0, 1fr);
+  grid-template-columns: 140px minmax(0, 1fr);
   gap: 8px 12px;
   margin-bottom: 8px;
+}
+
+.bom-parent .mform__label {
+  white-space: nowrap;
+}
+
+.bom-parent .mform__label {
+  font-size: 1.0625rem;
 }
 
 .bom-search-row {
@@ -69,7 +81,7 @@
 .bom-add-row legend {
   padding: 0 6px;
   margin-bottom: -6px;
-  font-size: 0.75rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -82,9 +94,54 @@
   gap: 10px;
 }
 
+/* Reserves the same horizontal space as the grid's "#" column below, so Part
+   Description / Qty / Unit line up with their own columns in the grid. */
+.bom-add-row__num {
+  flex: 0 0 36px;
+}
+
 .bom-add-row .form-control {
-  min-height: 32px;
-  padding: 4px 10px;
+  min-height: 30px;
+  padding: 2px 8px;
+  font-size: 0.8125rem;
+}
+
+.bom-add-row__inline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.bom-add-row__code,
+.bom-add-row__name {
+  font-size: 1.0625rem;
+}
+
+.bom-add-row__code {
+  flex: 0 0 170px;
+}
+
+.bom-add-row__name {
+  flex: 1;
+}
+
+.bom-add-row .bom-search-row .bom-code {
+  flex: none;
+  width: 100%;
+  min-height: 30px;
+  padding: 2px 4px;
+  font-size: 0.8125rem;
+}
+
+.bom-add-row .bom-search-row .bom-search {
+  flex: none;
+  width: 100%;
+  min-height: 30px;
+  font-size: 0.8125rem;
 }
 
 .bom-add-row [data-row-add] {
@@ -98,36 +155,30 @@
   padding: 4px 10px;
 }
 
+.bom-parent .bom-code {
+  flex: 0 0 150px;
+  padding: 3px 4px;
+}
+
+.bom-unit {
+  max-width: 100px;
+  text-transform: uppercase;
+}
+
 .bom-add-row__desc {
   flex: 1 1 320px;
 }
 
-.bom-add-row__qty {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
 .bom-add-row__qty input {
-  width: 110px;
+  width: 90px;
   text-align: right;
-}
-
-.bom-add-row__unit {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 0.9375rem;
 }
 
 .bom-add-row__unit input {
-  width: 80px;
+  width: 90px;
   text-transform: uppercase;
+  font-size: 1rem;
 }
 
 #bom-parent-unit {
@@ -152,12 +203,40 @@
 }
 
 .bom-grid-table {
-  font-size: 0.8125rem;
+  font-size: 1.0625rem;
+  table-layout: fixed;
+  width: 100%;
 }
 
 .bom-grid-table th,
 .bom-grid-table td {
-  padding: 2px 8px;
+  padding: 4px 8px;
+}
+
+.bom-grid-table th {
+  font-size: 0.8125rem;
+}
+
+/* Column widths matched to the add-row's own fields above (#-spacer, Code,
+   Qty, Unit), so each grid column sits directly under its input. */
+.bom-grid-table__col-num {
+  width: 36px;
+}
+
+.bom-grid-table__col-code {
+  width: 170px;
+}
+
+.bom-grid-table__col-qty {
+  width: 110px;
+}
+
+.bom-grid-table__col-unit {
+  width: 90px;
+}
+
+.bom-grid-table td:nth-child(3) {
+  white-space: normal;
 }
 
 .bom-grid-table .num {
@@ -176,6 +255,17 @@
 .bom-grid-table tbody tr.is-selected {
   background: #FFF176;
   box-shadow: inset 3px 0 0 var(--text-primary);
+}
+
+/* Space-toggled row: crossed out and struck through but still in the grid --
+   Space again on the same row brings it straight back to normal. */
+.bom-grid-table tbody tr.is-removed {
+  color: var(--danger);
+  text-decoration: line-through;
+}
+
+.bom-grid-table tbody tr.is-removed.is-selected {
+  background: #FADBD8;
 }
 
 @media (max-width: 767px) {

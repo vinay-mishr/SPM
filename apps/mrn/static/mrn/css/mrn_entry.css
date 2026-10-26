@@ -12,6 +12,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  width: 192px; /* 30% narrower than the default ~275px .form-control width */
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -74,6 +75,7 @@
 .mrn-form-modal #mrn-mrn_no,
 .mrn-form-modal #mrn-row-size { background: var(--ro); }
 .mrn-form-modal .num { text-align: right; }
+.mrn-form-modal #mrn-check_po { width: 50px; max-width: 50px; }
 .mrn-form-modal .mrn-body label { font-weight: 700; color: #000; font-size: 15px; white-space: nowrap; align-self: center; }
 .mrn-form-modal .oc-label { font-weight: 700; }
 .mrn-form-modal input, .mrn-form-modal select { font-weight: 700; }
@@ -87,7 +89,7 @@
   /* The 5th column is a flexible spacer (not a fixed gap) so the Challan No /
      Invoice No / G.R. No / Transport / Check PO Y/N block is pushed to the
      right side of the form instead of sitting right after Party. */
-  grid-template-columns: 62px 80px 36px 110px 1fr 112px 150px 120px 110px;
+  grid-template-columns: 62px 80px 36px 260px 1fr 112px 150px 120px 110px;
 }
 .mrn-form-modal .hdr .party { grid-column: 2 / 5; }
 .mrn-form-modal .hdr .party-sub { grid-column: 2 / 5; display: flex; gap: 3px; }
@@ -102,8 +104,10 @@
   border: 0; padding: 0;
 }
 .mrn-form-modal .item .hl { font-weight: 700; color: #000; font-size: 13px; align-self: end; }
-.mrn-form-modal .item .sizebox { display: flex; align-items: center; gap: 5px; }
-.mrn-form-modal .item .sizebox input { width: 110px; flex: none; }
+.mrn-form-modal .item .sizebox { display: flex; flex-direction: column; gap: 3px; }
+.mrn-form-modal .item .sizebox .partcode { width: 110px; flex: none; font-weight: 700; }
+.mrn-form-modal .item .sizebox .sizerow { display: flex; align-items: center; gap: 5px; }
+.mrn-form-modal .item .sizebox .sizerow input { width: 110px; flex: none; }
 .mrn-form-modal .item .sizebox .podt { margin-left: auto; }
 .mrn-form-modal .item .ok { height: var(--h); padding: 0 6px; font-weight: 600; border: 1px solid var(--border); background: #fff; border-radius: 2px; cursor: pointer; }
 .mrn-form-modal .item .ok:hover { background: var(--green); }
@@ -189,7 +193,8 @@
 .mrn-table { font-size: 17px; }
 .mrn-table th { font-size: 15px; }
 .mrn-table td { font-size: 17px; }
-.mrn-table th, .mrn-table td { padding: 4px 8px; }
+.mrn-table th, .mrn-table td { padding: 1px 4px; border-right: 2px solid #000; }
+.mrn-table tbody td { border-bottom: 2px solid #000; }
 .mrn-form-modal .item .hl { font-size: 15px; }
 .mrn-form-modal .tbl-wrap th { font-size: 11px; }
 .mrn-table th { font-size: 20px !important; }

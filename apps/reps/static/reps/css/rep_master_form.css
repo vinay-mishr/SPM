@@ -7,12 +7,18 @@
 
 .rep-form {
   grid-template-columns: 140px minmax(0, 1fr);
-  gap: 10px 12px;
+  gap: 7px 12px;
+}
+
+.rep-form .mform__label {
+  font-size: 1.0625rem;
 }
 
 .rep-form .mform__input.form-control {
-  min-height: 36px;
-  padding: 6px 10px;
+  min-height: 40px;
+  padding: 4px 8px;
+  font-size: 1.0625rem;
+  font-weight: 700;
 }
 
 .rep-code {

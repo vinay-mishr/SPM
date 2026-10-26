@@ -4,6 +4,34 @@
   width: min(760px, calc(100vw - 32px));
 }
 
+/* Readable, spacious Add/Modify/View form: bigger labels and inputs, tighter
+   outer/inner padding so more fields fit without extra scrolling. */
+.item-form-modal .modal__body {
+  padding: 10px 14px;
+}
+
+.item-form .mform,
+.item-form .mform--two {
+  gap: 9px 12px;
+}
+
+.item-form .mform__label {
+  padding-top: 11px;
+  font-size: 1rem;
+}
+
+.item-form .mform__input.form-control {
+  min-height: 46px;
+  padding: 8px 10px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.item-form .mform__section {
+  margin: 10px 0 9px;
+}
+
 /* Add/Modify/View form: size each input to roughly fit its own character limit
    instead of stretching full width (item code 4 digits, names 30/35/35 chars,
    unit 3 chars, GST% 4 digits, rate 8 digits). */
@@ -11,17 +39,14 @@
   max-width: 9ch;
 }
 
-.item-form [data-field="item_name_1"] {
-  max-width: 36ch;
-}
-
+.item-form [data-field="item_name_1"],
 .item-form [data-field="item_name_2"],
 .item-form [data-field="item_name_3"] {
   max-width: 41ch;
 }
 
 .item-form [data-field="unit"] {
-  max-width: 8ch;
+  max-width: 8.8ch;
 }
 
 .item-form [data-field="gst_percent"] {
@@ -59,7 +84,8 @@
 
 .item-table th,
 .item-table td {
-  padding: 6px 6px;
+  padding: 3px 6px;
+  line-height: 1.25;
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;

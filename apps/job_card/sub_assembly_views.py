@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -14,13 +15,33 @@ def _can_edit(user):
     return settings.LEGACY_WRITES_ENABLED and user.has_perm("job_card.change_jobcard")
 
 
+def _parse_date(value, default):
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return default
+
+
 class SubAssemblyEntryView(LoginRequiredMixin, TemplateView):
     template_name = "job_card/sub_assembly_entry.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["can_edit"] = _can_edit(self.request.user)
+        today = date.today()
+        context["initial_data"] = {"start_date": today.replace(day=1).isoformat(), "end_date": today.isoformat()}
         return context
+
+
+@login_required
+@require_GET
+def sa_list(request):
+    today = date.today()
+    start = _parse_date(request.GET.get("start_date"), today.replace(day=1))
+    end = _parse_date(request.GET.get("end_date"), today)
+    if start > end:
+        return JsonResponse({"message": "Start Date cannot be later than End Date."}, status=400)
+    return JsonResponse({"rows": sa.list_entries(start, end, request.GET.get("search", ""))})
 
 
 @login_required

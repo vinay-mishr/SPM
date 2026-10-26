@@ -64,19 +64,4 @@
 
 {% block modals %}
   {% include "bom/bom_item_form.html" %}
-
-  <dialog class="modal modal--sm" id="bomi-delete-dialog" aria-labelledby="bomi-delete-title">
-    <header class="modal__header">
-      <h2 class="modal__title" id="bomi-delete-title">Bill of Material Master — Delete</h2>
-    </header>
-    <div class="modal__body">
-      <dl class="detail-list" data-delete-details></dl>
-      <p class="modal-question">Are you sure you want to delete this Bill of Material?</p>
-      <div class="alert alert--error" role="alert" data-delete-alert hidden></div>
-    </div>
-    <footer class="modal__footer">
-      <button class="btn btn--danger" type="button" data-delete-yes>Delete</button>
-      <button class="btn btn--secondary" type="button" data-delete-no>Cancel</button>
-    </footer>
-  </dialog>
 {% endblock %}

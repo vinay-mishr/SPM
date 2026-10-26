@@ -1,0 +1,89 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Bad Debit Entry · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <script src="{% static 'money_receipt/js/bad_debit_entry.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Bad Debit Entry{% endblock %}
+{% block page_subtitle %}Money Receipts &rsaquo; Bad Debit Entry{% endblock %}
+
+{% block content %}
+<section class="gi-page" data-bd
+         data-list-url="{% url 'money_receipt:bad_debit_list' %}"
+         data-next-no-url="{% url 'money_receipt:bad_debit_next_no' %}"
+         data-find-bill-url="{% url 'money_receipt:bad_debit_find_bill' %}"
+         data-detail-url="{% url 'money_receipt:bad_debit_detail' %}"
+         data-ledgers-url="{% url 'money_receipt:api_ledgers' %}"
+         data-save-url="{% url 'money_receipt:bad_debit_save' %}"
+         data-delete-url="{% url 'money_receipt:bad_debit_delete' %}"
+         data-exit-url="{% url 'money_receipt:entry' %}">
+  {% csrf_token %}
+
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--primary" data-action="add">ADD</button>
+      <button type="button" class="btn btn--secondary" data-action="modify" disabled>MODIFY</button>
+      <button type="button" class="btn btn--secondary" data-action="delete" disabled>DELETE</button>
+      <button type="button" class="btn btn--secondary" data-action="view" disabled>VIEW</button>
+      <button type="button" class="btn btn--secondary" data-action="exit">EXIT</button>
+    </div>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="gi-grid">
+    <table>
+      <thead><tr><th>ENT NO</th><th>ENT DATE</th><th>BILL NO</th><th>BILL DATE</th><th>PARTY</th><th>CITY</th><th class="num">NET AMOUNT</th></tr></thead>
+      <tbody data-rows><tr class="empty"><td colspan="7">No Bad Debit entries this financial year.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog class="pe-page" data-form style="max-width:700px;">
+  <form novalidate data-bd-form>
+    {% csrf_token %}
+    <div class="pe-titlebar">OUTSTANDING ADJUSTMENT ENTRY <span data-mode-label></span></div>
+    <div class="gi-alert" role="alert" data-form-alert hidden></div>
+
+    <div class="pe-head">
+      <label>ADJ. NO <input data-field="ent_no"></label>
+      <label>ADJ.DATE <input data-field="ent_dt" type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
+      <label>BILL NO <input data-field="bill_no"></label>
+      <label>BILL DATE <input data-field="bill_dt" type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
+    </div>
+    <div class="pe-head">
+      <label>BILL AMOUNT <input class="num" data-bill-amount readonly tabindex="-1" value="0.00"></label>
+      <label class="pe-wide">PARTY <input data-party readonly tabindex="-1"></label>
+    </div>
+    <div class="pe-head">
+      <label class="pe-wide">ACCOUNT
+        <input data-ledger-search placeholder="Type ledger name and press Enter" autocomplete="off">
+        <input type="hidden" data-field="gcode">
+      </label>
+    </div>
+    <div class="pe-head">
+      <label>AMOUNT RECD. <input class="num" data-amount-recd readonly tabindex="-1" value="0.00"></label>
+      <label>BAL. AMOUNT <input class="num" data-bal-amount readonly tabindex="-1" value="0.00"></label>
+      <label>ADJ. AMOUNT <input class="num" data-field="amt_adj" value="0.00"></label>
+    </div>
+
+    <div class="pe-toolbar master-toolbar" style="margin-top:12px;">
+      <button type="button" class="btn btn--primary" data-confirm>CONFIRM</button>
+      <button type="button" class="btn btn--danger" data-form-exit>EXIT</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="gi-confirm" data-confirm-dialog>
+  <p data-confirm-message>Are You Sure?</p>
+  <div class="gi-footer">
+    <button type="button" class="btn btn--primary" data-confirm-yes>YES</button>
+    <button type="button" class="btn btn--secondary" data-confirm-no>NO</button>
+  </div>
+</dialog>
+{% endblock %}

@@ -328,6 +328,8 @@
     ensureDialog();
     state.config = config;
     state.field = field;
+    dialog.classList.toggle("help-lookup-dialog--wide", config.displayFields.length > 1);
+    dialog.classList.toggle("help-lookup-dialog--xwide", config.displayFields.length > 3);
     titleEl.textContent = ((config.title || fieldLabel(field)) + " Help").toUpperCase();
     searchInput.value = (config.seedText ? config.seedText(field) : field.value) || "";
     renderHeader(config);
@@ -395,9 +397,16 @@
     // selects gain an extra "(not in list)" <option> later (see party_master_form.js's
     // fill()), and the lookup should still offer whatever the field can actually hold.
     function readOptions() {
-      return Array.prototype.slice.call(select.options)
+      var options = Array.prototype.slice.call(select.options)
         .filter(function (o) { return o.value !== ""; })
         .map(function (o) { return { value: o.value, label: o.textContent.trim() }; });
+      // e.g. State: once a value is already selected (say, filled in from a GSTIN),
+      // show that one first instead of making the user hunt for it in the full list.
+      if (extra.selectedFirst && select.value) {
+        var index = options.findIndex(function (o) { return o.value === select.value; });
+        if (index > 0) options.unshift(options.splice(index, 1)[0]);
+      }
+      return options;
     }
     function labelFor(value) {
       if (!value) return ""; // blank/placeholder option -> show the placeholder, not its own text

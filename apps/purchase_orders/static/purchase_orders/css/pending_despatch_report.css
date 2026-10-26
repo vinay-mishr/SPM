@@ -13,7 +13,8 @@
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 0.8125rem;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .pdr-mode label {
@@ -21,23 +22,31 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .pdr-party {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .pdr-party__label {
-  font-size: 0.75rem;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.pdr-party__name { width: 220px; }
-.pdr-party__code { width: 70px; text-transform: uppercase; }
+.pdr-party__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdr-party__name { width: 330px; min-height: 34px; padding: 3px 8px; }
+.pdr-party__code { width: 90px; min-height: 34px; padding: 3px 8px; text-transform: uppercase; }
 
 .pdr-filter {
   display: flex;
@@ -56,8 +65,9 @@
   width: 130px;
 }
 
-.pdr-table { min-width: 900px; font-size: 0.8125rem; }
-.pdr-table th, .pdr-table td { padding: 4px 8px; white-space: nowrap; }
+.pdr-table { min-width: 900px; width: 100%; font-size: 1rem; }
+.pdr-table th, .pdr-table td { padding: 6px 14px; white-space: nowrap; border-right: 2px solid #000; }
+.pdr-table tbody td { border-bottom: 2px solid #000; }
 .pdr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .pdr-party-row td {

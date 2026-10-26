@@ -70,12 +70,20 @@
     .gi-print .terms-sign > div:first-child { border-right: 1px solid #000; }
     .gi-print .terms-sign ol { margin: 2px 0 0; padding-left: 16px; }
     .gi-print .sign-box { display: flex; flex-direction: column; justify-content: space-between; height: 100%; text-align: center; }
-    @media print { body { margin: 0; } .gi-print { min-height: 277mm; } }
+    @media print { body { margin: 0; } .gi-print { min-height: 277mm; } .gi-public-bar { display: none; } }
+    .gi-public-bar { display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto 8px; padding: 8px 12px; background: #eef6ef; border: 1px solid #000; border-radius: 4px; font-size: 13px; }
+    .gi-public-bar a, .gi-public-bar button { background: #16794a; color: #fff; border: 0; border-radius: 4px; padding: 6px 12px; font-weight: 700; text-decoration: none; cursor: pointer; }
   </style>
 </head>
 <body>
+{% if public %}
+<div class="gi-public-bar">
+  <span>Tax Invoice {{ note.bill_no }} &middot; {{ brand_name }}</span>
+  {% if pdf_url %}<a href="{{ pdf_url }}">Download PDF</a>{% else %}<button type="button" onclick="window.print()">Download / Print PDF</button>{% endif %}
+</div>
+{% endif %}
 <div class="gi-print">
-  <div class="doc-title">TAX INVOICE<span class="copy-label">Original For Recipient</span></div>
+  <div class="doc-title">TAX INVOICE<span class="copy-label">{{ copy_label|default:"Original For Recipient" }}</span></div>
 
   <div class="company-header">
     {% if brand.logo_full %}<img src="{% static brand.logo_full %}" alt="{{ brand.name }}">{% endif %}

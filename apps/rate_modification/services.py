@@ -1,9 +1,10 @@
 """
-Rate Modification (old VFP form ``itemrate1``) — bulk-edit the purchase rate of
-parts. No new table: this is a service layer over apps.parts.models.Part (the
-existing part-mst). Only the ``rate`` column is ever written; every other field
-(name, GST, HSN, stock, suppliers, ...) is left exactly as it is, so Item Master
-and Part Master keep working on the same records unaffected.
+Rate Modification (old VFP form ``itemrate1``) — bulk-edit the purchase rate,
+opening/current stock, GST% and location of parts. No new table: this is a
+service layer over apps.parts.models.Part (the existing part-mst). Only these
+five columns are ever written; every other field (name, HSN, suppliers, ...)
+is left exactly as it is, so Item Master and Part Master keep working on the
+same records unaffected.
 """
 from decimal import Decimal, InvalidOperation
 
@@ -76,36 +77,84 @@ def parse_rate(raw):
     return value.quantize(Decimal("0.0001"))
 
 
+def parse_decimal(raw, decimal_places, label, max_value=None):
+    """Generic non-negative decimal parser for the stock/GST% fields."""
+    text = str(raw if raw is not None else "").strip().replace(",", "")
+    if text == "":
+        raise ValueError(f"Enter the {label.lower()}.")
+    try:
+        value = Decimal(text)
+    except InvalidOperation:
+        raise ValueError(f"Enter a number for {label.lower()}.")
+    if not value.is_finite():
+        raise ValueError(f"Enter a number for {label.lower()}.")
+    if value < 0:
+        raise ValueError(f"{label} cannot be negative.")
+    if max_value is not None and value > max_value:
+        raise ValueError(f"{label} cannot be more than {max_value}.")
+    return value.quantize(Decimal(1).scaleb(-decimal_places))
+
+
+def parse_location(raw):
+    text = str(raw if raw is not None else "").strip().upper()
+    if len(text) > 10:
+        raise ValueError("Location cannot be more than 10 characters.")
+    return text
+
+
+# payload key -> (Part model field, parser)
+FIELD_PARSERS = {
+    "rate": ("purchase_rate", parse_rate),
+    "opening_stock": ("opening_stock", lambda raw: parse_decimal(raw, 3, "Opening stock")),
+    "current_stock": ("current_stock", lambda raw: parse_decimal(raw, 0, "Current stock")),
+    "gst_percent": ("gst_percent", lambda raw: parse_decimal(raw, 2, "GST %", max_value=Decimal("100"))),
+    "location": ("location", parse_location),
+}
+
+
 def save(changes, username=""):
     """
-    Save changed rates: [{"code": ..., "rate": ...}, ...]. Every row is validated
-    first; then all are written in one transaction (all or nothing). Only the
-    ``rate`` column is touched. Returns the number of parts updated.
+    Save changed rows: [{"code": ..., "rate": ..., "opening_stock": ..., ...}, ...].
+    Only the keys present in each change are validated and written -- a change
+    that only sends "rate" leaves opening_stock/current_stock/gst_percent/location
+    untouched, and vice versa. Every row is validated first; then all are written
+    in one transaction (all or nothing). Returns the number of parts updated.
     """
     if not isinstance(changes, list) or not changes:
         raise RateModificationError({"": "No changes to save."})
 
-    errors, rates = {}, {}
+    errors, updates = {}, {}
     duplicates = duplicate_part_numbers()
     for change in changes:
-        code = str((change or {}).get("code", "")).strip()
-        if code in duplicates:
-            errors[code] = "This part number exists more than once in the old data; its rate cannot be changed here."
+        change = change or {}
+        code = str(change.get("code", "")).strip()
+        if not code:
             continue
-        try:
-            rates[code] = parse_rate((change or {}).get("rate"))
-        except ValueError as exc:
-            errors[code] = str(exc)
+        if code in duplicates:
+            errors[code] = "This part number exists more than once in the old data; it cannot be changed here."
+            continue
+        row_updates = {}
+        for key, (db_field, parser) in FIELD_PARSERS.items():
+            if key not in change:
+                continue
+            try:
+                row_updates[db_field] = parser(change[key])
+            except ValueError as exc:
+                errors[code] = str(exc)
+                row_updates = None
+                break
+        if row_updates:
+            updates[code] = row_updates
 
-    existing = set(Part.objects.filter(part_number__in=list(rates)).values_list("part_number", flat=True))
-    for code in list(rates):
+    existing = set(Part.objects.filter(part_number__in=list(updates)).values_list("part_number", flat=True))
+    for code in list(updates):
         if code not in existing:
             errors[code] = "Part not found."
-            del rates[code]
+            del updates[code]
     if errors:
         raise RateModificationError(errors)
 
     with transaction.atomic(using=Part.objects.db):
-        for code, rate in rates.items():
-            Part.objects.filter(part_number=code).update(purchase_rate=rate)
-    return len(rates)
+        for code, fields in updates.items():
+            Part.objects.filter(part_number=code).update(**fields)
+    return len(updates)

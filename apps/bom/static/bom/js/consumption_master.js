@@ -96,7 +96,7 @@
   if (window.HelpLookup) {
     window.HelpLookup.attach(itemSearch, {
       endpoint: root.dataset.itemsUrl, resultsKey: "items", valueField: "name",
-      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }], title: "Item",
+      displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "unit", label: "Unit" }], title: "Item",
       onSelect: function (row) { itemCode.value = row.code; itemSearch.value = row.name; load(); },
     });
   }

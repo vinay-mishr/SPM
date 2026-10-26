@@ -2,27 +2,39 @@
    static/css/components.css; only this screen's specifics live here. */
 
 .poa-toolbar {
+  flex-wrap: nowrap;
   align-items: center;
   gap: 16px;
 }
 
+.poa-toolbar .master-toolbar__actions {
+  flex: none;
+}
+
 .poa-party {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
   flex: 1 1 380px;
+  min-width: 0;
 }
 
 .poa-party__label {
-  font-size: 0.75rem;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
-.poa-party__name { flex: 1; }
-.poa-party__code { flex: 0 0 90px; text-transform: uppercase; }
+.poa-party__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.poa-party__name { flex: 1; min-height: 40px; font-size: 1rem; font-weight: 700; }
+.poa-party__code { flex: 0 0 90px; min-height: 40px; font-size: 1rem; font-weight: 700; text-transform: uppercase; }
 
 .poa-rundate {
   display: flex;
@@ -38,7 +50,8 @@
 .poa-rundate input { width: 120px; }
 
 .poa-grid-wrap { max-height: calc(100vh - 220px); overflow: auto; margin-top: 12px; }
-.poa-table th, .poa-table td { padding: 4px 8px; white-space: nowrap; }
+.poa-table th, .poa-table td { padding: 4px 8px; white-space: nowrap; border-right: 2px solid #000; }
+.poa-table tbody td { border-bottom: 2px solid #000; }
 .poa-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .poa-adj-input {

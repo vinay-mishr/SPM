@@ -16,13 +16,13 @@
           <p class="mform__error" data-error-for="part_number"></p>
         </div>
 
-        <label class="mform__label" for="pt-description_1">Part Description1</label>
+        <label class="mform__label" for="pt-description_1">Part Desc1</label>
         <div class="mform__field mform__field--wide">
           <input class="form-control mform__input" id="pt-description_1" name="description_1" type="text" maxlength="35" autocomplete="off" data-field="description_1">
           <p class="mform__error" data-error-for="description_1"></p>
         </div>
 
-        <label class="mform__label" for="pt-description_2">Part Description2</label>
+        <label class="mform__label" for="pt-description_2">Part Desc2</label>
         <div class="mform__field mform__field--wide">
           <input class="form-control mform__input" id="pt-description_2" name="description_2" type="text" maxlength="35" autocomplete="off" data-field="description_2">
           <p class="mform__error" data-error-for="description_2"></p>
@@ -112,6 +112,9 @@
         <label class="mform__label" for="pt-material">Material</label>
         <div class="mform__field pform__short">
           <input class="form-control mform__input" id="pt-material" name="material" type="text" maxlength="15" list="part-material-list" autocomplete="off" data-field="material">
+          <datalist id="part-material-list">
+            {% for name in material_suggestions %}<option value="{{ name }}">{% endfor %}
+          </datalist>
         </div>
 
         <label class="mform__label" for="pt-location">Location</label>

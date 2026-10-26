@@ -12,9 +12,11 @@
   var NUM_FIELDS = ["packing", "gross_weight", "quantity_in_order", "purchase_rate", "sale_rate", "gst_percent",
     "opening_stock", "reorder_qty", "current_stock", "weight_by_100", "rate_1", "rate_2", "rate_3", "rate_4"];
   var ALL_FIELDS = TEXT_FIELDS.concat(NUM_FIELDS, ["part_type", "sub_assembly"]);
-  var LABELS = { add: "Add", modify: "Modify", view: "View" };
+  var UPPERCASE_FIELDS = { part_number: true, drawing_no: true, description_1: true, description_2: true,
+    gauge: true, grade: true, material: true, location: true, unit: true, hsn_code: true };
+  var LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
 
-  var dialog, form, alertBox, discard, confirmBtn, options;
+  var dialog, form, alertBox, discard, discardTitle, discardCancelBtn, discardConfirmBtn, confirmBtn, options;
   var state = { mode: "add", part: null, snapshot: "", saving: false, parties: {} };
 
   function input(name) { return form.querySelector('[data-field="' + name + '"]'); }
@@ -73,8 +75,52 @@
     close();
   }
 
+  function performDelete() {
+    if (state.saving || !state.part) return;
+    state.saving = true;
+    confirmBtn.disabled = true;
+    fetch(options.deleteUrl.replace("/0/", "/" + encodeURIComponent(state.part.id) + "/"), {
+      method: "POST", credentials: "same-origin",
+      headers: { "X-CSRFToken": options.csrfToken, "X-Requested-With": "XMLHttpRequest" }
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, status: r.status, body: b }; });
+      })
+      .then(function (res) {
+        if (res.ok) {
+          close();
+          options.onDeleted(res.body.message);
+        } else {
+          alertBox.textContent = res.body.message || "Could not delete.";
+          alertBox.hidden = false;
+        }
+      })
+      .catch(function () {
+        alertBox.textContent = "Could not reach the server. Nothing was deleted.";
+        alertBox.hidden = false;
+      })
+      .finally(function () { state.saving = false; confirmBtn.disabled = false; });
+  }
+
+  // The discard box is reused as a generic "are you sure?" prompt -- its own
+  // title text, button labels and confirm action are swapped per use (discard
+  // unsaved changes on EXIT vs delete the selected record), so there's one
+  // small confirm dialog in this form, not two.
+  function askDiscard(title, onConfirm, labels) {
+    discardTitle.textContent = title;
+    discardCancelBtn.textContent = labels ? labels.cancel : "Cancel";
+    discardConfirmBtn.textContent = labels ? labels.confirm : "Exit";
+    state.onDiscardConfirm = onConfirm;
+    discard.hidden = false;
+  }
+
   function save() {
-    if (state.saving || state.mode === "view") return;
+    if (state.saving) return;
+    if (state.mode === "delete") {
+      askDiscard("Are you sure you want to delete this record?", performDelete, { cancel: "No", confirm: "Yes" });
+      return;
+    }
+    if (state.mode === "view") return;
     clearErrors();
     var v = values();
     var errs = validate(v);
@@ -153,7 +199,7 @@
         endpoint: options.partiesUrl,
         resultsKey: "parties",
         valueField: "code",
-        displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }],
+        displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Name" }, { key: "city", label: "City" }],
         title: "Supplier " + n,
         onSelect: function (row) {
           state.parties[row.code] = row.name;
@@ -219,17 +265,20 @@
     state.mode = mode;
     dialog.dataset.mode = mode;
     dialog.querySelector("[data-mode-label]").textContent = LABELS[mode];
-    var readOnly = mode === "view";
+    var readOnly = mode === "view" || mode === "delete";
     TEXT_FIELDS.concat(NUM_FIELDS).forEach(function (n) { input(n).readOnly = readOnly; });
     input("part_number").readOnly = readOnly || mode === "modify"; // protected once created
     input("part_type").disabled = readOnly;
     input("sub_assembly").disabled = readOnly;
     ["1", "2", "3", "4"].forEach(function (n) {
       // Editable-mode search boxes stay readonly once their Code is already filled in
-      // (see fill()/wireSupplierSearch's syncReadonly) -- View mode always wins.
+      // (see fill()/wireSupplierSearch's syncReadonly) -- View/Delete always win.
       form.querySelector('[data-party-search="' + n + '"]').readOnly =
         readOnly || Boolean(input("supplier_" + n).value.trim());
     });
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
   }
 
   function open(mode, part) {
@@ -241,6 +290,7 @@
     state.snapshot = JSON.stringify(values());
     dialog.showModal();
     (mode === "view" ? dialog.querySelector(".modal__footer [data-form-exit]")
+      : mode === "delete" ? confirmBtn
       : mode === "add" ? input("part_number") : input("description_1")).focus();
   }
 
@@ -250,12 +300,16 @@
     form = dialog.querySelector("[data-part-form]");
     alertBox = dialog.querySelector("[data-form-alert]");
     discard = dialog.querySelector("[data-discard]");
+    discardTitle = discard.querySelector("#part-discard-title");
+    discardCancelBtn = dialog.querySelector("[data-discard-cancel]");
+    discardConfirmBtn = dialog.querySelector("[data-discard-confirm]");
     confirmBtn = dialog.querySelector("[data-form-confirm]");
     partyList = dialog.querySelector("[data-party-list]");
 
     ["1", "2", "3", "4"].forEach(wireSupplierSearch);
     if (window.HelpLookup) {
       window.HelpLookup.attachDatalist(input("unit"), { title: "Unit" });
+      window.HelpLookup.attachDatalist(input("material"), { title: "Material" });
       window.HelpLookup.attachSelect(input("part_type"), { title: "Part Type" });
     }
 
@@ -280,6 +334,22 @@
         el.value = Number(el.value).toFixed(Number(el.dataset.decimal));
       }
     });
+    // Clear a "0" / "0.00" placeholder value when a numeric field is focused, so typing
+    // doesn't have to delete it first; the focusout handler above restores it if left empty.
+    form.addEventListener("focusin", function (e) {
+      var el = e.target;
+      if (NUM_FIELDS.indexOf(el.dataset && el.dataset.field) > -1 && Number(el.value) === 0) {
+        el.value = "";
+      }
+    });
+    form.addEventListener("input", function (e) {
+      var field = e.target;
+      if (UPPERCASE_FIELDS[field.dataset.field] && field.value !== field.value.toUpperCase()) {
+        var pos = field.selectionStart;
+        field.value = field.value.toUpperCase();
+        field.setSelectionRange(pos, pos);
+      }
+    });
     form.addEventListener("input", function (e) {
       var name = e.target.dataset.field;
       var holder = e.target.closest(".mform__field");
@@ -296,7 +366,12 @@
       if (!discard.hidden) discard.hidden = true; else requestExit();
     });
     dialog.querySelector("[data-discard-cancel]").addEventListener("click", function () { discard.hidden = true; });
-    dialog.querySelector("[data-discard-confirm]").addEventListener("click", close);
+    dialog.querySelector("[data-discard-confirm]").addEventListener("click", function () {
+      discard.hidden = true;
+      var onConfirm = state.onDiscardConfirm || close;
+      state.onDiscardConfirm = null;
+      onConfirm();
+    });
   }
 
   window.SPPartForm = { init: init, open: open };

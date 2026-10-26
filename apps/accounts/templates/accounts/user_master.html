@@ -1,0 +1,59 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}User Master · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'accounts/css/user_master.css' %}">
+  <script src="{% static 'accounts/js/user_master.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}User Master{% endblock %}
+{% block page_subtitle %}Master &rsaquo; User Master{% endblock %}
+
+{% block content %}
+<section class="master-page" data-user-master
+         data-list-url="{% url 'accounts:api_list' %}"
+         data-create-url="{% url 'accounts:api_create' %}"
+         data-update-url="{% url 'accounts:api_update' pk=0 %}"
+         data-delete-url="{% url 'accounts:api_delete' pk=0 %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+
+  <div class="master-toolbar" role="toolbar" aria-label="User actions">
+    <div class="master-toolbar__actions">
+      <button class="btn btn--primary" type="button" data-action="add"><span class="master-toolbar__key">A</span>dd</button>
+      <button class="btn btn--secondary" type="button" data-action="modify" disabled><span class="master-toolbar__key">M</span>odify</button>
+      <button class="btn btn--secondary" type="button" data-action="delete" disabled><span class="master-toolbar__key">D</span>elete</button>
+      <button class="btn btn--secondary" type="button" data-action="view" disabled><span class="master-toolbar__key">V</span>iew</button>
+      <button class="btn btn--secondary" type="button" data-action="exit"><span class="master-toolbar__key">E</span>xit</button>
+    </div>
+    <label class="master-search">
+      <span class="visually-hidden">Search users</span>
+      <input class="form-control" type="search" placeholder="Search user…" data-search autocomplete="off">
+    </label>
+  </div>
+
+  <div class="alert alert--info" role="status">
+    Only an Admin can see or change this page. Two profiles: <strong>Admin</strong> (full access, including this page) and <strong>Sales</strong>.
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table user-table">
+      <thead>
+        <tr><th scope="col">Username</th><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Active</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No users yet. Click <strong>Add</strong> to create the first one.</p>
+  </div>
+  <p class="master-count" data-count aria-live="polite"></p>
+</section>
+
+{{ initial_data|json_script:"user-initial-data" }}
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+{% endblock %}
+
+{% block modals %}
+  {% include "accounts/user_form.html" %}
+{% endblock %}

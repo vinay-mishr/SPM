@@ -12,11 +12,12 @@
   var searchBox = root.querySelector("[data-search]");
   var startDate = root.querySelector("[data-start-date]");
   var endDate = root.querySelector("[data-end-date]");
+  var statusRadios = root.querySelectorAll('input[name="po-status"]');
   var toast = document.querySelector("[data-toast]");
   var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
 
   var initial = JSON.parse(document.getElementById("po-initial-data").textContent);
-  var state = { orders: initial.orders, selectedKey: null, query: "" };
+  var state = { orders: initial.orders, selectedKey: null, query: "", status: "all" };
 
   function showToast(message, kind) {
     toast.textContent = message;
@@ -80,6 +81,7 @@
     if (start && order.order_date && order.order_date < start) inRange = false;
     if (end && order.order_date && order.order_date > end) inRange = false;
     if (!inRange) return false;
+    if (state.status !== "all" && order.status !== state.status) return false;
     if (!text) return true;
     return [order.po_no, order.party_code, order.party_name, order.city].join(" ").toLowerCase().indexOf(text) > -1;
   }
@@ -132,6 +134,16 @@
   searchBox.addEventListener("input", function () {
     state.query = searchBox.value.trim().toLowerCase();
     render();
+  });
+  // All / Pending / Completed Orders -- was dead markup with no listener at all,
+  // so picking any of the three did nothing. Each order's status (set server-side
+  // in services.list_orders()) is "pending" when it still has an open line (adj
+  // blank AND stk_qty - rec_qty > 0, same rule as the Pending P.O. report), else
+  // "completed".
+  statusRadios.forEach(function (radio) {
+    radio.addEventListener("change", function () {
+      if (radio.checked) { state.status = radio.value; render(); }
+    });
   });
   /* Start / End Date default to today; the grid re-filters as soon as a date is
      complete (or cleared), not only when the field loses focus. */
@@ -330,7 +342,13 @@
     });
   });
 
-  window.SPPurchaseOrderMaster = { refresh: refresh, post: post, postJson: postJson, fetchJson: fetchJson, dmy: dmy, showToast: showToast };
+  window.SPPurchaseOrderMaster = {
+    refresh: refresh, post: post, postJson: postJson, fetchJson: fetchJson, dmy: dmy, showToast: showToast,
+    // Opens the VIEW / PRINT / PRINT PDF / WHATSAPP / EXIT dialog for whichever
+    // order is currently selected -- used right after Add/Modify saves so the
+    // print options come up immediately instead of requiring a separate click.
+    printSelected: function () { actions.print(); },
+  };
 
   render();
 })();

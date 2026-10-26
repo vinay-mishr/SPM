@@ -131,6 +131,10 @@
 .cn-grid td { font-size: 17px; }
 .cn-grid th, .cn-grid td { padding: 4px 8px; }
 
+/* Bold black vertical column dividers, same as the Payment Made list. */
+.cn-grid:not(.cn-items) th, .cn-grid:not(.cn-items) td { border-right: 2px solid #000; }
+.cn-grid:not(.cn-items) th:last-child, .cn-grid:not(.cn-items) td:last-child { border-right: 0; }
+
 .nar-reason-title { font-weight: 700; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
 .nar-reason input { display: block; width: 100%; max-width: 600px; height: 28px; margin-bottom: 4px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; }
 .nar-rates { flex: none; margin: 10px 0; }

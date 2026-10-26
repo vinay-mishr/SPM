@@ -198,8 +198,9 @@ def mrn_print(request, div, mrn_no):
     if not order:
         raise Http404("MRN not found.")
     _format_order_dates(order)
+    fill_rows = range(max(0, 7 - len(order["items"])))
     return render(request, "mrn/mrn_print.html", {
-        "order": order, "preview": request.GET.get("preview") == "1",
+        "order": order, "preview": request.GET.get("preview") == "1", "fill_rows": fill_rows,
     })
 
 
@@ -276,8 +277,9 @@ def mrn_share_view(request, token):
     if not order:
         return render(request, "mrn/mrn_share_invalid.html", status=404)
     _format_order_dates(order)
+    fill_rows = range(max(0, 7 - len(order["items"])))
     return render(request, "mrn/mrn_print.html", {
-        "order": order, "preview": True, "public": True,
+        "order": order, "preview": True, "public": True, "fill_rows": fill_rows,
         "pdf_url": request.build_absolute_uri(reverse("mrn_share_pdf", args=[token])),
     })
 

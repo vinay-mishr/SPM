@@ -146,21 +146,33 @@ def order_print(request, div, po_no):
     })
 
 
+def _public_url(request, path):
+    """Absolute URL for a link handed to someone OUTSIDE the app (a WhatsApp
+    share message, or the public share page's own Download PDF button).
+    Prefers settings.PUBLIC_BASE_URL when it's configured, since
+    request.build_absolute_uri() depends on the Host header of whichever
+    request happened to trigger it -- that's 127.0.0.1 in local development,
+    and in production it's silently wrong too whenever a reverse proxy in
+    front of Django isn't forwarding Host / X-Forwarded-Proto correctly, even
+    with ALLOWED_HOSTS and the real domain both set up correctly. Falls back
+    to build_absolute_uri() so nothing changes where PUBLIC_BASE_URL isn't
+    set."""
+    if settings.PUBLIC_BASE_URL:
+        return settings.PUBLIC_BASE_URL + path
+    return request.build_absolute_uri(path)
+
+
 @login_required
 @require_POST
 def order_share_link(request, div, po_no):
     """Creates (or reuses) a public, no-login link to this PO's actual PDF, for
-    the WhatsApp "Send on WhatsApp" flow. The link's domain is whatever this
-    request actually arrived on (never hardcoded), so it's correct in
-    development and wherever this is actually deployed -- Django's own
-    ALLOWED_HOSTS already guarantees that's a real, intended host, not
-    something attacker-controlled."""
+    the WhatsApp "Send on WhatsApp" flow."""
     token = services.get_po_share_token(div, po_no)
     if not token:
         return JsonResponse({"message": "Purchase order not found."}, status=404)
     return JsonResponse({
-        "url": request.build_absolute_uri(reverse("po_share_pdf", args=[token])),
-        "preview_url": request.build_absolute_uri(reverse("po_share_view", args=[token])),
+        "url": _public_url(request, reverse("po_share_pdf", args=[token])),
+        "preview_url": _public_url(request, reverse("po_share_view", args=[token])),
     })
 
 
@@ -178,7 +190,7 @@ def order_share_view(request, token):
     fill_rows = range(max(0, 20 - len(order["lines"])))
     return render(request, "purchase_orders/purchase_order_print.html", {
         "order": order, "party": party, "terms": PO_PRINT_TERMS, "fill_rows": fill_rows,
-        "preview": True, "public": True, "pdf_url": request.build_absolute_uri(reverse("po_share_pdf", args=[token])),
+        "preview": True, "public": True, "pdf_url": _public_url(request, reverse("po_share_pdf", args=[token])),
     })
 
 
@@ -778,8 +790,8 @@ def pending_order_letter_share_link(request):
     if not token:
         return JsonResponse({"message": "Party not found."}, status=404)
     return JsonResponse({
-        "url": request.build_absolute_uri(reverse("pending_order_letter_share_pdf", args=[token])),
-        "preview_url": request.build_absolute_uri(reverse("pending_order_letter_share_view", args=[token])),
+        "url": _public_url(request, reverse("pending_order_letter_share_pdf", args=[token])),
+        "preview_url": _public_url(request, reverse("pending_order_letter_share_view", args=[token])),
     })
 
 
@@ -799,7 +811,7 @@ def pending_order_letter_share_view(request, token):
         line["despatch_date"] = _dmy(line["despatch_date"])
     return render(request, "purchase_orders/party_pending_order_letter_print.html", {
         "result": result, "run_date": run_date, "preview": True, "public": True,
-        "pdf_url": request.build_absolute_uri(reverse("pending_order_letter_share_pdf", args=[token])),
+        "pdf_url": _public_url(request, reverse("pending_order_letter_share_pdf", args=[token])),
     })
 
 

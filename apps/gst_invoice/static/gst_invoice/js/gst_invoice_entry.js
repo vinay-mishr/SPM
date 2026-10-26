@@ -65,7 +65,6 @@
 
   function num(v) { return Number(v) || 0; }
   function f2(v) { return (Math.round(v * 100) / 100).toFixed(2); }
-  function f3(v) { return (Math.round(v * 1000) / 1000).toFixed(3); }
 
   function post(url, data) {
     return fetch(url, {
@@ -127,11 +126,6 @@
   }
 
   function field(name) { return form.querySelector('[data-field="' + name + '"]'); }
-  function radio(name) { return form.querySelector('input[name="' + name + '"]:checked'); }
-  function setRadio(name, value) {
-    var el = form.querySelector('input[name="' + name + '"][value="' + value + '"]');
-    if (el) el.checked = true;
-  }
 
   function lineAmount(l) { return l.qty * l.rate * (1 - l.dis / 100); }
 
@@ -144,8 +138,14 @@
     var freight = num(field("freight").value);
     var fg = freight * num(field("freight_gst_pct").value) / 100;
     var adjNet = 0;
+    // ADD/LESS Rate % is taken on Total Amount + GST + Freight + GST on Freight.
+    var adjBase = amount + gst + freight + fg;
     [0, 1].forEach(function (i) {
-      var amt = num(form.querySelector('[data-adj-amount="' + i + '"]').value);
+      // A Rate % keeps its Amt in step with that base (e.g. items added later).
+      var rate = num(form.querySelector('[data-adj-rate="' + i + '"]').value);
+      var amtInput = form.querySelector('[data-adj-amount="' + i + '"]');
+      if (rate) amtInput.value = f2(adjBase * rate / 100);
+      var amt = num(amtInput.value);
       var sign = form.querySelector('[data-adj-sign="' + i + '"]').value;
       adjNet += sign === "A" ? amt : -amt;
     });
@@ -174,7 +174,7 @@
       tr.dataset.index = i;
       if (i === state.editIndex) tr.classList.add("is-editing");
       tr.append(cell(i + 1), cell(l.item_code), cell(l.item_name), cell(l.hsn_code), cell(l.unit),
-        cell(l.order_no), cell(f3(l.qty), "num"), cell(f2(l.rate), "num"), cell(f2(l.dis), "num"),
+        cell(l.order_no), cell(String(Math.round(num(l.qty))), "num"), cell(f2(l.rate), "num"), cell(f2(l.dis), "num"),
         cell(f2(lineAmount(l)), "num"), cell(f2(l.gst), "num"));
       itemRows.appendChild(tr);
     });
@@ -190,7 +190,7 @@
     form.querySelector("[data-item-hsn]").value = "";
     form.querySelector("[data-item-order]").value = "";
     form.querySelector("[data-item-dis]").value = "0.00";
-    form.querySelector("[data-item-qty]").value = "1.000";
+    form.querySelector("[data-item-qty]").value = "1";
     form.querySelector("[data-item-rate]").value = "0.00";
     itemError.textContent = "";
   }
@@ -206,11 +206,11 @@
       form.querySelector("[data-item-hsn]").value = p.hsn;
       form.querySelector("[data-item-rate]").value = p.rate;
       itemError.textContent = "";
-      // HelpLookup's own focusNext() runs right after this callback and -- since
-      // Unit and HSN are both readonly, excluded from its generic "next focusable
-      // field" search -- would land on Ord.No/Dt instead, skipping Unit entirely.
-      // Override that once it's happened.
-      setTimeout(function () { form.querySelector("[data-item-unit]").focus(); }, 0);
+      // HelpLookup's own focusNext() runs right after this callback and --
+      // since Unit and HSN are both readonly, excluded from its generic "next
+      // focusable field" search -- would land on Ord.No/Dt instead. Override
+      // to Dis %, the real start of the item-entry Enter chain wired below.
+      setTimeout(function () { form.querySelector("[data-item-dis]").focus(); form.querySelector("[data-item-dis]").select(); }, 0);
     });
   }
 
@@ -283,12 +283,13 @@
       partySearch.value = p.name;
       field("gst_no").value = p.gst_no;
       field("phone").value = p.phone;
+      field("city").value = p.city;
       form.querySelector("[data-supply-type]").value = p.supply_type === "I" ? "I" : "W";
-      // Same HelpLookup focusNext() override as fillItem() below -- party_code is
-      // hidden and the cash-party rows are hidden via the `hidden` attribute, so in
-      // practice focusNext() already lands on GST No on its own, but this keeps the
-      // result correct even if that DOM order ever changes.
-      setTimeout(function () { field("gst_no").focus(); }, 0);
+      // Same HelpLookup focusNext() override as fillItem() below -- without this,
+      // focusNext() would land on GST No (the next non-readonly field in DOM
+      // order). Override to Phone, the real next step in the header's Enter
+      // chain wired below.
+      setTimeout(function () { field("phone").focus(); }, 0);
     });
   }
 
@@ -298,6 +299,7 @@
     partySearch.closest("label").hidden = cash;
     form.querySelector('[data-field="gst_no"]').closest("label").hidden = cash;
     form.querySelector('[data-field="phone"]').closest("label").hidden = cash;
+    form.querySelector("[data-party-city-row]").hidden = cash;
   }
   form.querySelector('[data-ca-cr]').addEventListener("change", applyCashMode);
 
@@ -312,13 +314,25 @@
   function resetAdjustments() {
     [0, 1].forEach(function (i) {
       form.querySelector('[data-adj-sign="' + i + '"]').value = "A";
-      var codeInput = form.querySelector('[data-adj-code="' + i + '"]');
-      codeInput.value = "";
-      codeInput.title = "Type to search the ledger master, or press Enter";
+      setAdjLedger(i, "", "");
+      var rateInput = form.querySelector('[data-adj-rate="' + i + '"]');
+      rateInput.value = "";
+      rateInput.disabled = true;
       var amountInput = form.querySelector('[data-adj-amount="' + i + '"]');
-      amountInput.value = "0.00";
+      amountInput.value = "";
       amountInput.disabled = true;
     });
+  }
+
+  // ADD/LESS ledger: the visible box shows the ledger NAME, the 4-char code
+  // lives in the hidden [data-adj-code] (that's what gets saved) and is echoed
+  // in the CODE pill next to it.
+  function setAdjLedger(i, code, name) {
+    form.querySelector('[data-adj-code="' + i + '"]').value = code;
+    var ledgerInput = form.querySelector('[data-adj-ledger="' + i + '"]');
+    ledgerInput.value = name;
+    ledgerInput.title = name || "Type to search the ledger master, or press Enter";
+    form.querySelector('[data-adj-code-badge="' + i + '"]').textContent = code || "CODE";
   }
 
   function open(mode) {
@@ -342,12 +356,12 @@
       form.querySelector('[data-ca-cr]').value = "CR";
       form.querySelector('[data-chk-order]').value = "N";
       form.querySelector("[data-supply-type]").value = "W";
-      setRadio("gi-reverse-charge", "N");
+      form.querySelector("[data-reverse-charge]").value = "N";
       applyCashMode();
       setReadonly(false);
       renderItems();
       dialog.showModal();
-      field("date").focus();
+      field("bill_no").focus();
       return;
     }
     getJson(root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.key))).then(function (res) {
@@ -358,7 +372,7 @@
       form.querySelector('[data-ca-cr]').value = d.ca_cr;
       form.querySelector('[data-chk-order]').value = d.chk_order;
       form.querySelector("[data-supply-type]").value = d.supply_type === "I" ? "I" : "W";
-      setRadio("gi-reverse-charge", d.reverse_charge ? "Y" : "N");
+      form.querySelector("[data-reverse-charge]").value = d.reverse_charge ? "Y" : "N";
       applyCashMode();
       partySearch.value = d.party_name;
       field("party_code").value = d.party_code;
@@ -366,6 +380,7 @@
       field("cash_party_city").value = d.cash_party_city;
       field("gst_no").value = d.gst_no;
       field("phone").value = d.phone;
+      field("city").value = d.city;
       field("consignee_name").value = d.consignee_name;
       field("consignee_address").value = d.consignee_address;
       field("order_no").value = d.order_no;
@@ -382,6 +397,14 @@
       field("remarks").value = d.remarks;
       field("freight").value = d.freight;
       field("freight_gst_pct").value = d.freight_rate;
+      (d.adjustments || []).slice(0, 2).forEach(function (a, i) {
+        form.querySelector('[data-adj-sign="' + i + '"]').value = a.sign === "S" ? "S" : "A";
+        setAdjLedger(i, a.code, a.name);
+        form.querySelector('[data-adj-rate="' + i + '"]').disabled = false;
+        var amountInput = form.querySelector('[data-adj-amount="' + i + '"]');
+        amountInput.value = a.amount;
+        amountInput.disabled = false;
+      });
       state.lines = d.items.map(function (i) {
         return { item_code: i.item_code, item_name: i.item_name, hsn_code: i.hsn_code, unit: i.unit,
           order_no: i.order_no, qty: num(i.qty), rate: num(i.rate), dis: 0, gst: num(i.gst_pct) };
@@ -419,7 +442,7 @@
       place_of_supply: field("place_of_supply").value.trim(),
       eway_no: field("eway_no").value.trim(),
       eway_date: window.DateMask.toIso(field("eway_date").value),
-      reverse_charge: radio("gi-reverse-charge").value === "Y",
+      reverse_charge: form.querySelector("[data-reverse-charge]").value === "Y",
       remarks: field("remarks").value.trim(),
       freight: field("freight").value,
       freight_gst_pct: field("freight_gst_pct").value,
@@ -451,35 +474,38 @@
     window.askConfirm(message, onYes);
   }
 
-  /* Header focus chain (Date through Place of Supply -- see the onEnterFocus comment
-     near the top of this file for the full sequence). Party -> GST No is wired via
-     fillParty() above instead, since that's where the party gets filled in. */
+  /* Header focus chain: Bill No -> Date -> CA/CR -> Chk Order -> Party -> Phone
+     -> Consignee Name -> Consignee Address -> Order No -> Order Date -> G.R.No
+     -> G.R.Date -> Vehicle No -> Transport -> Date of Supply -> Time of Supply
+     -> Place of Supply -> Item. City, GST No, Cash Party and Supply are
+     reachable by Tab/click but deliberately not part of this Enter chain.
+     Party -> Phone is wired via fillParty() above instead (that's where the
+     party gets filled in, same as Item -> Dis % below). */
+  onEnterFocus(field("bill_no"), field("date"));
   onEnterFocus(field("date"), form.querySelector('[data-ca-cr]'));
   onEnterFocus(form.querySelector('[data-ca-cr]'), form.querySelector('[data-chk-order]'));
-  onEnterFocus(form.querySelector('[data-chk-order]'), form.querySelector('[data-supply-type]'));
-  onEnterFocus(form.querySelector('[data-supply-type]'), partySearch);
-  onEnterFocus(field("gst_no"), field("consignee_name"));
+  onEnterFocus(form.querySelector('[data-chk-order]'), partySearch);
+  onEnterFocus(field("phone"), field("consignee_name"));
   onEnterFocus(field("consignee_name"), field("consignee_address"));
-  onEnterFocus(field("consignee_address"), field("phone"));
-  onEnterFocus(field("phone"), field("gr_no"));
+  onEnterFocus(field("consignee_address"), field("order_no"));
+  onEnterFocus(field("order_no"), field("order_date"));
+  onEnterFocus(field("order_date"), field("gr_no"));
   onEnterFocus(field("gr_no"), field("gr_date"));
   onEnterFocus(field("gr_date"), field("vehicle_no"));
   onEnterFocus(field("vehicle_no"), field("transport"));
-  onEnterFocus(field("transport"), field("order_no"));
-  onEnterFocus(field("order_no"), field("order_date"));
-  onEnterFocus(field("order_date"), field("date_of_supply"));
+  onEnterFocus(field("transport"), field("date_of_supply"));
   onEnterFocus(field("date_of_supply"), field("time_of_supply"));
   onEnterFocus(field("time_of_supply"), field("place_of_supply"));
   onEnterFocus(field("place_of_supply"), itemSearch);
 
   var itemAddBtn = form.querySelector("[data-item-add]");
   itemAddBtn.addEventListener("click", addItem);
-  // Item-entry focus chain: Item (via fillItem(), above) -> Unit -> HSN -> Ord.No/Dt ->
-  // Dis % -> Qty -> Rate -> OK. Only Rate's Enter actually adds the row (via the
-  // button's own native Enter-triggers-click behavior once it's focused).
-  onEnterFocus(form.querySelector("[data-item-unit]"), form.querySelector("[data-item-hsn]"));
-  onEnterFocus(form.querySelector("[data-item-hsn]"), form.querySelector("[data-item-order]"));
-  onEnterFocus(form.querySelector("[data-item-order]"), form.querySelector("[data-item-dis]"));
+  // Item-entry focus chain: Item (via fillItem(), above) -> Dis % -> Qty -> Rate
+  // -> OK, then back to Item (addItem(), above) for the next line. Unit/HSN/
+  // Ord.No-Dt are reachable by Tab/click but not part of this Enter chain.
+  // Only Rate's Enter actually adds the row (via the button's own native
+  // Enter-triggers-click behavior once it's focused).
+  form.querySelector("[data-item-dis]").addEventListener("focus", function () { this.select(); });
   onEnterFocus(form.querySelector("[data-item-dis]"), form.querySelector("[data-item-qty]"));
   onEnterFocus(form.querySelector("[data-item-qty]"), form.querySelector("[data-item-rate]"));
   onEnterFocus(form.querySelector("[data-item-rate]"), itemAddBtn);
@@ -487,36 +513,55 @@
   field("freight").addEventListener("input", updateTotals);
   field("freight_gst_pct").addEventListener("input", updateTotals);
   [0, 1].forEach(function (i) {
+    var ledgerInput = form.querySelector('[data-adj-ledger="' + i + '"]');
     var codeInput = form.querySelector('[data-adj-code="' + i + '"]');
+    var rateInput = form.querySelector('[data-adj-rate="' + i + '"]');
     var amountInput = form.querySelector('[data-adj-amount="' + i + '"]');
 
     function syncAdjAmountEnabled() {
       var hasLedger = codeInput.value.trim() !== "";
+      rateInput.disabled = !hasLedger;
       amountInput.disabled = !hasLedger;
-      if (!hasLedger) amountInput.value = "0.00";
+      if (!hasLedger) { rateInput.value = ""; amountInput.value = ""; }
       updateTotals();
     }
 
-    codeInput.addEventListener("input", function () {
-      codeInput.value = codeInput.value.toUpperCase();
-      codeInput.title = "Type to search the ledger master, or press Enter";
+    // Typing in the name box drops the previously selected ledger -- a code
+    // is only set by picking a row from the lookup.
+    ledgerInput.addEventListener("input", function () {
+      ledgerInput.value = ledgerInput.value.toUpperCase();
+      if (codeInput.value) {
+        codeInput.value = "";
+        form.querySelector('[data-adj-code-badge="' + i + '"]').textContent = "CODE";
+        ledgerInput.title = "Type to search the ledger master, or press Enter";
+      }
       syncAdjAmountEnabled();
     });
-    codeInput.addEventListener("blur", syncAdjAmountEnabled);
+    ledgerInput.addEventListener("blur", syncAdjAmountEnabled);
 
     if (window.HelpLookup && root.dataset.ledgersUrl) {
-      window.HelpLookup.attach(codeInput, {
-        endpoint: root.dataset.ledgersUrl, resultsKey: "ledgers", valueField: "code",
+      window.HelpLookup.attach(ledgerInput, {
+        endpoint: root.dataset.ledgersUrl, resultsKey: "ledgers", valueField: "name",
         displayFields: [{ key: "code", label: "Code" }, { key: "name", label: "Ledger" }],
         title: "Ledger",
         onSelect: function (row) {
-          codeInput.value = row.code;
-          codeInput.title = row.name || "";
+          setAdjLedger(i, row.code, row.name || row.code);
           syncAdjAmountEnabled();
-          amountInput.focus();
+          rateInput.focus();
         },
       });
     }
+
+    // Rate is a %: Amt = (Total + GST + Freight + GST on Freight) x Rate / 100
+    // (worked out in updateTotals()). Amt stays editable -- typing one directly clears the Rate --
+    // and Amt is the value that's saved / added to the net.
+    rateInput.addEventListener("focus", function () { this.select(); });
+    rateInput.addEventListener("input", function () {
+      if (!num(rateInput.value)) amountInput.value = "";
+      updateTotals();
+    });
+    amountInput.addEventListener("input", function () { rateInput.value = ""; });
+    onEnterFocus(rateInput, amountInput);
 
     form.querySelector('[data-adj-sign="' + i + '"]').addEventListener("change", updateTotals);
     amountInput.addEventListener("input", updateTotals);
@@ -546,9 +591,124 @@
           });
         });
       }
-      else if (a === "print") { var row = selectedRow(); if (row) window.open(root.dataset.printUrlTemplate.replace("__NO__", encodeURIComponent(row.key)), "_blank"); }
+      else if (a === "print") {
+        var row = selectedRow();
+        if (!row) return;
+        printOptionsDialog.querySelector("[data-print-bill-no]").value = row.bill_no;
+        printOptionsDialog.querySelector("[data-print-net-amount]").value = row.net_amount;
+        printOptionsDialog.showModal();
+      }
       else if (a === "refresh") refresh();
       else if (a === "exit") window.location.href = root.dataset.exitUrl;
+    });
+  });
+
+  /* --- Print options dialog (VIEW / PRINT / PRINT PDF / WHATSAPP / EXIT) --------
+     Same popup, same interaction pattern as apps.purchase_orders' own
+     print-options dialog (purchase_order_master.js). */
+  var printOptionsDialog = document.getElementById("gi-print-options-dialog");
+  var copyCheckboxes = printOptionsDialog.querySelectorAll('input[name="gi-copy-type"]');
+  copyCheckboxes.forEach(function (box) {
+    box.addEventListener("change", function () {
+      if (box.checked) copyCheckboxes.forEach(function (other) { if (other !== box) other.checked = false; });
+      else box.checked = true; // always exactly one selected, never zero
+    });
+  });
+  function copyType() {
+    var checked = Array.prototype.find.call(copyCheckboxes, function (b) { return b.checked; });
+    return checked ? checked.value : "";
+  }
+
+  function printUrl(row, preview) {
+    var url = root.dataset.printUrlTemplate.replace("__NO__", encodeURIComponent(row.key));
+    var params = new URLSearchParams();
+    if (preview) params.set("preview", "1");
+    params.set("copy", copyType());
+    return url + "?" + params.toString();
+  }
+
+  function pdfUrl(row) {
+    var url = root.dataset.pdfUrlTemplate.replace("__NO__", encodeURIComponent(row.key));
+    return url + "?copy=" + encodeURIComponent(copyType());
+  }
+
+  var whatsappDialog = document.getElementById("gi-whatsapp-dialog");
+  var whatsappParty = whatsappDialog.querySelector("[data-whatsapp-party]");
+  var whatsappMobile = whatsappDialog.querySelector("[data-whatsapp-mobile]");
+  var whatsappAlert = whatsappDialog.querySelector("[data-whatsapp-alert]");
+  var whatsappRow = null;
+
+  function normalizeMobile(raw) {
+    var digits = (raw || "").replace(/\D/g, "");
+    if (digits.length === 10) return "91" + digits;
+    if (digits.length === 12 && digits.startsWith("91")) return digits;
+    return null;
+  }
+
+  function openWhatsAppDialog() {
+    var row = selectedRow();
+    if (!row) return;
+    whatsappAlert.hidden = true;
+    whatsappParty.value = row.party || "";
+    whatsappMobile.value = "";
+    whatsappRow = row;
+    var url = root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.key));
+    getJson(url).then(function (res) {
+      if (res.ok && whatsappRow === row) whatsappMobile.value = res.body.phone || "";
+    });
+    whatsappDialog.showModal();
+    whatsappMobile.focus();
+  }
+
+  whatsappDialog.querySelector("[data-whatsapp-send]").addEventListener("click", function () {
+    var mobile = normalizeMobile(whatsappMobile.value);
+    if (!mobile) {
+      whatsappAlert.textContent = "Enter a valid 10-digit mobile number.";
+      whatsappAlert.hidden = false;
+      return;
+    }
+    var row = whatsappRow;
+    var shareUrl = root.dataset.shareUrlTemplate.replace("__NO__", encodeURIComponent(row.key));
+    var sendBtn = whatsappDialog.querySelector("[data-whatsapp-send]");
+    sendBtn.disabled = true;
+    // Open the tab NOW, synchronously, inside the click -- popup blockers only
+    // allow window.open() during the click itself.
+    var waTab = window.open("", "_blank");
+    post(shareUrl, {}).then(function (res) {
+      sendBtn.disabled = false;
+      if (!res.ok) {
+        if (waTab) waTab.close();
+        whatsappAlert.textContent = res.body.message || "Could not create a share link for this invoice.";
+        whatsappAlert.hidden = false;
+        return;
+      }
+      var message = "Dear " + (whatsappParty.value || "Sir/Madam") + ",\n" +
+        "Please find your tax invoice below.\n" +
+        "Invoice No: " + row.bill_no + "\n" +
+        "Download Invoice PDF:\n" + res.body.url + "\n" +
+        "Thank you.\nSP MACHINES";
+      whatsappDialog.close();
+      var waUrl = "https://wa.me/" + mobile + "?text=" + encodeURIComponent(message);
+      if (waTab) waTab.location.href = waUrl; else window.open(waUrl, "_blank");
+    }).catch(function () {
+      sendBtn.disabled = false;
+      if (waTab) waTab.close();
+      whatsappAlert.textContent = "Could not reach the server.";
+      whatsappAlert.hidden = false;
+    });
+  });
+  whatsappDialog.querySelector("[data-whatsapp-back]").addEventListener("click", function () { whatsappDialog.close(); });
+
+  printOptionsDialog.querySelectorAll("[data-print-action]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var action = btn.dataset.printAction;
+      if (action === "exit") { printOptionsDialog.close(); return; }
+      var row = selectedRow();
+      if (!row) return;
+      printOptionsDialog.close();
+      if (action === "whatsapp") openWhatsAppDialog();
+      else if (action === "pdf") window.open(pdfUrl(row), "_blank");
+      else window.open(printUrl(row, action === "preview"), "_blank");
     });
   });
 

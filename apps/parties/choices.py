@@ -48,11 +48,7 @@ class GstCategory(models.TextChoices):
     REGULAR = "REGULAR", "Regular"
     COMPOSITION = "COMPOSITION", "Composition"
     UNREGISTERED = "UNREGISTERED", "Unregistered"
-    CONSUMER = "CONSUMER", "Consumer"
-    SEZ = "SEZ", "SEZ"
-    OVERSEAS = "OVERSEAS", "Overseas / Export"
-    DEEMED_EXPORT = "DEEMED_EXPORT", "Deemed Export"
-    UIN = "UIN", "UIN Holder"
+    ECOMMERCE = "ECOMMERCE", "E-commerce"
 
 
 class SupplyType(models.TextChoices):

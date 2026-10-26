@@ -49,7 +49,7 @@
   var totalNet = dialog.querySelector("[data-total-net]");
 
   var master = window.SPPurchaseOrderMaster;
-  var formState = { mode: "add", key: null, lines: [], parties: {}, currentRef: null, snapshot: "", selectedRow: -1, editingIndex: -1 };
+  var formState = { mode: "add", key: null, lines: [], parties: {}, currentRef: null, currentPartName: "", snapshot: "", selectedRow: -1, editingIndex: -1 };
 
   function todayIso() {
     var d = new Date();
@@ -129,7 +129,8 @@
       ],
       title: "Part",
       onSelect: function (row) {
-        rowPartSearch.value = row.name;
+        formState.currentPartName = row.name;
+        rowPartSearch.value = partDisplayText(row.name, row.code);
         fillPartReference(row.code);
         setTimeout(function () { rowMaterial.focus(); }, 0);
       },
@@ -143,6 +144,8 @@
       title: "Part",
       onSelect: function (row) {
         rowPartCode.value = row.code;
+        formState.currentPartName = row.name;
+        rowPartSearch.value = partDisplayText(row.name, row.code);
         fillPartReference(row.code);
         setTimeout(function () { rowMaterial.focus(); }, 0);
       },
@@ -156,6 +159,17 @@
   });
 
   /* --- Part reference (material / unit / gst / hsn / rate / last rate / stock) --- */
+
+  // "NAME (CODE)" for the single visible Part/Code search box -- the box only
+  // ever showed the name, with the actual part code invisible in the hidden
+  // backing field, so there was no way to see which code got picked from the
+  // Part Help list once its name was filled in.
+  function partDisplayText(name, code) {
+    name = (name || "").trim();
+    code = (code || "").trim();
+    if (!name) return code;
+    return code ? name + " (" + code + ")" : name;
+  }
 
   function fillPartReference(code) {
     var url = root.dataset.partReferenceUrl + "?code=" + encodeURIComponent(code) + "&vendor=" + encodeURIComponent(partyCode.value.trim());
@@ -210,14 +224,14 @@
   /* --- Line grid ------------------------------------------------------------------ */
 
   function lineAmount(row) {
-    var base = Number(row.quantity || 0) * Number(row.rate || 0);
+    var base = Number(row.po_qty || 0) * Number(row.rate || 0);
     return base * (1 - Number(row.discount_percent || 0) / 100);
   }
 
   function computeTotals() {
     var amount = 0, gst = 0, discount = 0;
     formState.lines.forEach(function (row) {
-      var base = Number(row.quantity || 0) * Number(row.rate || 0);
+      var base = Number(row.po_qty || 0) * Number(row.rate || 0);
       var amt = lineAmount(row);
       amount += amt;
       discount += base - amt;
@@ -254,11 +268,13 @@
     var row = formState.lines[index];
     formState.editingIndex = index;
     rowPartCode.value = row.part_code || "";
-    rowPartSearch.value = row.part_name || "";
+    formState.currentPartName = row.part_name || "";
+    rowPartSearch.value = partDisplayText(row.part_name, row.part_code);
     rowMaterial.value = row.material || "";
     rowDespatch.value = window.DateMask.toDisplay(row.despatch_date || "");
     rowPoQty.value = row.po_qty || "";
     rowQty.value = row.quantity || "";
+    qtyTouchedByUser = true;
     rowUnit.value = row.unit || "";
     rowHsn.value = row.hsn_code || "";
     rowRate.value = row.rate || "";
@@ -284,8 +300,8 @@
 
   function cancelEdit() {
     formState.editingIndex = -1;
-    rowPartCode.value = ""; rowPartSearch.value = ""; rowMaterial.value = ""; rowDespatch.value = "";
-    rowPoQty.value = ""; rowQty.value = ""; rowUnit.value = ""; rowHsn.value = ""; rowRate.value = "";
+    formState.currentPartName = ""; rowPartCode.value = ""; rowPartSearch.value = ""; rowMaterial.value = ""; rowDespatch.value = "";
+    qtyTouchedByUser = false; rowPoQty.value = ""; rowQty.value = ""; rowUnit.value = ""; rowHsn.value = ""; rowRate.value = "";
     rowDiscount.value = "";
     rowSize.value = ""; rowPacking.value = ""; rowLastRate.value = ""; rowCurrentStock.value = ""; rowParticulars.value = "";
     formState.currentRef = null;
@@ -328,7 +344,12 @@
   function addRow() {
     rowError.textContent = "";
     var code = rowPartCode.value.trim().toUpperCase();
-    var name = rowPartSearch.value.trim();
+    // formState.currentPartName is the clean name (no "(code)" suffix) set by
+    // whichever Help Lookup selection filled rowPartCode -- rowPartSearch.value
+    // itself now also carries that suffix for on-screen display, and saving it
+    // verbatim would bake a redundant "(CODE)" into the stored part_name next to
+    // the grid's already-separate Code column.
+    var name = (formState.currentPartName || rowPartSearch.value).trim();
     var poQty = rowPoQty.value.trim().replace(/,/g, "");
     var qty = (rowQty.value.trim() || rowPoQty.value.trim()).replace(/,/g, "");
     if (!code) { rowError.textContent = "Select a part."; return; }
@@ -349,8 +370,8 @@
     else formState.lines.push(line);
     formState.editingIndex = -1;
     renderGrid();
-    rowPartCode.value = ""; rowPartSearch.value = ""; rowMaterial.value = ""; rowDespatch.value = "";
-    rowPoQty.value = ""; rowQty.value = ""; rowUnit.value = ""; rowHsn.value = ""; rowRate.value = "";
+    formState.currentPartName = ""; rowPartCode.value = ""; rowPartSearch.value = ""; rowMaterial.value = ""; rowDespatch.value = "";
+    qtyTouchedByUser = false; rowPoQty.value = ""; rowQty.value = ""; rowUnit.value = ""; rowHsn.value = ""; rowRate.value = "";
     rowDiscount.value = "";
     rowSize.value = ""; rowPacking.value = ""; rowLastRate.value = ""; rowCurrentStock.value = ""; rowParticulars.value = "";
     formState.currentRef = null;
@@ -358,7 +379,14 @@
   }
   var rowAddBtn = dialog.querySelector("[data-row-add]");
   rowAddBtn.addEventListener("click", addRow);
-  rowPoQty.addEventListener("input", function () { if (!rowQty.value.trim()) rowQty.value = rowPoQty.value; });
+  // Qty mirrors P.O. Qty live as the user types, same as before, but now keeps
+  // mirroring on every keystroke (not just the first, while Qty happened to still
+  // be literally empty) until the user actually edits Qty themselves -- see
+  // qtyTouchedByUser below for why the old "only copy while blank" check broke
+  // partway through typing a multi-digit P.O. Qty.
+  var qtyTouchedByUser = false;
+  rowQty.addEventListener("input", function () { qtyTouchedByUser = true; });
+  rowPoQty.addEventListener("input", function () { if (!qtyTouchedByUser) rowQty.value = rowPoQty.value; });
   lineFieldset.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && formState.editingIndex > -1) { e.preventDefault(); cancelEdit(); }
   });
@@ -439,8 +467,8 @@
     remarks.value = "";
     payment.value = "";
     note.value = "";
-    rowPartCode.value = ""; rowPartSearch.value = ""; rowMaterial.value = ""; rowDespatch.value = "";
-    rowPoQty.value = ""; rowQty.value = ""; rowUnit.value = ""; rowHsn.value = ""; rowRate.value = "";
+    formState.currentPartName = ""; rowPartCode.value = ""; rowPartSearch.value = ""; rowMaterial.value = ""; rowDespatch.value = "";
+    qtyTouchedByUser = false; rowPoQty.value = ""; rowQty.value = ""; rowUnit.value = ""; rowHsn.value = ""; rowRate.value = "";
     rowDiscount.value = "";
     rowSize.value = ""; rowPacking.value = ""; rowLastRate.value = ""; rowCurrentStock.value = ""; rowParticulars.value = "";
     rowError.textContent = "";
@@ -500,7 +528,7 @@
       if (res.ok) {
         dialog.close();
         master.showToast(res.body.message);
-        master.refresh(res.body.key);
+        master.refresh(res.body.key).then(function () { master.printSelected(); });
       } else if (res.body.errors) {
         showErrors(res.body.errors);
       } else {

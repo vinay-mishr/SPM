@@ -29,7 +29,7 @@
 .so-repname { grid-column: 4; grid-row: 2; }
 .so-item-row { grid-template-columns: 2fr repeat(6, minmax(0, 1fr)) auto; align-items: end; margin: 10px 0; }
 .so-wide { grid-column: span 1; }
-.so-body label { display: flex; flex-direction: column; gap: 3px; font-size: 15px; font-weight: 700; text-transform: uppercase; }
+.so-body label { display: flex; flex-direction: column; gap: 3px; font-size: 16px; font-weight: 700; text-transform: uppercase; }
 .so-body input { height: 26px; padding: 2px 6px; border: 2px solid #000; border-radius: 3px; background: #fff; font-weight: 700; }
 .so-body input[readonly] { background: #e5e7eb; }
 .so-body input.num { text-align: right; }
@@ -50,7 +50,7 @@
 .so-totals label { flex-direction: row; align-items: center; gap: 10px; }
 .so-totals input { width: 160px; }
 .so-actions { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
-.so-actions .btn { height: 24px; min-height: 24px; min-width: 76px; padding: 0 10px; font-size: 11px; }
+.so-actions .btn { height: 36px; min-height: 36px; min-width: 110px; padding: 0 16px; font-size: 14px; }
 .so-pono input { width: 100%; }
 .so-podate input, .so-repcod input, .so-repname input { width: 65%; }
 .so-city input { width: 50%; }
@@ -67,10 +67,10 @@
 .so-filter--search input { width: 320px; }
 .so-filters fieldset.so-filter { flex-direction: row; align-items: center; gap: 10px; padding: 2px 8px; }
 .so-filters fieldset.so-filter legend { font-size: 12px; font-weight: 700; }
-.so-filters fieldset.so-filter label { flex-direction: row; align-items: center; gap: 4px; font-size: 12px; white-space: nowrap; }
+.so-filters fieldset.so-filter label { flex-direction: row; align-items: center; gap: 4px; font-size: 14px; white-space: nowrap; }
 .so-filters fieldset.so-filter input[type=radio] { width: 14px; height: 14px; margin: 0; }
 .so-filters input[type=radio] { width: 14px; height: 14px; margin: 0; }
 .so-filters label.so-filter:has(input[type=radio]) { flex-direction: row; align-items: center; gap: 4px; }
-.so-filters label.so-filter span { display: flex; align-items: center; gap: 4px; font-size: 12px; white-space: nowrap; }
+.so-filters label.so-filter span { display: flex; align-items: center; gap: 4px; font-size: 14px; white-space: nowrap; }
 .so-filter--search input { width: 280px; }
 .so-filter input { min-height: 26px; height: 28px; padding: 2px 8px; }

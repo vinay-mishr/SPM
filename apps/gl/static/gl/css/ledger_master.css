@@ -4,6 +4,8 @@
 .gl-table th,
 .gl-table td {
   white-space: nowrap;
+  padding: 2px 6px;
+  font-size: 1.0625rem;
 }
 
 .gl-table .num {
@@ -22,6 +24,11 @@
 
 .glf .mform__label {
   white-space: nowrap;
+  font-size: 1.0625rem;
+}
+
+.gl-form-modal .form-control {
+  font-weight: 700;
 }
 
 .glf-search-row {

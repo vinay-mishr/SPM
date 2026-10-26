@@ -2,21 +2,21 @@
    styles come from static/css/components.css; only this screen's layout lives here. */
 
 .part-form-modal {
-  width: min(760px, calc(100vw - 32px));
+  width: min(960px, calc(100vw - 32px));
 }
 
 .pform {
-  grid-template-columns: 140px minmax(0, 1fr);
+  grid-template-columns: 130px minmax(0, 1fr);
   gap: 8px 12px;
   margin-bottom: 4px;
 }
 
 .pform--three {
-  grid-template-columns: 100px minmax(0, 1fr) 100px minmax(0, 1fr) 100px minmax(0, 1fr);
+  grid-template-columns: 120px minmax(0, 1fr) 120px minmax(0, 1fr) 120px minmax(0, 1fr);
 }
 
 .pform--two {
-  grid-template-columns: 108px minmax(0, 1fr) 108px minmax(0, 1fr);
+  grid-template-columns: 130px minmax(0, 1fr) 130px minmax(0, 1fr);
 }
 
 .pform--two .mform__label {
@@ -29,7 +29,7 @@
 }
 
 .pform--suppliers {
-  grid-template-columns: 90px minmax(0, 1fr) 70px 110px;
+  grid-template-columns: 110px minmax(0, 1fr) 90px 130px;
 }
 
 .pform .mform__input.form-control {
@@ -37,12 +37,16 @@
   padding: 5px 10px;
 }
 
+.pform__supplier .mform__input.form-control {
+  padding: 4px 6px;
+}
+
 .pform__short {
   max-width: 160px;
 }
 
 .pform__code {
-  width: 70px;
+  width: 84px;
   text-transform: uppercase;
 }
 
@@ -50,6 +54,68 @@
   display: flex;
   gap: 6px;
   max-width: none;
+}
+
+/* Sub Assembly checkbox row: align its text baseline with the "SUB ASSEMBLY" label,
+   which otherwise sits lower (it has the usual label top padding, the checkbox doesn't). */
+.part-form-modal .checkbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.part-form-modal .checkbox input {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.part-form-modal .checkbox__box {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-dark);
+  border-radius: 5px;
+  background: var(--surface);
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.part-form-modal .checkbox__box::after {
+  content: "";
+  width: 12px;
+  height: 6px;
+  margin-top: -2px;
+  border: 2.5px solid var(--surface);
+  border-top: 0;
+  border-right: 0;
+  transform: rotate(-45deg) scale(0.6);
+  opacity: 0;
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.part-form-modal .checkbox input:checked + .checkbox__box {
+  background: #1a56db;
+  border-color: #1a56db;
+}
+
+.part-form-modal .checkbox input:checked + .checkbox__box::after {
+  opacity: 1;
+  transform: rotate(-45deg) scale(1);
+}
+
+.part-form-modal .checkbox input:focus-visible + .checkbox__box {
+  box-shadow: var(--focus-ring);
 }
 
 .pform__party-search {
@@ -79,7 +145,8 @@
 .part-form-modal .mform__input.form-control { font-size: 15px; }
 .part-form-modal .mform__section { font-size: 15px; padding: 6px 10px; }
 
-.pform, .pform--three, .pform--two, .pform--suppliers { gap: 2px 6px; }
+.pform, .pform--three, .pform--two, .pform--suppliers { gap: 2px 10px; }
 .part-form-modal .mform__label { font-size: 15px; }
 .part-form-modal .mform__input.form-control { font-size: 16px; font-weight: 700; padding: 3px 8px; min-height: 30px; }
 .part-form-modal .mform__section { font-size: 16px; padding: 4px 8px; }
+.part-form-modal .modal__body { padding: 10px 14px; }

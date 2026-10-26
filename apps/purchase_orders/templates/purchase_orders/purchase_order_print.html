@@ -90,7 +90,7 @@
           <th>MATERIAL</th>
           <th>DESPATCH DATE</th>
           <th class="num">GST%</th>
-          <th class="num">QTY</th>
+          <th class="num">PO QTY</th>
           <th class="num">RATE</th>
           <th class="num">DISC%</th>
           <th class="num">AMOUNT</th>
@@ -107,7 +107,7 @@
           <td>{{ line.material }}</td>
           <td>{{ line.despatch_date|slice:"8:10" }}-{{ line.despatch_date|slice:"5:7" }}-{{ line.despatch_date|slice:"0:4" }}</td>
           <td class="num">{{ line.gst_percent }}</td>
-          <td class="num">{{ line.quantity }}</td>
+          <td class="num">{{ line.po_qty }}</td>
           <td class="num">{{ line.rate|floatformat:2 }}</td>
           <td class="num">{{ line.discount_percent }}</td>
           <td class="num">{{ line.amount }}</td>

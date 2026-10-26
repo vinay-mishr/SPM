@@ -153,6 +153,7 @@
   var partySearch = dialog.querySelector("[data-party-search]");
   var partyList = dialog.querySelector("[data-party-list]");
   var partyName = dialog.querySelector("[data-party-name]");
+  var confirmBtn = dialog.querySelector("[data-form-confirm]");
   var FIELDS = ["div", "bill_no", "bill_date", "party_code", "net_amount", "cash_discount"];
   var formState = { mode: "add", key: null, snapshot: "", afterConfirm: null, parties: {} };
 
@@ -245,12 +246,14 @@
     });
   }
 
+  var MODE_LABELS = { add: "Add", modify: "Modify", "delete": "Delete" };
+
   function openForm(mode, bill) {
     formState.mode = mode;
     formState.key = bill ? bill.key : null;
     clearErrors();
     confirmBox.hidden = true;
-    dialog.querySelector("[data-mode-label]").textContent = mode === "add" ? "Add" : "Modify";
+    dialog.querySelector("[data-mode-label]").textContent = MODE_LABELS[mode];
     field("div").value = bill ? bill.div : (divFilter.value || "OL");
     field("bill_no").value = bill ? bill.bill_no : "";
     field("bill_date").value = bill ? window.DateMask.toDisplay(bill.bill_date) : "";
@@ -260,12 +263,18 @@
     if (bill) formState.parties[bill.party_code] = bill.party_name;
     field("net_amount").value = bill ? bill.net_amount : "";
     field("cash_discount").value = bill ? bill.cash_discount : "0.00";
+    var readOnlyMode = mode === "delete";
+    FIELDS.forEach(function (n) { field(n).readOnly = readOnlyMode; });
+    partySearch.readOnly = readOnlyMode;
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
     formState.snapshot = JSON.stringify(values());
     dialog.showModal();
-    (mode === "add" ? field("div") : field("net_amount")).focus();
+    (mode === "add" ? field("div") : mode === "delete" ? confirmBtn : field("net_amount")).focus();
   }
 
-  function isDirty() { return JSON.stringify(values()) !== formState.snapshot; }
+  function isDirty() { return formState.mode !== "delete" && JSON.stringify(values()) !== formState.snapshot; }
 
   function ask(text, onYes) {
     confirmText.textContent = text;
@@ -312,9 +321,29 @@
     });
   }
 
+  function performDelete() {
+    post(root.dataset.deleteUrl, { key: formState.key || "" }).then(function (res) {
+      if (res.ok) {
+        dialog.close();
+        showToast(res.body.message);
+        refresh(null);
+      } else {
+        alertBox.textContent = res.body.message || "Could not delete.";
+        alertBox.hidden = false;
+      }
+    }).catch(function () {
+      alertBox.textContent = "Could not reach the server. Nothing was deleted.";
+      alertBox.hidden = false;
+    });
+  }
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     clearErrors();
+    if (formState.mode === "delete") {
+      ask("Are you sure you want to delete this Creditor Outstanding entry?", performDelete);
+      return;
+    }
     var errs = validate(values());
     if (Object.keys(errs).length) { showErrors(errs); return; }
     ask("Are you sure?", save);
@@ -348,50 +377,12 @@
     else requestExit();
   });
 
-  /* --- Delete ------------------------------------------------------------------------- */
-
-  var delDialog = document.getElementById("co-delete-dialog");
-  function openDelete(bill) {
-    var dl = delDialog.querySelector("[data-delete-details]");
-    dl.textContent = "";
-    [["Div", bill.div], ["Invoice No", bill.bill_no], ["Invoice Date", dmy(bill.bill_date)],
-     ["Party", (bill.party_name || "") + " (" + bill.party_code + ")"],
-     ["Balance Amt", money.format(Number(bill.net_amount))], ["Cash Dis", money.format(Number(bill.cash_discount))]]
-      .forEach(function (p) {
-        var dt = document.createElement("dt"), dd = document.createElement("dd");
-        dt.textContent = p[0]; dd.textContent = p[1];
-        dl.append(dt, dd);
-      });
-    delDialog.querySelector("[data-delete-alert]").hidden = true;
-    delDialog.querySelector("[data-delete-yes]").disabled = false;
-    delDialog.showModal();
-    delDialog.querySelector("[data-delete-no]").focus();
-  }
-  delDialog.querySelector("[data-delete-no]").addEventListener("click", function () { delDialog.close(); });
-  delDialog.querySelector("[data-delete-yes]").addEventListener("click", function () {
-    var bill = selectedBill();
-    var btn = delDialog.querySelector("[data-delete-yes]");
-    var alert = delDialog.querySelector("[data-delete-alert]");
-    if (!bill) return;
-    btn.disabled = true;
-    post(root.dataset.deleteUrl, { key: bill.key }).then(function (res) {
-      if (res.ok) {
-        delDialog.close();
-        showToast(res.body.message);
-        refresh(null);
-      } else {
-        alert.textContent = res.body.message || "Could not delete.";
-        alert.hidden = false;
-      }
-    });
-  });
-
   /* --- Toolbar ------------------------------------------------------------------------ */
 
   var actions = {
     add: function () { openForm("add", null); },
     modify: function () { var b = selectedBill(); if (b) openForm("modify", b); },
-    "delete": function () { var b = selectedBill(); if (b) openDelete(b); },
+    "delete": function () { var b = selectedBill(); if (b) openForm("delete", b); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
   root.querySelectorAll("[data-action]").forEach(function (btn) {

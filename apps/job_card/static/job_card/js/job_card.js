@@ -176,6 +176,7 @@
       if (f.date) { input.setAttribute("data-date-mask", ""); input.placeholder = "dd/mm/yyyy"; input.maxLength = 10; }
       label.appendChild(input);
       actionFields.appendChild(label);
+      if (f.date) window.DateMask.attach(input);
     });
     actionDialog.showModal();
     var first = actionFields.querySelector("input");

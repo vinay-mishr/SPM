@@ -399,6 +399,18 @@ a.app-nav__link:hover,
   cursor: pointer;
 }
 
+/* E-Way Invoice: red background, matching the EXIT/danger buttons elsewhere. */
+.app-nav__link--eway {
+  background: var(--danger);
+  color: #fff;
+}
+
+.app-nav__link--eway:hover,
+.app-nav__link--eway.is-active {
+  background: var(--danger-hover);
+  color: #fff;
+}
+
 .app-nav__quit:hover {
   border-radius: var(--radius-md);
 }
@@ -439,15 +451,44 @@ a.app-nav__link:hover,
 }
 
 
+/* Mobile top bar: hamburger button that opens the sidebar as an off-canvas drawer. */
+.app-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: var(--text-primary);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.app-menu-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+.app-menu-toggle:hover {
+  background: var(--surface-hover);
+}
+
+.app-backdrop {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .app {
-    height: auto;
-    overflow: visible;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
     grid-template-columns: minmax(0, 1fr);
   }
 
   .app-main {
-    overflow: visible;
+    overflow-y: auto;
   }
 
   .master-page {
@@ -455,21 +496,62 @@ a.app-nav__link:hover,
     min-height: 0;
   }
 
+  .app-menu-toggle {
+    display: inline-flex;
+  }
+
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  /* Off-canvas drawer, hidden by default; .is-open slides it in. */
   .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: min(300px, 84vw);
+    height: 100vh;
+    height: 100dvh;
     padding: 16px;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+  }
+
+  .app-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .app-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+  }
+
+  .app-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .app-nav {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
   }
 
   .app-nav__link {
-    width: auto;
+    width: 100%;
   }
 
   .app-nav__group {
-    flex-basis: 100%;
+    flex-basis: auto;
   }
 
   /* Phones: no room beside the sidebar, so the options open underneath. */
@@ -771,6 +853,8 @@ a.app-nav__link:hover,
 .master-table td {
   padding: 9px 12px;
   white-space: nowrap;
+  border: 2px solid #000; /* kept separate (not collapsed) -- border-collapse
+    would break the sticky header above */
 }
 
 .master-table th {
@@ -863,7 +947,9 @@ a.app-nav__link:hover,
 }
 
 .mform__label::after {
-  content: " :";
+  /* Non-breaking space so the colon never wraps onto its own line, away
+     from the last word of the label. */
+  content: "\00a0:";
 }
 
 .mform__input.form-control {
@@ -928,12 +1014,13 @@ a.app-nav__link:hover,
 /* --- "Discard unsaved changes?" overlay inside the form dialog --------------- */
 
 .modal-discard {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  z-index: 10;
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.45);
 }
 
 .modal-discard[hidden] {
@@ -1028,7 +1115,7 @@ a.app-nav__link:hover,
 
 .app-nav__sublink.is-disabled { opacity: 0.5; cursor: default; }
 
-.app-nav__submenu .app-nav__sublink { color: #000; font-weight: 600; font-size: 1rem; }
+.app-nav__submenu .app-nav__sublink { color: #000; font-weight: 600; font-size: 1.15rem; padding: 3px 8px; }
 .app-nav__link { font-size: 1.1rem; }
 .app-nav__sublink { font-size: 1.05rem; }
 .app-sidebar { padding-top: 8px; }

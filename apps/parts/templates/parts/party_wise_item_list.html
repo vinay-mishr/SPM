@@ -1,0 +1,34 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Party Wise Item List · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'money_receipt/css/party_outstanding.css' %}">
+  <script src="{% static 'parts/js/party_wise_item_list.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Party Wise Item List{% endblock %}
+{% block page_subtitle %}Reports &rsaquo; Sales Reports &rsaquo; Party Wise Item List{% endblock %}
+
+{% block content %}
+<section class="master-page po-page" data-party-wise-item-list
+         data-parties-url="{% url 'money_receipt:api_parties' %}"
+         data-export-url="{% url 'parts:party_wise_item_list_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="master-toolbar po-toolbar" role="toolbar" aria-label="Party wise item list filters">
+    <div class="po-filters">
+      <label class="po-filter po-filter--search">PARTY NAME
+        <input class="form-control" placeholder="Type party name and press Enter" autocomplete="off" data-party-search>
+        <input type="hidden" data-party-code>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-excel>EXCEL</button>
+      <button class="btn btn--danger" type="button" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <p class="po-table__empty" data-alert hidden></p>
+</section>
+{% endblock %}

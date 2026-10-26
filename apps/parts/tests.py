@@ -133,7 +133,7 @@ class PartMasterTests(TestCase):
 
     def test_party_search(self):
         response = self.client.get(reverse("parts:api_parties"), {"q": "steel"})
-        self.assertEqual(response.json()["parties"], [{"code": "S048", "name": "STEEL SUPPLIERS"}])
+        self.assertEqual(response.json()["parties"], [{"code": "S048", "name": "STEEL SUPPLIERS", "city": ""}])
 
     def test_login_and_post_only(self):
         self.assertEqual(self.client.get(reverse("parts:api_delete", args=["ABM01"])).status_code, 405)

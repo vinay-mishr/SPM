@@ -7,18 +7,148 @@
   <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
 {% endblock %}
 
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}{% if show_dashboard %}Dashboard{% else %}Home{% endif %}{% endblock %}
 
 {% block content %}
-<section class="dash-stats" aria-label="Summary">
-  <div class="dash-card"><span class="dash-card__label">Machines</span><strong class="dash-card__value">0</strong></div>
-  <div class="dash-card"><span class="dash-card__label">Customers</span><strong class="dash-card__value">0</strong></div>
-  <div class="dash-card"><span class="dash-card__label">Open Orders</span><strong class="dash-card__value">0</strong></div>
-  <div class="dash-card"><span class="dash-card__label">Pending Quotations</span><strong class="dash-card__value">0</strong></div>
+{% if not show_dashboard %}
+<section class="dash-panel">
+  <div class="dash-panel__head">
+    <h2 class="dash-panel__title">Welcome, {{ user.get_full_name|default:user.username }}</h2>
+  </div>
+  <p class="dash-empty">Choose a screen from the menu on the left.</p>
+</section>
+{% else %}
+<section class="dash-sotd" aria-label="Sale of the Day">
+  <div class="dash-sotd__main">
+    <span class="dash-sotd__label">Sales Today</span>
+    <strong class="dash-sotd__value">₹{{ sale_today.total_sales|floatformat:2 }}</strong>
+    <span class="dash-sotd__sub">{{ sale_today.total_invoices }} invoice{{ sale_today.total_invoices|pluralize }} · gross, excludes collections &amp; credit notes</span>
+  </div>
+  <div class="dash-sotd__split">
+    <div class="dash-sotd__item">
+      <span class="dash-sotd__icon" aria-hidden="true">⚙</span>
+      <div>
+        <span class="dash-sotd__item-label">Machine Sales</span>
+        <strong>₹{{ sale_today.machine_sales|floatformat:2 }}</strong>
+        <span class="dash-sotd__qty">{{ sale_today.machine_qty|floatformat:0 }} units sold</span>
+      </div>
+    </div>
+    <div class="dash-sotd__item">
+      <span class="dash-sotd__icon" aria-hidden="true">🔧</span>
+      <div>
+        <span class="dash-sotd__item-label">Spare Part Sales</span>
+        <strong>₹{{ sale_today.spare_sales|floatformat:2 }}</strong>
+        <span class="dash-sotd__qty">{{ sale_today.spare_qty|floatformat:0 }} qty sold</span>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section class="dash-panel">
-  <h2 class="dash-panel__title">Getting started</h2>
-  <p>Modules (Machines, Customers, Products, Inventory, Sales, Reports) will appear in the sidebar as they're built.</p>
+<section class="dash-panel dash-panel--chart dash-panel--compact">
+  <div class="dash-panel__head">
+    <h2 class="dash-panel__title">Orders Overview</h2>
+  </div>
+  <canvas id="ordersOverviewChart" height="70" data-url="{% url 'dashboard:orders_overview_data' %}"></canvas>
 </section>
+
+<section class="dash-grid dash-grid--tables">
+  <div class="dash-panel dash-panel--wide">
+    <div class="dash-panel__head">
+      <h2 class="dash-panel__title">Recent Sales Orders</h2>
+      <a href="{% url 'sale_order:despatch_status' %}">View All</a>
+    </div>
+    {% if recent_orders %}
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr><th>Order No.</th><th>Customer</th><th>Item</th><th>Date</th><th>Amount (₹)</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for o in recent_orders %}
+          <tr>
+            <td>{{ o.order_no }}</td>
+            <td>{{ o.party_name }}</td>
+            <td>{{ o.item_name }}</td>
+            <td>{{ o.date|date:"d M Y" }}</td>
+            <td>₹{{ o.amount|floatformat:2 }}</td>
+            <td><span class="dash-badge dash-badge--{{ o.status|slugify }}">{{ o.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="dash-empty">No sales orders yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="dash-panel">
+    <div class="dash-panel__head">
+      <h2 class="dash-panel__title">Low Stock Materials</h2>
+      <a href="{% url 'parts:master' %}">View All</a>
+    </div>
+    {% if low_stock %}
+    <div class="dash-table-wrap">
+      <table class="dash-table dash-table--compact">
+        <thead>
+          <tr><th>Material</th><th>Current</th><th>Reorder</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for m in low_stock %}
+          <tr>
+            <td>{{ m.name }}</td>
+            <td class="{% if m.critical %}dash-text--danger{% endif %}">{{ m.current_stock|floatformat:0 }}</td>
+            <td>{{ m.reorder_level|floatformat:0 }}</td>
+            <td>
+              {% if m.critical %}<span class="dash-badge dash-badge--danger">Critical</span>
+              {% else %}<span class="dash-badge dash-badge--warning">Low</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="dash-empty">No materials below reorder level.</p>
+    {% endif %}
+  </div>
+
+  <div class="dash-panel dash-panel--wide">
+    <div class="dash-panel__head">
+      <h2 class="dash-panel__title">Recent Sales</h2>
+      <a href="{% url 'gst_invoice:entry' %}">View All</a>
+    </div>
+    {% if recent_invoices %}
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr><th>Invoice No.</th><th>Customer</th><th>Date</th><th>Amount (₹)</th><th>Type</th></tr>
+        </thead>
+        <tbody>
+          {% for inv in recent_invoices %}
+          <tr>
+            <td>{{ inv.invoice_no }}</td>
+            <td>{{ inv.party_name }}</td>
+            <td>{{ inv.date|date:"d M Y" }}</td>
+            <td>₹{{ inv.amount|floatformat:2 }}</td>
+            <td><span class="dash-badge dash-badge--{{ inv.type|slugify }}">{{ inv.type }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="dash-empty">No sales invoices yet.</p>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block modals %}
+{{ block.super }}
+{% if show_dashboard %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{% static 'dashboard/js/dashboard.js' %}" defer></script>
+{% endif %}
 {% endblock %}

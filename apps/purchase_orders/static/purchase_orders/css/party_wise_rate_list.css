@@ -13,7 +13,8 @@
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 0.8125rem;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .pwr-mode label {
@@ -21,22 +22,30 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .pwr-party {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .pwr-party__label {
-  font-size: 0.75rem;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.pwr-party__name { width: 220px; }
+.pwr-party__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pwr-party__name { width: 340px; min-height: 40px; font-size: 1rem; }
 .pwr-party__code { width: 70px; text-transform: uppercase; }
 
 .pwr-filter {
@@ -65,8 +74,9 @@
 
 .pwr-error[hidden] { display: none; }
 
-.pwr-table { min-width: 800px; font-size: 0.8125rem; }
-.pwr-table th, .pwr-table td { padding: 4px 8px; white-space: nowrap; }
+.pwr-table { min-width: 800px; width: 100%; font-size: 1rem; }
+.pwr-table th, .pwr-table td { padding: 6px 14px; white-space: nowrap; border-right: 2px solid #000; }
+.pwr-table tbody td { border-bottom: 2px solid #000; }
 .pwr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .pwr-party-row td {

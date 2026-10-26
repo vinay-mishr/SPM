@@ -23,14 +23,16 @@
   <div class="master-toolbar pwr-toolbar" role="toolbar" aria-label="Party wise rate list filters">
     <fieldset class="pwr-mode">
       <legend class="visually-hidden">All / Single party</legend>
-      <label><input type="radio" name="pwr-mode" value="all" checked> All Party</label>
-      <label><input type="radio" name="pwr-mode" value="single"> Single Party</label>
+      <label><input type="radio" name="pwr-mode" value="all" checked> All</label>
+      <label><input type="radio" name="pwr-mode" value="single"> Single</label>
     </fieldset>
 
     <div class="pwr-party">
       <span class="pwr-party__label">Party Name</span>
-      <input class="form-control pwr-party__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search disabled>
-      <input class="form-control pwr-party__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+      <div class="pwr-party__row">
+        <input class="form-control pwr-party__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search disabled>
+        <input class="form-control pwr-party__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+      </div>
     </div>
 
     <label class="pwr-filter">Start Date

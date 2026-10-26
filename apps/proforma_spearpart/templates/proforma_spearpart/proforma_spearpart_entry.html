@@ -24,7 +24,6 @@
          data-save-url="{% url 'proforma_spearpart:api_save' %}"
          data-delete-url="{% url 'proforma_spearpart:api_delete' %}"
          data-print-url-template="{% url 'proforma_spearpart:print' bill_no='__NO__' %}"
-         data-new-party-url="{% url 'parties:master' %}"
          data-exit-url="{% url 'dashboard:home' %}"
          data-can-edit="{{ can_edit|yesno:'1,0' }}">
   {% csrf_token %}
@@ -62,30 +61,26 @@
     <div class="gi-body">
       <div class="gi-alert" role="alert" data-form-alert hidden></div>
 
-      <div class="gi-fields">
-        <div class="gi-field-row">
-          <label>PERFORMA NO <input data-field="bill_no" readonly tabindex="-1"></label>
-          <label>DATE <input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-          <label>ORDER NO <input data-field="order_no" maxlength="15"></label>
-          <label>ORDER DATE <input data-field="order_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-          <label>GST(Y/N) <select data-field="gst_enabled"><option value="Y" selected>Y</option><option value="N">N</option></select></label>
-        </div>
-
-        <div class="gi-field-row">
-          <label class="gi-wide">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
-          <label class="gi-wide">GST NO <input data-field="gst_no" maxlength="16"></label>
-          <label>PL NO <input data-field="pl_no" maxlength="20"></label>
-          <label>PL DATE <input data-field="pl_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
-          <a class="pfs-shortcut" data-new-party target="_blank" rel="noopener">New Party</a>
-        </div>
-
-        <div class="gi-field-row">
-          <label class="gi-radio">SUPPLY
-            <span><input type="radio" name="pfs-supply" value="W" checked> (W) WITHIN STATE</span>
-            <span><input type="radio" name="pfs-supply" value="I"> (I) INTERSTATE</span>
-          </label>
-          <label class="gi-wide">OTHERS <input data-field="others" maxlength="100"></label>
-        </div>
+      <div class="gi-fields pfs-header-grid">
+        <!-- DOM order now matches the required keyboard focus sequence
+             (Performa No -> Performa Date -> Party -> Supply -> Order No ->
+             Order Date -> GST(Y/N) -> PL No -> PL Date -> Others -> Part No),
+             independent of each field's visual position -- that's still set
+             entirely by the pfs-f-* CSS Grid classes in proforma_spearpart.css,
+             which are unchanged, so nothing moves on screen. GST No isn't part
+             of the required sequence; it stays tabindex="-1" (click-only,
+             still auto-filled from Party) so it doesn't intrude on it. -->
+        <label class="pfs-f-billno">PERFORMA NO <input data-field="bill_no" readonly tabindex="-1"></label>
+        <label class="pfs-f-date">PERFORMA DATE <input data-field="date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="gi-wide pfs-f-party">PARTY <input data-party-search placeholder="Type party name and press Enter" autocomplete="off"><input type="hidden" data-field="party_code"></label>
+        <label class="gi-wide pfs-f-gstno">GST NO <input data-field="gst_no" maxlength="16" tabindex="-1"></label>
+        <label class="pfs-f-supply">SUPPLY <select data-field="supply_type"><option value="W" selected>(W) WITHIN STATE</option><option value="I">(I) INTERSTATE</option></select></label>
+        <label class="pfs-f-orderno">ORDER NO <input data-field="order_no" maxlength="15"></label>
+        <label class="pfs-f-orderdate">ORDER DATE <input data-field="order_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="pfs-f-gstyn">GST(Y/N) <select data-field="gst_enabled"><option value="Y" selected>Y</option><option value="N">N</option></select></label>
+        <label class="pfs-f-plno">PL NO <input data-field="pl_no" maxlength="20"></label>
+        <label class="pfs-f-pldate">PL DATE <input data-field="pl_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
+        <label class="gi-wide pfs-f-others">OTHERS <input data-field="others" maxlength="100"></label>
       </div>
 
       <div class="gi-item-row pfs-item-row">
@@ -96,6 +91,11 @@
         <label>RATE <input class="num" data-item-rate></label>
         <button type="button" class="btn btn--primary" data-item-add>OK</button>
         <div class="gi-row-error" data-item-error></div>
+      </div>
+
+      <div class="gi-narration">
+        <div class="gi-narration-title">Particular</div>
+        <textarea data-item-particular rows="1"></textarea>
       </div>
 
       <div class="gi-grid gi-items">

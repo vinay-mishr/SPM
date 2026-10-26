@@ -61,4 +61,43 @@
       }
     });
   });
+
+  /* Mobile: hamburger button opens the sidebar as an off-canvas drawer. */
+  var toggle = document.querySelector("[data-nav-toggle]");
+  var sidebar = document.getElementById("app-sidebar");
+  var backdrop = document.querySelector("[data-nav-backdrop]");
+  if (toggle && sidebar && backdrop) {
+    function closeDrawer() {
+      sidebar.classList.remove("is-open");
+      backdrop.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    function openDrawer() {
+      sidebar.classList.add("is-open");
+      backdrop.classList.add("is-open");
+      toggle.setAttribute("aria-expanded", "true");
+    }
+
+    toggle.addEventListener("click", function () {
+      if (sidebar.classList.contains("is-open")) closeDrawer();
+      else openDrawer();
+    });
+
+    backdrop.addEventListener("click", closeDrawer);
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && sidebar.classList.contains("is-open")) closeDrawer();
+    });
+
+    /* Close the drawer after navigating (clicking a real link, not a Details toggle). */
+    sidebar.addEventListener("click", function (event) {
+      var link = event.target.closest("a.app-nav__link, a.app-nav__sublink");
+      if (link) closeDrawer();
+    });
+
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 767) closeDrawer();
+    });
+  }
 })();

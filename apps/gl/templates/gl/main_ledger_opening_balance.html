@@ -19,8 +19,7 @@
   {% csrf_token %}
 
   <form class="mlob-search master-toolbar" role="search" data-search-form>
-    <fieldset class="mlob-search__mode">
-      <legend class="mlob-search__label">Search</legend>
+    <fieldset class="mlob-search__mode" aria-label="Search">
       <label><input type="radio" name="mode" value="all" checked> All</label>
       <label><input type="radio" name="mode" value="selective"> Selective</label>
     </fieldset>

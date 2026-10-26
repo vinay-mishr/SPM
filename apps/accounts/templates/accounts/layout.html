@@ -37,6 +37,11 @@
       </div>
 
       <p class="auth-panel__tagline">&ldquo;Smart Machines<br>for a Better Tomorrow&rdquo;</p>
+
+      <p class="auth-panel__credit">
+        Developed by <strong>CTC Solutions</strong><br>
+        <span class="auth-panel__credit-line">For Support Call: <a href="tel:+919855556863">+91 98555-56863</a>, <a href="tel:+917986810335">+91 79868-10335</a></span>
+      </p>
     </section>
 
     {% block showcase %}
@@ -95,6 +100,10 @@
       <span>{{ brand.tagline }}</span>
     </div>
     <div class="auth-footer__contact">
+      {% if brand.contact_address %}
+        <span class="auth-footer__address">{{ brand.contact_address }}</span>
+        <span class="auth-footer__sep" aria-hidden="true"></span>
+      {% endif %}
       {% if brand.website %}
         <a href="{{ brand.website }}" target="_blank" rel="noopener">{{ brand.website|cut:"https://"|cut:"http://" }}</a>
         <span class="auth-footer__sep" aria-hidden="true"></span>
@@ -103,6 +112,12 @@
         <svg><use href="#i-settings"></use></svg>
         <svg><use href="#i-globe"></use></svg>
       </span>
+      {% if brand.contact_email %}
+        <a class="auth-footer__phone" href="mailto:{{ brand.contact_email }}">
+          <svg aria-hidden="true"><use href="#i-mail"></use></svg>
+          {{ brand.contact_email }}
+        </a>
+      {% endif %}
       {% if brand.phone %}
         <a class="auth-footer__phone" href="tel:{{ brand.phone|cut:' ' }}">
           <svg aria-hidden="true"><use href="#i-phone"></use></svg>

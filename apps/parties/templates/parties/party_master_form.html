@@ -125,14 +125,8 @@
 
           <label class="mform__label" for="p-email">Email</label>
           <div class="mform__field">
-            <input class="form-control mform__input" id="p-email" name="email" type="text" inputmode="email" maxlength="30" autocomplete="off" data-field="email">
+            <input class="form-control mform__input" id="p-email" name="email" type="text" inputmode="email" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false" data-field="email">
             <p class="mform__error" data-error-for="email"></p>
-          </div>
-
-          <label class="mform__label" for="p-transport">Transport</label>
-          <div class="mform__field">
-            <input class="form-control mform__input" id="p-transport" name="transport" type="text" maxlength="25" list="party-transport-list" autocomplete="off" data-field="transport">
-            <p class="mform__error" data-error-for="transport"></p>
           </div>
 
           <label class="mform__label" for="p-credit_days">Cr Days</label>
@@ -151,25 +145,17 @@
 
           <label class="mform__label" for="p-association">Association</label>
           <div class="mform__field">
-            <input class="form-control mform__input" id="p-association" name="association" type="text" maxlength="4" list="party-association-list" autocomplete="off" data-field="association">
+            <input class="form-control mform__input pform__short" id="p-association" name="association" type="text" maxlength="4" autocomplete="off" data-field="association">
             <p class="mform__error" data-error-for="association"></p>
           </div>
 
           <label class="mform__label" for="p-supply_type">W / I</label>
           <div class="mform__field">
-            <select class="form-control mform__input" id="p-supply_type" name="supply_type" data-field="supply_type">
+            <select class="form-control mform__input pform__short" id="p-supply_type" name="supply_type" data-field="supply_type">
               <option value="">—</option>
               {% for value, label in supply_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
             </select>
             <p class="mform__error" data-error-for="supply_type"></p>
-          </div>
-
-          <label class="mform__label" for="p-permit">Permit</label>
-          <div class="mform__field">
-            <select class="form-control mform__input pform__short" id="p-permit" name="permit" data-field="permit">
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </select>
           </div>
         </div>
       </div>

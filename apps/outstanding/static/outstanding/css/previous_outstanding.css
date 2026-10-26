@@ -33,12 +33,12 @@
 
 .po-table {
   min-width: 820px;
-  font-size: 0.8125rem;
+  font-size: 1rem;
 }
 
 .po-table th,
 .po-table td {
-  padding: 6px 10px;
+  padding: 2px 6px;
 }
 
 .po-table td:nth-child(5) {
@@ -71,12 +71,18 @@
 
 .po-form {
   grid-template-columns: 120px minmax(0, 1fr);
-  gap: 10px 12px;
+  gap: 7px 12px;
+}
+
+.po-form .mform__label {
+  font-size: 1.0625rem;
 }
 
 .po-form .mform__input.form-control {
-  min-height: 34px;
-  padding: 5px 10px;
+  min-height: 42px;
+  padding: 4px 8px;
+  font-size: 1.0625rem;
+  font-weight: 700;
 }
 
 .po-short { max-width: 70px; text-transform: uppercase; }

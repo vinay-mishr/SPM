@@ -28,8 +28,10 @@
   <div class="master-toolbar poa-toolbar" role="toolbar" aria-label="Pending purchase order adjustment filters">
     <div class="poa-party">
       <span class="poa-party__label">Party Name</span>
-      <input class="form-control poa-party__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search>
-      <input class="form-control poa-party__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+      <div class="poa-party__row">
+        <input class="form-control poa-party__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search>
+        <input class="form-control poa-party__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+      </div>
     </div>
     <label class="poa-rundate">Run Date
       <input class="form-control" type="text" readonly tabindex="-1" data-run-date>

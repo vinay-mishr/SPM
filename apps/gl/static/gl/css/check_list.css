@@ -1,0 +1,4 @@
+/* Accounts > Data Entry > Check-List Printing -- flags rows with an error
+   in red, same visual convention apps.money_receipt's own Party Outstanding
+   uses for its own "ledger mismatch" rows (.po-warn). */
+[data-check-list] table.po-table tr.cl-error td { color: #b91c1c; font-weight: 700; background: #fee2e2; }

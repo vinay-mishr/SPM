@@ -22,17 +22,17 @@
 .gi-alert { margin-bottom: 10px; padding: 8px 12px; border-radius: 4px; background: #dc2626; color: #fff; font-weight: 700; }
 .gi-grid { flex: 1; background: #fff; border: 1px solid var(--gi-border); border-radius: 4px; overflow: auto; }
 .gi-grid table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.gi-grid th { position: sticky; top: 0; background: var(--gi-green); padding: 6px 8px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--gi-border); }
-.gi-grid td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-weight: 700; white-space: nowrap; }
+.gi-grid th { position: sticky; top: 0; background: var(--gi-green); padding: 6px 8px; text-align: left; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #000; }
+.gi-grid td { padding: 5px 8px; border-bottom: 2px solid #000; font-weight: 700; white-space: nowrap; }
 .gi-grid tbody tr.is-selected td { background: #fef9c3; }
 .gi-grid tbody tr.empty td { text-align: center; color: #6b7280; font-weight: 400; }
 .gi-grid .num { text-align: right; }
 .gi-grid .gi-code { font-weight: 700; }
 
 .gi-form-modal {
-  width: min(1340px, 84vw);
+  width: min(1520px, 94vw);
   max-height: calc(100vh - 12px);
-  margin: auto 0 auto 16vw;
+  margin: auto 0 auto 14vw;
   padding: 0;
   border: 1px solid var(--gi-border);
   border-radius: 6px;
@@ -40,36 +40,96 @@
 }
 .gi-form-modal[open] { display: flex; flex-direction: column; }
 .gi-form-modal::backdrop { background: rgba(0, 0, 0, 0.35); }
-.gi-titlebar { flex: none; padding: 5px 14px; background: #8fc4a2; font-weight: 700; font-size: 15px; }
+.gi-titlebar { flex: none; padding: 8px 16px; background: #8fc4a2; font-weight: 700; font-size: 18px; }
 .gi-mode { color: #b91c1c; font-style: italic; margin-left: 10px; }
 .gi-body { flex: 1; min-height: 0; padding: 6px 14px; display: flex; flex-direction: column; gap: 4px; overflow: auto; }
-.gi-fields { display: flex; flex-direction: column; gap: 4px; flex: none; }
+/* align-self: flex-start keeps this shrink-wrapped to its own content's width
+   instead of stretching (the .gi-body flex column's default cross-axis
+   behavior) to the form's full width. Several screens pull a later .gi-fields
+   up beside the (narrower, right-aligned) .gi-summary column with a negative
+   margin-top -- at some viewport widths the two still collide even shrink-
+   wrapped (e.g. a wide REMARKS field here, a wide ledger-amount column
+   there), so .gi-fields and .gi-field-row are also made pointer-transparent
+   except over their own actual controls: any part of their box that isn't a
+   real field just lets clicks fall through to whatever sits underneath (the
+   .gi-summary column's own inputs) instead of swallowing them. */
+.gi-fields { display: flex; flex-direction: column; gap: 4px; flex: none; align-self: flex-start; pointer-events: none; }
+.gi-field-row { pointer-events: none; }
+.gi-fields label, .gi-fields input, .gi-fields select, .gi-fields textarea, .gi-fields button { pointer-events: auto; }
 .gi-field-row { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: end; }
 .gi-fields input, .gi-totals input, .gi-rate input, .gi-fields select {
-  height: 28px; padding: 2px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 15px; font-weight: 400; text-transform: none;
+  height: 34px; padding: 2px 6px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 17px; font-weight: 400; text-transform: none;
 }
 .gi-fields input[readonly] { background: #e5e7eb; }
-.gi-fields input { width: 210px; }
+.gi-fields input { width: 230px; }
 .gi-fields input[type="radio"] { width: auto; }
-.gi-fields select { width: 90px; padding: 2px 4px; }
-.gi-wide input { width: 340px; }
-.gi-narrow input { width: 147px; }
-.gi-compact input { width: 126px; }
-.gi-compact2 input { width: 110px; }
-.gi-compact-wide input { width: 204px; }
+.gi-fields select { width: 100px; padding: 2px 6px; }
+.gi-wide input { width: 370px; }
+.gi-narrow input { width: 160px; }
+.gi-compact input { width: 138px; }
+.gi-compact2 input { width: 120px; }
+.gi-compact-wide input { width: 222px; }
 
-/* Four-column GST invoice layout: Invoice details | Party & Consignee | Transport | Order & Supply. */
-.gi-columns { display: flex; flex-wrap: wrap; align-items: start; gap: 10px 24px; width: fit-content; }
-.gi-column { display: flex; flex-direction: column; gap: 2px; flex: 0 0 auto; min-width: 0; }
-.gi-column--invoice { width: 115px; }
-.gi-column--party { width: 360px; }
-.gi-column--other { width: 260px; }
-.gi-column--supply { width: 270px; }
-.gi-column input, .gi-column select { width: 100%; }
-.gi-column input[type="radio"] { width: auto; }
+/* Two-column legacy-style invoice header (left: bill/party/consignee details,
+   right: order/transport/supply details + shortcut links), matching the
+   reference VFP form's compact row-by-row, label-beside-input layout --
+   deliberately NOT the same stacked label-above-input shape the rest of
+   .gi-fields uses elsewhere, so these rules are scoped to .inv-header only. */
+.inv-header { display: flex; align-items: flex-start; gap: 28px; flex-wrap: wrap; }
+.inv-col { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.inv-col--left { width: 720px; }
+.inv-col--right { width: 450px; }
+
+.inv-row { display: flex; gap: 8px; }
+.inv-row--pair { justify-content: space-between; }
+
+.inv-header .inv-field {
+  display: flex; flex-direction: row; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 18px; text-transform: uppercase;
+}
+.inv-field span { flex: 0 0 148px; white-space: nowrap; }
+.inv-field input, .inv-field select { flex: 1 1 auto; width: auto; min-width: 0; }
+.inv-field input[readonly] { background: #e5e7eb; }
+
+/* date_mask.js wraps a date-mask input in its own ".dm-field" span (to host the
+   calendar icon), measured for size BEFORE this dialog is ever opened -- while
+   hidden, that measurement is 0, so the wrapper never gets an explicit width
+   and instead shrinks/grows on its own. Size the WRAPPER itself here rather
+   than fighting the wrapper's injected "width:100%" rule on the input inside
+   it (same specificity, so unreliable to override at the input level). */
+.inv-header .dm-field { flex: 1 1 auto; min-width: 0; }
+
+.inv-row--top .inv-field > span:first-child { flex-basis: auto; }
+.inv-row--top { font-size: 20px; }
+.inv-row--top input, .inv-row--top select, .inv-row--top .dm-field { height: 36px; }
+.inv-field--billno input { width: 50px; flex: none; }
+.inv-field--date input[data-date-mask] { padding: 2px 4px; }
+.inv-field--date .dm-field { flex: 0 0 130px; }
+.inv-field--cacr select, .inv-field--chk select { width: 62px; flex: none; }
+.inv-field--supply span { flex-basis: 250px; }
+.inv-field--supply select { width: 165px; flex: none; }
+
+.inv-row--pair .inv-field:first-child span { flex-basis: 130px; }
+.inv-row--pair .inv-field:first-child input { flex: 0 0 90px; width: 90px; }
+.inv-row--pair .inv-field--orderno:first-child input { flex: 0 0 140px; width: 140px; }
+.inv-field--date-right { flex: 0 0 auto; }
+.inv-field--date-right span { flex-basis: 94px; }
+.inv-field--date-right input { width: 143px; flex: none; }
+.inv-field--date-right .dm-field { flex: 0 0 143px; }
+
+.inv-row--order { font-size: 20px; }
+.inv-row--order input, .inv-row--order select, .inv-row--order .dm-field { height: 36px; }
+.inv-row--order .inv-field:first-child span { flex-basis: 130px; }
+.inv-row--order .inv-field--orderno:first-child input { flex: 0 0 154px; width: 154px; }
+
+
+.inv-links { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-top: 10px; }
+.inv-link { font-style: italic; text-decoration: underline; color: #1d4ed8; font-size: 12px; font-weight: 700; }
+.inv-link:hover { color: #1e40af; }
+
 @media (max-width: 1060px) {
-  .gi-columns { flex-direction: column; }
-  .gi-column--invoice, .gi-column--party, .gi-column--other, .gi-column--supply { width: 100%; max-width: 420px; flex-basis: auto; }
+  .inv-header { flex-direction: column; }
+  .inv-col--left, .inv-col--right { width: 100%; max-width: 480px; }
 }
 
 .gi-check { flex-direction: row; align-items: center; gap: 6px; }
@@ -83,53 +143,92 @@
 .gi-rate span { font-weight: 700; text-align: right; }
 .gi-rate span:first-child { text-align: left; }
 .gi-rate input { text-align: right; }
-.gi-footer { flex: none; display: flex; justify-content: center; gap: 10px; margin-top: -22px; }
-.gi-footer .btn { height: 30px; min-width: 100px; padding: 0 14px; font-size: 13px; }
+.gi-footer { flex: none; display: flex; justify-content: center; gap: 14px; margin-top: 14px; margin-bottom: 4px; }
+.gi-footer .btn { height: 38px; min-width: 120px; padding: 0 18px; font-size: 15px; }
 /* Still used by spare_invoice/proforma_invoice/proforma_spearpart's own gi-confirm dialog. */
 .gi-confirm { border: 1px solid var(--gi-border); border-radius: 6px; padding: 16px; width: min(320px, 90vw); margin: auto; background: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
 .gi-confirm::backdrop { background: rgba(0, 0, 0, 0.45); }
 .gi-confirm p { font-weight: 700; margin: 0 0 12px; font-size: 16px; }
-.gi-item-row { flex: none; width: fit-content; display: grid; grid-template-columns: 340px 75px 106px 100px 90px 100px 135px auto; gap: 8px; align-items: end; margin: 2px 0; }
-.gi-item-row label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 13px; text-transform: uppercase; }
-.gi-item-row input { height: 28px; padding: 2px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 15px; font-weight: 400; }
+.gi-item-row { flex: none; width: fit-content; display: grid; grid-template-columns: 380px 85px 118px 112px 100px 112px 150px auto; gap: 10px; align-items: end; margin: 4px 0; }
+.gi-item-row label { display: flex; flex-direction: column; gap: 3px; font-weight: 700; font-size: 16px; text-transform: uppercase; }
+.gi-item-row input { height: 34px; padding: 3px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 17px; font-weight: 400; }
 .gi-item-row .gi-wide { grid-column: auto; }
 .gi-item-row .gi-wide input { width: 100%; }
 .gi-item-row .gi-row-error { grid-column: 1 / -1; color: #dc2626; font-size: 12px; }
-.gi-items { flex: none; min-height: 90px; max-height: 460px; border: 1px solid #000; overflow: auto; }
+.gi-items { flex: none; min-height: 100px; max-height: 480px; border: 1px solid #000; overflow: auto; }
 .gi-items table { width: 100%; border-collapse: collapse; }
-.gi-items th, .gi-items td { border: 1px solid #000; padding: 1px 8px; font-size: 1.05rem; }
+.gi-items th, .gi-items td { border: 1px solid #000; padding: 4px 10px; font-size: 1.2rem; }
 .gi-items th { background: #bfe0c9; font-weight: 700; text-transform: uppercase; position: sticky; top: 0; }
 .gi-items td.num, .gi-items th.num { text-align: right; }
 .gi-items tbody td { border-bottom: 1px solid #000; }
-.gi-summary { flex: none; display: grid; grid-template-columns: max-content; gap: 4px; justify-content: end; margin-top: 4px; margin-right: 60px; }
-.gi-summary label { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; width: 340px; font-weight: 700; font-size: 13px; text-transform: uppercase; }
-.gi-summary input { height: 25px; width: 170px; padding: 2px 10px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
+.gi-summary { flex: none; display: grid; grid-template-columns: max-content; gap: 6px; justify-content: end; margin-top: 14px; margin-right: 60px; }
+.gi-summary label { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 14px; width: 380px; justify-self: end; /* right edge lines up with the ADD/LESS Amt boxes */ font-weight: 700; font-size: 17px; text-transform: uppercase; }
+.gi-summary input { height: 30px; width: 190px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
 .gi-summary input[readonly] { background: #e5e7eb; }
 .gi-form-modal input, .gi-form-modal select { font-weight: 700; }
-.gi-item-row .btn[data-item-add] { height: 26px; min-width: 56px; padding: 0 12px; font-size: 12px; align-self: end; }
-.gi-form-modal label { font-size: 13px; }
-.gi-form-modal input, .gi-form-modal select { font-size: 14px; }
-.gi-grid table { font-size: 15px; }
-.gi-grid th { font-size: 14px; }
-.gi-grid td { font-size: 15px; }
+.gi-item-row .btn[data-item-add] { height: 34px; min-width: 70px; padding: 0 14px; font-size: 14px; align-self: end; }
+.gi-form-modal label { font-size: 16px; }
+.gi-form-modal input, .gi-form-modal select { font-size: 16px; }
+.gi-page .btn { font-size: 17px; height: 48px; padding: 0 20px; }
+.gi-page label { font-size: 15px; }
+.gi-page input { font-size: 17px; height: 42px; }
+.gi-grid table { font-size: 18px; }
+.gi-grid th { font-size: 16px; }
+.gi-grid td { font-size: 18px; }
 .gi-grid th, .gi-grid td { padding: 2px 6px; }
-.gi-page .btn { font-size: 15px; height: 40px; padding: 0 14px; }
-.gi-page label { font-size: 14px; }
-.gi-page input { font-size: 16px; height: 40px; }
-.gi-grid table { font-size: 17px; }
-.gi-grid th { font-size: 15px; }
-.gi-grid td { font-size: 17px; }
-.gi-grid th, .gi-grid td { padding: 4px 8px; }
+
+/* Bold black vertical column dividers, same as the Payment Made list. */
+.gi-grid:not(.gi-items) th, .gi-grid:not(.gi-items) td { border-right: 2px solid #000; }
+.gi-grid:not(.gi-items) th:last-child, .gi-grid:not(.gi-items) td:last-child { border-right: 0; }
 
 .gi-radio { flex-direction: row !important; align-items: center; gap: 10px; }
 .gi-radio label { flex-direction: row; align-items: center; gap: 4px; font-weight: 700; text-transform: none; }
 
-.gi-summary-adj-row { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 300px; justify-self: end; }
+/* --- Print options dialog / WhatsApp (same convention as apps.purchase_orders) ---- */
+
+.print-options-dialog { width: min(360px, calc(100vw - 32px)); padding: 0; overflow: hidden; }
+.print-options__header { background: var(--primary); padding: 10px 16px; }
+.print-options__title { margin: 0; font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.04em; }
+.print-options__body { padding: 16px; }
+.print-options__grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.print-options__grid button {
+  grid-column: span 1;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--primary);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+.print-options__grid button:hover { background: var(--border-mint); }
+.print-options__fields { display: flex; gap: 10px; margin-bottom: 12px; }
+.print-options__fields label { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+.print-options__fields input { padding: 6px 8px; border: 1px solid var(--border-mint); border-radius: var(--radius-sm, 4px); background: var(--bg-mint-subtle, #f0f8f2); font-weight: 700; }
+.print-options__copies { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 0.8125rem; }
+.print-options__copies label { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.print-options__exit { grid-column: 3; background: var(--surface-hover); }
+.print-options__exit:hover { background: var(--border-mint); }
+
+.gi-summary-adj-row { display: flex; align-items: center; justify-content: flex-end; gap: 6px; width: 680px; justify-self: end; }
+.gi-adj-label { flex: none; margin-right: 6px; font-weight: 700; font-size: 17px; text-transform: uppercase; white-space: nowrap; }
 .gi-summary-adj-row select {
-  height: 21px; width: 50px; padding: 1px 2px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 11px; font-weight: 700;
+  flex: none; height: 30px; width: 44px; padding: 1px 2px; border: 2px solid #000; border-radius: 4px; background: #fff; font-size: 11px; font-weight: 700;
 }
-.gi-summary-adj-row input[data-adj-code] {
-  height: 21px; width: 66px; padding: 1px 4px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: left; text-transform: uppercase; font-weight: 400;
+.gi-summary-adj-row input.gi-adj-ledger {
+  height: 30px; flex: 1 1 auto; min-width: 0; width: auto; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: left; text-transform: uppercase; font-weight: 400;
 }
-.gi-summary-adj-row input[data-adj-amount] { height: 21px; width: 150px; padding: 1px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
-.gi-summary-adj-row input[data-adj-amount]:disabled { background: #e5e7eb; color: #9ca3af; }
+.gi-adj-code {
+  flex: none; min-width: 52px; height: 26px; padding: 0 10px; border: 2px solid #000; border-radius: 999px; background: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 400; white-space: nowrap;
+}
+.gi-summary-adj-row input[data-adj-rate],
+.gi-summary-adj-row input[data-adj-amount] { flex: none; height: 30px; padding: 2px 8px; border: 2px solid #000; border-radius: 4px; background: #fff; text-align: right; }
+.gi-summary-adj-row input[data-adj-rate] { width: 84px; }
+.gi-summary-adj-row input[data-adj-amount] { width: 190px; } /* lines up with the value boxes above */
+.gi-summary-adj-row input[data-adj-rate]:placeholder-shown,
+.gi-summary-adj-row input[data-adj-amount]:placeholder-shown { text-align: center; }
+.gi-summary-adj-row input[data-adj-rate]:disabled,
+.gi-summary-adj-row input[data-adj-amount]:disabled { background: #fff; color: #9ca3af; }

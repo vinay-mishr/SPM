@@ -13,7 +13,8 @@
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 0.8125rem;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .iwp-mode label {
@@ -21,23 +22,31 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .iwp-item {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .iwp-item__label {
-  font-size: 0.75rem;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.iwp-item__name { width: 260px; }
-.iwp-item__code { width: 90px; text-transform: uppercase; }
+.iwp-item__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iwp-item__name { width: 507px; min-height: 34px; padding: 3px 8px; }
+.iwp-item__code { width: 90px; min-height: 34px; padding: 3px 8px; text-transform: uppercase; }
 
 .iwp-filter {
   display: flex;
@@ -56,8 +65,10 @@
   width: 130px;
 }
 
-.iwp-table { min-width: 900px; font-size: 0.8125rem; }
-.iwp-table th, .iwp-table td { padding: 4px 8px; white-space: nowrap; }
+.iwp-table { min-width: 900px; font-size: 0.9375rem; }
+.iwp-table th, .iwp-table td { padding: 3px 6px; white-space: nowrap; }
+.iwp-table th, .iwp-table td { border-right: 2px solid #000; }
+.iwp-table tbody td { border-bottom: 2px solid #000; }
 .iwp-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .iwp-item-row td {

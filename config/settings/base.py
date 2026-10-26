@@ -52,6 +52,21 @@ DEBUG = False
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
+# Canonical public origin (scheme + host, no trailing slash -- e.g.
+# "https://ctcspm.online") for links handed to someone OUTSIDE the app, such as
+# the "Send on WhatsApp" share links (Purchase Order, Pending Order Letter,
+# MRN, Returnable Challan, GST Invoice, Spare Invoice all build one the same
+# way). Those links are currently built with request.build_absolute_uri(),
+# which uses the Host header of whichever request triggered it -- that's
+# 127.0.0.1 in local development (a link nobody outside this machine can
+# open), and in production it's silently wrong too if a reverse proxy in
+# front of Django isn't forwarding the Host / X-Forwarded-Proto headers
+# correctly, even though ALLOWED_HOSTS and the real domain are both set up
+# fine. Set this in production's .env and the share-link views use it
+# instead, so the link is correct regardless of proxy header configuration.
+# Left blank, behaviour is unchanged (falls back to build_absolute_uri()).
+PUBLIC_BASE_URL = env("PUBLIC_BASE_URL", "").rstrip("/")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -93,6 +108,7 @@ INSTALLED_APPS = [
     "apps.quotations",
     "apps.quotation_spearpart",
     "apps.money_receipt",
+    "apps.eway_bill",
 ]
 
 MIDDLEWARE = [
@@ -126,24 +142,27 @@ TEMPLATES = [
 ]
 
 # --- Database ---------------------------------------------------------------
-# Two connections:
-#   "default" — local SQLite: Django's own tables (users, sessions, permissions)
-#               and the new modules (e.g. Party Master).
+# Two connection aliases, both pointing at the same SQL Server database by default:
+#   "default" — Django's own tables (users, sessions, permissions) and the new
+#               modules (e.g. Party Master).
 #   "legacy"  — the existing SP_MACHINE SQL Server database of the old software.
-#               Configured with DB_ENGINE=mssql (plus DB_NAME, DB_HOST, DB_PORT,
-#               DB_USER, DB_PASSWORD, DB_DRIVER) in .env. Django never creates,
-#               alters or drops tables there (see config/db_routers.py).
+#               Django never creates, alters or drops tables there (see
+#               config/db_routers.py).
+# Configured with DB_ENGINE=mssql (plus DB_NAME, DB_HOST, DB_PORT, DB_USER,
+# DB_PASSWORD, DB_DRIVER) in .env. DB_ENGINE defaults to mssql; set it to
+# "django.db.backends.sqlite3" explicitly (and SQLITE_NAME) to use sqlite instead.
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": env("SQLITE_NAME", str(BASE_DIR / "db.sqlite3")),
+DB_ENGINE = env("DB_ENGINE", "mssql")
+
+if DB_ENGINE.endswith("sqlite3"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": env("SQLITE_NAME", str(BASE_DIR / "db.sqlite3")),
+        }
     }
-}
-
-DB_ENGINE = env("DB_ENGINE", "")
-if DB_ENGINE and not DB_ENGINE.endswith("sqlite3"):
-    DATABASES["legacy"] = {
+else:
+    _mssql_config = {
         "ENGINE": DB_ENGINE,
         "NAME": env("DB_NAME"),
         "USER": env("DB_USER"),
@@ -153,13 +172,17 @@ if DB_ENGINE and not DB_ENGINE.endswith("sqlite3"):
         "CONN_MAX_AGE": int(env("DB_CONN_MAX_AGE", "60")),
     }
     if DB_ENGINE == "mssql":
-        DATABASES["legacy"]["OPTIONS"] = {
+        _mssql_config["OPTIONS"] = {
             "driver": env("DB_DRIVER", "ODBC Driver 18 for SQL Server"),
             # ODBC Driver 18 encrypts by default; TrustServerCertificate=yes accepts the
             # server's self-signed certificate. Set a CA-signed cert on the server and
             # change this to "TrustServerCertificate=no" for full verification.
             "extra_params": env("DB_EXTRA_PARAMS", "Encrypt=yes;TrustServerCertificate=yes"),
         }
+    DATABASES = {
+        "default": dict(_mssql_config),
+        "legacy": dict(_mssql_config),
+    }
 
 DATABASE_ROUTERS = ["config.db_routers.LegacyRouter"]
 
@@ -239,9 +262,12 @@ BRAND = {
     "name": env("SITE_NAME", "SP Machines"),
     "tagline": env("SITE_TAGLINE", "Complete Packaging Solutions"),
     "website": env("SITE_WEBSITE", "https://www.spmachines.in"),
-    "phone": env("SITE_PHONE", "+91 96481 69281"),
-    "logo": "img/sp-logo.svg",  # compact mark: favicon, footer
+    "phone": env("SITE_PHONE", "+91 92169 01409"),
+    "logo": "img/sp-mark.png",  # compact mark: favicon, footer, print headers
     "logo_full": "img/sp-logo-full.png",  # full lockup: login page
+    # Login-page-only contact details (footer), matching spmachines.in's own header.
+    "contact_address": env("SITE_CONTACT_ADDRESS", "SP Machines, C-44, Phase-3, Industrial Area, Mohali"),
+    "contact_email": env("SITE_CONTACT_EMAIL", "spmachines9@gmail.com"),
     # Printed-document-only fields (Purchase Order header etc.) -- separate from
     # the "phone" above, which is the general in-app contact number used across the
     # rest of the site and left untouched. Override any of these with the matching
@@ -271,6 +297,28 @@ QUOTATION_BANK = {
     "account_no": env("QUOTATION_BANK_ACCOUNT", "50200066791400"),
     "ifsc": env("QUOTATION_BANK_IFSC", "HDFC0001307"),
     "branch": env("QUOTATION_BANK_BRANCH", "MOHALI"),
+}
+
+# --- E-Way Bill / e-Invoice provider (apps.eway_bill) ---------------------------
+# Chartered Information Systems (einvapi.charteredinfo.com) -- credentials already
+# live in .env under EINV_*; apps.eway_bill.provider is the first code in this
+# project to actually call them. Leave any of these blank to keep the module
+# disabled (apps.eway_bill.provider.config() raises a clear "not configured"
+# error rather than ever faking a response).
+EWAY_BILL_PROVIDER = {
+    "provider": "charteredinfo",
+    "environment": env("EINV_ENVIRONMENT", "sandbox"),
+    "asp_id": env("EINV_ASP_ID"),
+    "asp_password": env("EINV_ASP_PASSWORD"),
+    "gst_username": env("EINV_GST_USERNAME"),
+    "gst_password": env("EINV_GST_PASSWORD"),
+    "company_gstin": env("EINV_COMPANY_GSTIN"),
+    "company_pin": env("EINV_COMPANY_PIN"),
+    "company_state_code": env("EINV_COMPANY_STATE_CODE"),
+    "auth_url": env("EINV_AUTH_URL"),
+    "invoice_url": env("EINV_INVOICE_URL"),
+    "eway_url": env("EINV_EWAYBILL_URL"),
+    "gstin_details_url": env("EINV_GSTIN_DETAILS_URL"),
 }
 
 # --- Internationalisation -----------------------------------------------------

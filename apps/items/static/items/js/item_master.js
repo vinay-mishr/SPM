@@ -12,7 +12,6 @@
   var countNote = root.querySelector("[data-count]");
   var searchBox = root.querySelector("[data-search]");
   var toast = document.querySelector("[data-toast]");
-  var deleteDialog = document.getElementById("item-delete-dialog");
   var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
 
   var initial = JSON.parse(document.getElementById("item-initial-data").textContent);
@@ -109,72 +108,13 @@
       });
   }
 
-  /* --- Delete dialog ---------------------------------------------------------- */
-
-  var DETAIL_LABELS = [
-    ["item_code", "Item Code"], ["item_name_1", "Item Name 1"], ["item_name_2", "Item Name 2"],
-    ["item_name_3", "Item Name 3"], ["unit", "Unit"], ["hsn_code", "HSN Code"],
-    ["gst_percent", "GST %"], ["rate", "Rate"], ["opening_balance", "Op. Balance"]
-  ];
-
-  function openDelete(item) {
-    var details = deleteDialog.querySelector("[data-delete-details]");
-    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
-    details.textContent = "";
-    DETAIL_LABELS.forEach(function (pair) {
-      var dt = document.createElement("dt");
-      var dd = document.createElement("dd");
-      dt.textContent = pair[1];
-      dd.textContent = item[pair[0]] || "—";
-      details.append(dt, dd);
-    });
-    alertBox.hidden = true;
-    deleteDialog.querySelector("[data-delete-confirm]").disabled = false;
-    deleteDialog.showModal();
-    deleteDialog.querySelector(".modal__footer [data-delete-cancel]").focus();
-  }
-
-  function confirmDelete() {
-    var item = selectedItem();
-    var button = deleteDialog.querySelector("[data-delete-confirm]");
-    var alertBox = deleteDialog.querySelector("[data-delete-alert]");
-    if (!item) return;
-    button.disabled = true;
-
-    fetch(root.dataset.deleteUrl.replace("/0/", "/" + encodeURIComponent(item.id) + "/"), {
-      method: "POST",
-      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" },
-      credentials: "same-origin"
-    })
-      .then(function (response) {
-        return response.json().catch(function () { return {}; }).then(function (body) {
-          return { ok: response.ok, body: body };
-        });
-      })
-      .then(function (result) {
-        if (result.ok) {
-          deleteDialog.close();
-          state.selectedId = null;
-          showToast(result.body.message);
-          return refresh();
-        }
-        alertBox.textContent = result.body.message || "The item could not be deleted.";
-        alertBox.hidden = false;
-      })
-      .catch(function () {
-        alertBox.textContent = "Could not reach the server. Please try again.";
-        alertBox.hidden = false;
-        button.disabled = false;
-      });
-  }
-
   /* --- Actions ------------------------------------------------------------------ */
 
   var actions = {
     add: function () { SPItemForm.open("add", null, state.nextCode); },
     modify: function () { var item = selectedItem(); if (item) SPItemForm.open("modify", item); },
     view: function () { var item = selectedItem(); if (item) SPItemForm.open("view", item); },
-    "delete": function () { var item = selectedItem(); if (item) openDelete(item); },
+    "delete": function () { var item = selectedItem(); if (item) SPItemForm.open("delete", item); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
 
@@ -223,18 +163,19 @@
     }
   });
 
-  deleteDialog.querySelectorAll("[data-delete-cancel]").forEach(function (btn) {
-    btn.addEventListener("click", function () { deleteDialog.close(); });
-  });
-  deleteDialog.querySelector("[data-delete-confirm]").addEventListener("click", confirmDelete);
-
   SPItemForm.init({
     createUrl: root.dataset.createUrl,
     updateUrl: root.dataset.updateUrl,
+    deleteUrl: root.dataset.deleteUrl,
     csrfToken: csrfToken,
     onSaved: function (item, message) {
       showToast(message);
       refresh(item.id);
+    },
+    onDeleted: function (message) {
+      state.selectedId = null;
+      showToast(message);
+      refresh();
     }
   });
 

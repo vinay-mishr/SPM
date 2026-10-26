@@ -24,4 +24,9 @@ urlpatterns = [
         views.PasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
+    path("users/", views.UserMasterView.as_view(), name="user_master"),
+    path("users/api/", views.user_list, name="api_list"),
+    path("users/api/create/", views.user_save, name="api_create"),
+    path("users/api/<int:pk>/update/", views.user_save, name="api_update"),
+    path("users/api/<int:pk>/delete/", views.user_delete, name="api_delete"),
 ]

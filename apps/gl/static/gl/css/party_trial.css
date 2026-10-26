@@ -1,0 +1,9 @@
+/* Accounts > Trial Balance > Party Trial -- the radio-mode list + sub-ledger
+   listbox (only enabled for mode 6, "SUB TRIAL LIST"); the printed result
+   reuses apps.gl.cash_book/main_ledger's own .cb-*/.vp-* classes. */
+.pt-body { display: flex; gap: 20px; padding: 10px 14px 6px; align-items: flex-start; }
+.pt-modes { display: flex; flex-direction: column; gap: 8px; }
+.pt-mode { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; text-transform: uppercase; cursor: pointer; }
+.pt-mode input { width: 16px; height: 16px; cursor: pointer; }
+.pt-sublist { flex: 1; min-height: 140px; border: 2px solid #000; border-radius: 4px; font-size: 13px; background: #fff; }
+.pt-sublist:disabled { background: #eef1f4; color: #9ca3af; }

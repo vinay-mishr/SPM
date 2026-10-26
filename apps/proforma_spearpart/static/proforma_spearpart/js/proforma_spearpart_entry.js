@@ -25,6 +25,25 @@
   var state = { rows: [], selected: null, mode: "add", key: null, lines: [], item: null, editIndex: -1 };
   var alertTimer = null;
 
+  /* Keyboard focus order (per spec):
+     Header: Performa No -> Performa Date -> Party -> Supply -> Order No ->
+       Order Date -> GST(Y/N) -> PL No -> PL Date -> Others -> Part No.
+     Item entry: Part No -> Unit -> HSN No -> Qty -> Rate -> OK (then back to
+     Part No for the next item). GST No isn't part of this sequence -- it's
+     tabindex="-1" (click-only; still auto-filled from Party) -- and DOM
+     order matches this list field-for-field, so plain Tab / Shift+Tab
+     already visits everything in the right order; only Enter needs wiring
+     (same convention as apps.gst_invoice's own onEnterFocus). */
+  function onEnterFocus(el, next) {
+    el.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (!next) return;
+      next.focus();
+      if (next.select) next.select();
+    });
+  }
+
   function show(box, msg) {
     box.textContent = msg || "";
     box.hidden = !msg;
@@ -48,7 +67,6 @@
 
   function num(v) { return Number(v) || 0; }
   function f2(v) { return (Math.round(v * 100) / 100).toFixed(2); }
-  function f3(v) { return (Math.round(v * 1000) / 1000).toFixed(3); }
 
   function post(url, data) {
     return fetch(url, {
@@ -110,11 +128,6 @@
   }
 
   function field(name) { return form.querySelector('[data-field="' + name + '"]'); }
-  function radio(name) { return form.querySelector('input[name="' + name + '"]:checked'); }
-  function setRadio(name, value) {
-    var el = form.querySelector('input[name="' + name + '"][value="' + value + '"]');
-    if (el) el.checked = true;
-  }
 
   function lineAmount(l) { return l.qty * l.rate; }
 
@@ -162,7 +175,7 @@
       tr.dataset.index = i;
       if (i === state.editIndex) tr.classList.add("is-editing");
       tr.append(cell(i + 1), cell(i + 1), cell(l.item_code), cell(l.item_name), cell(l.hsn_code), cell(l.unit),
-        cell(f3(l.qty), "num"), cell(f2(l.rate), "num"), cell(f2(lineAmount(l)), "num"),
+        cell(String(Math.round(num(l.qty))), "num"), cell(f2(l.rate), "num"), cell(f2(lineAmount(l)), "num"),
         cell(gstOn ? f2(l.gst) : "0.00", "num"));
       itemRows.appendChild(tr);
     });
@@ -176,8 +189,9 @@
     form.querySelector("[data-item-code]").value = "";
     form.querySelector("[data-item-unit]").value = "";
     form.querySelector("[data-item-hsn]").value = "";
-    form.querySelector("[data-item-qty]").value = "1.000";
+    form.querySelector("[data-item-qty]").value = "1";
     form.querySelector("[data-item-rate]").value = "0.00";
+    form.querySelector("[data-item-particular]").value = "";
     itemError.textContent = "";
   }
 
@@ -192,7 +206,10 @@
       form.querySelector("[data-item-hsn]").value = p.hsn;
       form.querySelector("[data-item-rate]").value = p.rate;
       itemError.textContent = "";
-      form.querySelector("[data-item-qty]").focus();
+      // Leave focus wherever HelpLookup's own focusNext() already put it (Unit,
+      // the next field in DOM order) -- Unit and HSN are real stops in the
+      // required Part No -> Unit -> HSN -> Qty -> Rate -> OK sequence here,
+      // unlike apps.gst_invoice where those two are readonly/skipped.
     });
   }
 
@@ -206,7 +223,8 @@
     var line = { item_code: state.item.code, item_name: state.item.name,
       hsn_code: form.querySelector("[data-item-hsn]").value.trim() || state.item.hsn,
       unit: form.querySelector("[data-item-unit]").value.trim() || state.item.unit,
-      qty: qty, rate: rate, gst: state.item.gst };
+      qty: qty, rate: rate, gst: state.item.gst,
+      particular: form.querySelector("[data-item-particular]").value.trim() };
     if (state.editIndex >= 0) state.lines[state.editIndex] = line; else state.lines.push(line);
     clearItemRow();
     renderItems();
@@ -225,6 +243,7 @@
     form.querySelector("[data-item-hsn]").value = l.hsn_code;
     form.querySelector("[data-item-qty]").value = l.qty;
     form.querySelector("[data-item-rate]").value = l.rate;
+    form.querySelector("[data-item-particular]").value = l.particular || "";
     renderItems();
     form.querySelector("[data-item-qty]").focus();
   });
@@ -262,7 +281,13 @@
       field("party_code").value = p.code;
       partySearch.value = p.name;
       field("gst_no").value = p.gst_no;
-      setRadio("pfs-supply", p.supply_type === "I" ? "I" : "W");
+      field("supply_type").value = p.supply_type === "I" ? "I" : "W";
+      // HelpLookup's own focusNext() (called right after this onSelect
+      // callback returns) would still land on GST No -- tabindex="-1" keeps
+      // it out of native Tab order but not out of focusNext()'s own
+      // next-focusable-field scan. Override to Supply, the real next step in
+      // the header's Enter chain wired below.
+      setTimeout(function () { field("supply_type").focus(); }, 0);
     });
   }
 
@@ -306,11 +331,11 @@
       field("date").value = today;
       partySearch.value = "";
       field("gst_enabled").value = "Y";
-      setRadio("pfs-supply", "W");
+      field("supply_type").value = "W";
       setReadonly(false);
       renderItems();
       dialog.showModal();
-      field("date").focus();
+      field("bill_no").focus();
       return;
     }
     getJson(root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.key))).then(function (res) {
@@ -319,7 +344,7 @@
       field("bill_no").value = d.bill_no;
       field("date").value = dmy(d.date);
       field("gst_enabled").value = d.gst_enabled === "N" ? "N" : "Y";
-      setRadio("pfs-supply", d.supply_type);
+      field("supply_type").value = d.supply_type === "I" ? "I" : "W";
       partySearch.value = d.party_name;
       field("party_code").value = d.party_code;
       field("gst_no").value = d.gst_no;
@@ -341,7 +366,7 @@
       });
       state.lines = d.items.map(function (i) {
         return { item_code: i.item_code, item_name: i.item_name, hsn_code: i.hsn_code, unit: i.unit,
-          qty: num(i.qty), rate: num(i.rate), gst: num(i.gst_pct) };
+          qty: num(i.qty), rate: num(i.rate), gst: num(i.gst_pct), particular: i.particular || "" };
       });
       renderItems();
       setReadonly(mode === "view");
@@ -356,7 +381,7 @@
       key: state.mode === "modify" ? state.key : null,
       date: window.DateMask.toIso(field("date").value),
       gst_enabled: field("gst_enabled").value,
-      supply_type: radio("pfs-supply").value,
+      supply_type: field("supply_type").value,
       party_code: field("party_code").value.trim(),
       gst_no: field("gst_no").value.trim(),
       order_no: field("order_no").value.trim(),
@@ -377,7 +402,8 @@
         };
       }),
       items: state.lines.map(function (l) {
-        return { item_code: l.item_code, hsn_code: l.hsn_code, unit: l.unit, qty: l.qty, rate: l.rate };
+        return { item_code: l.item_code, hsn_code: l.hsn_code, unit: l.unit, qty: l.qty, rate: l.rate,
+          particular: l.particular || "" };
       }),
     };
     post(root.dataset.saveUrl, payload).then(function (res) {
@@ -398,6 +424,30 @@
   }
 
   form.querySelector("[data-item-add]").addEventListener("click", addItem);
+
+  // Enter-to-advance chain (see the focus-order comment near the top of this
+  // file). Party and Part No each already open their own HelpLookup popup on
+  // Enter (wired by window.HelpLookup.attach above); on selection, fillParty()
+  // explicitly overrides HelpLookup's own focusNext() to land on Supply (not
+  // GST No), and fillItem() leaves it at Unit, by plain DOM order -- so
+  // neither needs an entry here.
+  onEnterFocus(field("bill_no"), field("date"));
+  onEnterFocus(field("date"), partySearch);
+  onEnterFocus(field("supply_type"), field("order_no"));
+  onEnterFocus(field("order_no"), field("order_date"));
+  onEnterFocus(field("order_date"), field("gst_enabled"));
+  onEnterFocus(field("gst_enabled"), field("pl_no"));
+  onEnterFocus(field("pl_no"), field("pl_date"));
+  onEnterFocus(field("pl_date"), field("others"));
+  onEnterFocus(field("others"), itemSearch);
+  onEnterFocus(form.querySelector("[data-item-unit]"), form.querySelector("[data-item-hsn]"));
+  onEnterFocus(form.querySelector("[data-item-hsn]"), form.querySelector("[data-item-qty]"));
+  onEnterFocus(form.querySelector("[data-item-qty]"), form.querySelector("[data-item-rate]"));
+  // Rate's Enter just moves focus to OK; the button's own native
+  // Enter-triggers-click behavior (once focused) runs addItem() from there,
+  // same as apps.gst_invoice's Rate -> OK step.
+  onEnterFocus(form.querySelector("[data-item-rate]"), form.querySelector("[data-item-add]"));
+
   [0, 1].forEach(function (i) {
     form.querySelector('[data-adj-sign="' + i + '"]').addEventListener("change", updateTotals);
     form.querySelector('[data-adj-amount="' + i + '"]').addEventListener("input", updateTotals);
@@ -408,8 +458,6 @@
   });
   form.querySelectorAll("[data-form-exit]").forEach(function (b) { b.addEventListener("click", function () { dialog.close(); }); });
   dialog.addEventListener("keydown", function (e) { if (e.key === "Escape" && dialog.open) { e.preventDefault(); dialog.close(); } });
-
-  form.querySelector("[data-new-party]").href = root.dataset.newPartyUrl;
 
   root.querySelectorAll("[data-action]").forEach(function (btn) {
     btn.addEventListener("click", function () {

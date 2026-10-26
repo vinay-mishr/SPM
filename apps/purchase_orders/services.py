@@ -102,6 +102,22 @@ def _allocate_po_number(div):
     return str((max(numbers) + 1) if numbers else 1)
 
 
+def _pending_po_keys():
+    """{div}|{po_no} for every PO that has at least one still-open line -- adj
+    blank/space AND stk_qty - rec_qty > 0, the same definition the Pending P.O.
+    report (pending_orders() below) uses. Used to label each PO in the master
+    list All / Pending / Completed -- a PO not in this set has every line
+    either adjusted or fully received, i.e. "completed"."""
+    keys = set()
+    for r in PurchaseOrderItem.objects.values("div", "po_no", "quantity", "received_qty", "adjusted"):
+        if (r["adjusted"] or "").strip():
+            continue
+        outstanding = (r["quantity"] or Decimal("0")) - (r["received_qty"] or Decimal("0"))
+        if outstanding > 0:
+            keys.add(f"{(r['div'] or '').strip()}|{r['po_no']}")
+    return keys
+
+
 def list_orders(div=None):
     """All PO headers (optionally one division), newest first."""
     qs = PurchaseOrderHeader.objects.all()
@@ -110,12 +126,14 @@ def list_orders(div=None):
     rows = list(qs.order_by("-order_date", "-po_no").values("div", "po_no", "order_date", "party_code", "amount", "net_amount", "uname"))
     names = _party_names(r["party_code"] for r in rows)
     cities = _party_cities(r["party_code"] for r in rows)
+    pending_keys = _pending_po_keys()
     result = []
     for sno, r in enumerate(rows, start=1):
         party = (r["party_code"] or "").strip()
+        key = f"{(r['div'] or '').strip()}|{r['po_no']}"
         result.append({
             "sno": sno,
-            "key": f"{(r['div'] or '').strip()}|{r['po_no']}",
+            "key": key,
             "div": (r["div"] or "").strip(),
             "po_no": r["po_no"],
             "order_date": r["order_date"].isoformat() if r["order_date"] else "",
@@ -125,6 +143,7 @@ def list_orders(div=None):
             "amount": _money(r["amount"]),
             "net_amount": _money(r["net_amount"]),
             "uname": _clean(r["uname"]),
+            "status": "pending" if key in pending_keys else "completed",
         })
     return result
 
@@ -164,7 +183,7 @@ def get_order(div, po_no):
     names = _part_descriptions(codes)
     materials = dict(Part.objects.filter(part_number__in=set(codes)).values_list("part_number", "material"))
     total_discount = sum(
-        (r["quantity"] or 0) * (r["rate"] or 0) * (r["discount_percent"] or 0) / 100 for r in lines
+        (r["po_qty"] or 0) * (r["rate"] or 0) * (r["discount_percent"] or 0) / 100 for r in lines
     )
     party_mobile = ""
     if header.party_code:
@@ -209,18 +228,18 @@ def get_order(div, po_no):
                 # printed PO, not added into the totals again (it's already baked
                 # into Amount / header.amount).
                 "discount_amount": _money(
-                    (r["quantity"] or 0) * (r["rate"] or 0) * (r["discount_percent"] or 0) / 100
+                    (r["po_qty"] or 0) * (r["rate"] or 0) * (r["discount_percent"] or 0) / 100
                 ),
-                "amount": _money(_line_amount(r["quantity"], r["rate"], r["discount_percent"])),
+                "amount": _money(_line_amount(r["po_qty"], r["rate"], r["discount_percent"])),
             }
             for r in lines
         ],
     }
 
 
-def _line_amount(quantity, rate, discount_percent):
-    """Qty * Rate, less Discount % -- the taxable value GST is computed on."""
-    base = (quantity or Decimal("0")) * (rate or Decimal("0"))
+def _line_amount(po_qty, rate, discount_percent):
+    """P.O. Qty * Rate, less Discount % -- the taxable value GST is computed on."""
+    base = (po_qty or Decimal("0")) * (rate or Decimal("0"))
     return base * (Decimal("1") - (discount_percent or Decimal("0")) / Decimal("100"))
 
 
@@ -383,7 +402,7 @@ def save(div, po_no, party_code, order_date, lines, username="", key=None, remar
     total_gst = Decimal("0")
     line_objects = []
     for row in cleaned:
-        amount = _line_amount(row["quantity"], row["rate"], row["discount_percent"]).quantize(Decimal("0.01"))
+        amount = _line_amount(row["po_qty"], row["rate"], row["discount_percent"]).quantize(Decimal("0.01"))
         gst = gst_split(row["gst_percent"], party_code)
         gst_amount = (amount * (row["gst_percent"] or Decimal("0")) / Decimal("100")).quantize(Decimal("0.01"))
         total_amount += amount
@@ -604,9 +623,15 @@ def pending_despatch(start_date, end_date, run_date, party_code=None, item_code=
 # --- Item Wise Pending Purchase Order report --------------------------------------------------
 #
 # Old VFP form: "ITEM-WISE PENDING P.O." (part-mst is aliased/labelled "item" on this screen).
-# A PO line is pending when:  date <= run_date  AND  stk_qty - rec_qty > 0
+# A PO line is pending when:  date <= run_date  AND  stock - rec_qty > 0
 # (no adj check here, matching the VFP scan condition literally). All = every part; Single
 # narrows to one part (icod == the chosen part's code). Grouped/ordered by item name (i_name).
+#
+# ORD.QTY is P.O. Qty (po_qty / "stock"), not the separate Qty (quantity / stk_qty) -- the
+# two can legitimately differ on a line (e.g. P.O. Qty 10, Qty 100), and what's actually on
+# order, and what MRN receives against, is P.O. Qty. REC.QTY/BAL.QTY follow the same MRN
+# receiving in apps.mrn.services._apply_po_received. Lines saved without a P.O. Qty fall
+# back to Qty so they still show as pending.
 
 def item_wise_pending(run_date, part_code=None):
     """[{part_code, part_name, lines: [...]}] -- pending PO lines, item-wise, ordered by item name."""
@@ -614,9 +639,12 @@ def item_wise_pending(run_date, part_code=None):
     if part_code:
         qs = qs.filter(part_code=part_code.strip().upper())
     lines = list(qs.values(
-        "div", "po_no", "part_code", "order_date", "party_code", "quantity", "received_qty", "despatch_date",
+        "div", "po_no", "part_code", "order_date", "party_code",
+        "po_qty", "quantity", "received_qty", "despatch_date",
     ))
-    lines = [r for r in lines if (r["quantity"] or Decimal("0")) - (r["received_qty"] or Decimal("0")) > 0]
+    for r in lines:
+        r["ordered_qty"] = r["po_qty"] if r["po_qty"] else (r["quantity"] or Decimal("0"))
+    lines = [r for r in lines if r["ordered_qty"] - (r["received_qty"] or Decimal("0")) > 0]
 
     parts = {
         p.part_number: p for p in Part.objects.filter(
@@ -634,7 +662,7 @@ def item_wise_pending(run_date, part_code=None):
     for r in lines:
         code = (r["part_code"] or "").strip()
         part = parts.get(code)
-        ord_qty = r["quantity"] or Decimal("0")
+        ord_qty = r["ordered_qty"]
         rec_qty = r["received_qty"] or Decimal("0")
         entry = grouped.setdefault(code, {
             "part_code": code,

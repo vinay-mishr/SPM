@@ -10,10 +10,13 @@ urlpatterns = [
     path("api/next-no/", views.si_next_no, name="api_next_no"),
     path("api/items/", views.si_items, name="api_items"),
     path("api/item/", views.si_item, name="api_item"),
+    path("api/ledgers/", views.si_ledgers, name="api_ledgers"),
     path("api/parties/", views.si_parties, name="api_parties"),
     path("api/party/", views.si_party, name="api_party"),
     path("api/save/", views.si_save, name="api_save"),
     path("api/delete/", views.si_delete, name="api_delete"),
     path("api/<str:bill_no>/", views.si_detail, name="api_detail"),
     path("print/<str:bill_no>/", views.SpareInvoicePrintView.as_view(), name="print"),
+    path("pdf/<str:bill_no>/", views.si_pdf, name="pdf"),
+    path("share/<str:bill_no>/", views.si_share_link, name="share_link"),
 ]

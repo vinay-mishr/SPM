@@ -1,0 +1,37 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Month Trial · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <script src="{% static 'gl/js/month_trial.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Month Trial{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Trial Balance &rsaquo; Month Trial{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-month-trial
+         data-export-url="{% url 'gl:month_trial_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-titlebar">MONTH TRIAL</div>
+
+  <div class="ml-head">
+    <label class="ml-row ml-row--date"><span>START DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-start-date data-date-mask></label>
+    <label class="ml-row ml-row--date"><span>END DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-end-date data-date-mask></label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+</section>
+
+{{ initial_data|json_script:"mnt-initial-data" }}
+{% endblock %}

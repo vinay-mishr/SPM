@@ -90,37 +90,54 @@ def list_parents():
     ]
 
 
-def search_parts(term, limit=15):
+def search_parts(term, limit=3000, only_sub_assembly=False):
     """Part Master lookup by code or description (for the parent "Item Name" field).
     A blank term returns the first parts so the Help popup has something to show
-    as soon as it opens, instead of "No matches"."""
+    as soon as it opens, instead of "No matches". The limit is high enough to cover
+    the whole Part Master table, so the Help popup can show and scroll through all
+    of them rather than only the first few. Sorted alphabetically by description
+    (case-insensitive), like the Part Master grid itself.
+    ``only_sub_assembly`` restricts the list to parts flagged as a sub-assembly
+    (for the parent "Item Name" field, which only makes sense for those)."""
+    from django.db.models.functions import Lower
+
     term = (term or "").strip()
     duplicates = duplicate_part_numbers()
     if term:
         qs = Part.objects.filter(part_number__istartswith=term) | Part.objects.filter(description_1__icontains=term)
     else:
         qs = Part.objects.all()
+    if only_sub_assembly:
+        qs = qs.filter(sub_assembly="Y")
+    qs = qs.annotate(name_lower=Lower("description_1"))
     return [
         {"code": c, "name": _clean(n), "unit": _clean(u), "material": _clean(m),
-         "gst_percent": f"{g:.2f}" if g is not None else "", "is_duplicate": c in duplicates}
-        for c, n, u, m, g in qs.order_by("part_number").values_list(
-            "part_number", "description_1", "unit", "material", "gst_percent"
+         "gst_percent": f"{g:.2f}" if g is not None else "", "is_duplicate": c in duplicates,
+         "sub_assembly": "Y" if sa == "Y" else ""}
+        for c, n, u, m, g, sa in qs.order_by("name_lower", "part_number").values_list(
+            "part_number", "description_1", "unit", "material", "gst_percent", "sub_assembly"
         )[:limit]
     ]
 
 
-def search_items(term, limit=15):
+def search_items(term, limit=3000):
     """Item Master lookup by code or name (for adding a component row).
     A blank term returns the first items so the Help popup has something to show
-    as soon as it opens, instead of "No matches"."""
+    as soon as it opens, instead of "No matches". Sorted alphabetically by name
+    (case-insensitive), like the Item Master grid itself. The limit is high enough
+    to cover the whole Item Master table, so the Help popup can show and scroll
+    through all of them rather than only the first few."""
+    from django.db.models.functions import Lower
+
     term = (term or "").strip()
     if term:
         qs = Item.objects.filter(item_code__istartswith=term) | Item.objects.filter(item_name_1__icontains=term)
     else:
         qs = Item.objects.all()
+    qs = qs.annotate(name_lower=Lower("item_name_1"))
     return [
         {"code": c, "name": _clean(n), "unit": _clean(u)}
-        for c, n, u in qs.order_by("item_code").values_list("item_code", "item_name_1", "unit")[:limit]
+        for c, n, u in qs.order_by("name_lower", "item_code").values_list("item_code", "item_name_1", "unit")[:limit]
     ]
 
 
@@ -133,14 +150,18 @@ def get_components(part_code):
         BomSaComponent.objects.filter(parent_part_code=part_code)
         .values("component_part_code", "quantity", "unit")
     )
-    names = _part_descriptions(r["component_part_code"] for r in rows)
+    codes = [r["component_part_code"] for r in rows]
+    names = _part_descriptions(codes)
+    # The old conms table's own "unit" column is blank on some rows (never filled in
+    # by the old software); fall back to the component's unit from Part Master.
+    units = _part_units(codes)
     duplicates = duplicate_part_numbers()
     return [
         {
             "item_code": _clean(r["component_part_code"]),
             "item_name": _clean(names.get(r["component_part_code"])),
             "quantity": f"{(r['quantity'] or 0):.3f}",
-            "unit": _clean(r["unit"]),
+            "unit": _clean(r["unit"]) or _clean(units.get(r["component_part_code"])),
             "is_duplicate": r["component_part_code"] in duplicates,
         }
         for r in rows

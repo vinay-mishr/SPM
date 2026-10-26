@@ -1,0 +1,36 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Data Processing · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <script src="{% static 'gl/js/data_processing.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Data Processing{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Final Accounts &rsaquo; Data Processing{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-data-processing
+         data-process-url="{% url 'gl:data_processing_process' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  {% csrf_token %}
+  <div class="pe-titlebar">DATA PROCESSING</div>
+
+  <div class="ml-head">
+    <label class="ml-row ml-row--date"><span>RUN DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-run-date data-date-mask></label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--primary" data-ok>OK</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+</section>
+
+{{ initial_data|json_script:"dp-initial-data" }}
+{% endblock %}

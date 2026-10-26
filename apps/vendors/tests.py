@@ -175,3 +175,33 @@ class VendorMasterTests(CustMstTableMixin, TestCase):
         self.assertEqual(headers[:3], ["Vendor Code", "Vendor Name", "Address 1"])
         self.assertEqual(ws.cell(row=5, column=1).value, "A001")
         self.assertEqual(ws.cell(row=5, column=2).value, "A.S. ENGINEERS")
+
+
+class VendorGstinLookupTests(TestCase):
+    """GST No. auto-fill on the Vendor form reuses the Customer Master lookup;
+    the provider call is mocked so these don't reach the network."""
+
+    def test_view_requires_login(self):
+        res = self.client.get(reverse("vendors:api_gstin_lookup"), {"gstin": VALID_GSTIN})
+        self.assertEqual(res.status_code, 302)
+
+    def test_returns_only_name_address_and_pin(self):
+        self.client.force_login(get_user_model().objects.create_user(username="vendor_gst", password="x"))
+        with mock.patch("apps.eway_bill.provider.lookup_gstin") as mocked:
+            mocked.return_value = {
+                "Gstin": VALID_GSTIN, "TradeName": "Acme", "AddrBno": "12", "AddrBnm": "Industrial Estate",
+                "AddrSt": "Main Road", "AddrLoc": "Mohali", "AddrPncd": "160055", "StateCode": 3,
+            }
+            res = self.client.get(reverse("vendors:api_gstin_lookup"), {"gstin": VALID_GSTIN})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["fields"], {
+            "name": "ACME", "address_1": "12, Industrial Estate", "address_2": "Main Road, Mohali", "pin": "160055",
+        })
+
+    def test_invalid_gstin_is_an_error_without_provider_call(self):
+        self.client.force_login(get_user_model().objects.create_user(username="vendor_gst2", password="x"))
+        with mock.patch("apps.eway_bill.provider.lookup_gstin") as mocked:
+            res = self.client.get(reverse("vendors:api_gstin_lookup"), {"gstin": "03ABC"})
+            mocked.assert_not_called()
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("message", res.json())

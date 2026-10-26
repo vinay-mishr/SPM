@@ -12,7 +12,6 @@
   var countNote = root.querySelector("[data-count]");
   var searchBox = root.querySelector("[data-search]");
   var toast = document.querySelector("[data-toast]");
-  var delDialog = document.getElementById("sv-delete-dialog");
   var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
   var initial = JSON.parse(document.getElementById("sv-initial-data").textContent);
   var state = { supervisors: initial.supervisors, selected: null, query: "" };
@@ -79,53 +78,11 @@
       });
   }
 
-  function openDelete(m) {
-    var dl = delDialog.querySelector("[data-delete-details]");
-    dl.textContent = "";
-    [["Code", m.code], ["Name", m.name]].forEach(function (p) {
-      var dt = document.createElement("dt"), dd = document.createElement("dd");
-      dt.textContent = p[0]; dd.textContent = p[1] || "—";
-      dl.append(dt, dd);
-    });
-    delDialog.querySelector("[data-delete-alert]").hidden = true;
-    delDialog.querySelector("[data-delete-confirm]").disabled = false;
-    delDialog.showModal();
-    delDialog.querySelector(".modal__footer [data-delete-cancel]").focus();
-  }
-
-  function confirmDelete() {
-    var m = selected();
-    var btn = delDialog.querySelector("[data-delete-confirm]");
-    var alertBox = delDialog.querySelector("[data-delete-alert]");
-    if (!m) return;
-    btn.disabled = true;
-    fetch(root.dataset.deleteUrl.replace("/00/", "/" + encodeURIComponent(m.id) + "/"), {
-      method: "POST", credentials: "same-origin",
-      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" }
-    })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, body: b }; }); })
-      .then(function (res) {
-        if (res.ok) {
-          delDialog.close();
-          state.selected = null;
-          showToast(res.body.message);
-          return refresh();
-        }
-        alertBox.textContent = res.body.message || "The supervisor could not be deleted.";
-        alertBox.hidden = false;
-      })
-      .catch(function () {
-        alertBox.textContent = "Could not reach the server. Please try again.";
-        alertBox.hidden = false;
-        btn.disabled = false;
-      });
-  }
-
   var actions = {
     add: function () { SPSupervisorForm.open("add", null); },
     modify: function () { var m = selected(); if (m) SPSupervisorForm.open("modify", m); },
     view: function () { var m = selected(); if (m) SPSupervisorForm.open("view", m); },
-    "delete": function () { var m = selected(); if (m) openDelete(m); },
+    "delete": function () { var m = selected(); if (m) SPSupervisorForm.open("delete", m); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
 
@@ -151,15 +108,14 @@
     var btn = map[e.key.toLowerCase()] && root.querySelector('[data-action="' + map[e.key.toLowerCase()] + '"]');
     if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
   });
-  delDialog.querySelectorAll("[data-delete-cancel]").forEach(function (b) { b.addEventListener("click", function () { delDialog.close(); }); });
-  delDialog.querySelector("[data-delete-confirm]").addEventListener("click", confirmDelete);
-
   SPSupervisorForm.init({
     createUrl: root.dataset.createUrl,
     updateUrl: root.dataset.updateUrl,
+    deleteUrl: root.dataset.deleteUrl,
     nextCodeUrl: root.dataset.nextCodeUrl,
     csrfToken: csrfToken,
-    onSaved: function (m, message) { showToast(message); refresh(m.id); }
+    onSaved: function (m, message) { showToast(message); refresh(m.id); },
+    onDeleted: function (message) { state.selected = null; showToast(message); refresh(); }
   });
 
   render();

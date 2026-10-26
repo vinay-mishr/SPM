@@ -197,14 +197,18 @@ def search_ledgers(q):
 
 
 def search_parties(q):
+    """Party lookup for the Add form -- Sundry Debtors only (settings.PARTY_DEBTOR_CODE
+    / "S001"); Sundry Creditors (vendors, "S002") are a purchase-side concept and
+    should never show up when billing a customer."""
     q = (q or "").strip().upper()
     if q:
         rows = _rows(
-            "SELECT ccode, cname, cadd3 FROM cust_mst WHERE UPPER(cname) LIKE %s ORDER BY cname",
-            [f"%{q}%"],
+            "SELECT ccode, cname, cadd3 FROM cust_mst WHERE code = %s AND UPPER(cname) LIKE %s ORDER BY cname",
+            [settings.PARTY_DEBTOR_CODE, f"%{q}%"],
         )
     else:
-        rows = _rows("SELECT ccode, cname, cadd3 FROM cust_mst ORDER BY cname")
+        rows = _rows("SELECT ccode, cname, cadd3 FROM cust_mst WHERE code = %s ORDER BY cname",
+                      [settings.PARTY_DEBTOR_CODE])
     return [{"code": _clean(r["ccode"]), "name": _clean(r["cname"]) or "", "city": _clean(r["cadd3"]) or ""}
             for r in rows[:20]]
 
@@ -239,6 +243,11 @@ def _validate(payload):
             errors["party_code"] = "Select the party."
         elif not _rows("SELECT ccode FROM cust_mst WHERE ccode = %s", [party_code]):
             errors["party_code"] = "Party not found."
+
+    if not (payload.get("consignee_name") or "").strip():
+        errors["consignee_name"] = "Consignee name is required."
+    if not (payload.get("consignee_address") or "").strip():
+        errors["consignee_address"] = "Consignee address is required."
 
     lines = []
     for n, row in enumerate(payload.get("items") or [], start=1):
@@ -393,7 +402,8 @@ def _post_ledger(bill_no, bill_date, vno, is_cash, party_code, cash_party_name, 
 
 def get_invoice(bill_no):
     rows = _rows(
-        "SELECT b.*, c.cname, c.cadd1, c.cadd2, c.cadd3, c.gst_no AS p_gst_no, c.cphno, c.gscode, c.stname "
+        "SELECT b.*, c.cname, c.cadd1, c.cadd2, c.cadd3, c.gst_no AS p_gst_no, c.cphno, c.gscode, c.stname, "
+        "c.pin AS p_pin, c.ctrp AS p_transport "
         "FROM bill b LEFT JOIN cust_mst c ON c.ccode = b.p_code "
         "WHERE b.bill_no = %s AND b.bill_type = %s", [bill_no, BILL_TYPE],
     )
@@ -429,6 +439,8 @@ def get_invoice(bill_no):
         "city": "" if is_cash else _clean(h["cadd3"]) or "",
         "party_state_code": "" if is_cash else _clean(h["gscode"]) or "",
         "party_state_name": "" if is_cash else _clean(h["stname"]) or "",
+        "party_pin": "" if is_cash else _clean(h["p_pin"]) or "",
+        "party_transport": "" if is_cash else _clean(h["p_transport"]) or "",
         "cash_party_name": _clean(h["c_party"]) if is_cash else "",
         "cash_party_city": _clean(h["c_city"]) if is_cash else "",
         "gst_no": _clean(h["p_gst_no"]) or "", "phone": _clean(h["cphno"]) or "",
@@ -462,6 +474,28 @@ def get_invoice(bill_no):
 
 
 # --- print -------------------------------------------------------------------------------
+
+def get_share_token(bill_no):
+    """Token for a public, no-login link to this invoice's PDF (for sharing e.g.
+    over WhatsApp) -- reuses one already issued for this invoice if it's still
+    valid, rather than minting (and invalidating) a new one on every share."""
+    from .models import GstInvoiceShareLink
+
+    if not get_invoice(bill_no):
+        return None
+    return GstInvoiceShareLink.get_or_create_for(bill_no).token
+
+
+def get_bill_no_by_share_token(token):
+    """The bill_no a public share link's token points to, or None if the token
+    is unknown, expired, or has been revoked."""
+    from .models import GstInvoiceShareLink
+
+    link = GstInvoiceShareLink.objects.filter(token=token).first()
+    if not link or not link.is_valid():
+        return None
+    return link.bill_no
+
 
 def print_data(bill_no):
     """Tax Invoice print view: same get_invoice() data, plus each line split into its

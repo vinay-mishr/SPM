@@ -93,3 +93,7 @@
 .dn-grid th { font-size: 15px; }
 .dn-grid td { font-size: 17px; }
 .dn-grid th, .dn-grid td { padding: 4px 8px; }
+
+/* Bold black vertical column dividers, same as the Payment Made list. */
+.dn-grid:not(.dn-items) th, .dn-grid:not(.dn-items) td { border-right: 2px solid #000; }
+.dn-grid:not(.dn-items) th:last-child, .dn-grid:not(.dn-items) td:last-child { border-right: 0; }

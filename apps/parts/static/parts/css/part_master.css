@@ -1,17 +1,48 @@
 /* Part Master — list screen. Toolbar, table and search come from the shared
    "Master screens" styles in static/css/components.css. */
 
+[data-part-master] .master-toolbar {
+  gap: 18px;
+}
+
+[data-part-master] .master-toolbar__actions {
+  gap: 12px;
+}
+
+[data-part-master] .master-toolbar .btn {
+  min-width: 140px;
+  padding: 0 32px;
+  font-size: 0.9375rem;
+  height: 46px;
+}
+
+[data-part-master] .master-search {
+  flex: 1.56 1 auto;
+  width: auto;
+  min-width: 343px;
+}
+
+[data-part-master] .master-search .form-control {
+  min-height: 46px;
+  padding: 10px 14px;
+  font-size: 1rem;
+}
+
 .part-table {
-  min-width: 900px;
+  min-width: 1200px;
+  width: 100%;
 }
 
 .part-table td:nth-child(2) {
-  min-width: 220px;
+  min-width: 260px;
   white-space: normal;
 }
 
 .part-table__sa {
-  width: 48px;
+  width: 60px;
   text-align: center;
 }
-.part-table th, .part-table td { padding: 0; }
+
+.part-table th, .part-table td {
+  padding: 2px 6px;
+}

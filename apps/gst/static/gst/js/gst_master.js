@@ -72,7 +72,7 @@
       tr.dataset.rate = r.rate;
       tr.tabIndex = 0;
       if (r.rate === state.selected) tr.classList.add("is-selected");
-      tr.append(cell(r.rate, "num"));
+      tr.append(cell(r.rate));
       tbody.appendChild(tr);
     });
     emptyNote.hidden = state.rates.length > 0;
@@ -198,14 +198,19 @@
     });
   }
 
+  var MODE_LABELS = { add: "Add", modify: "Modify", view: "View", "delete": "Delete" };
+
   function setMode(mode) {
     formState.mode = mode;
     dialog.dataset.mode = mode;
-    dialog.querySelector("[data-mode-label]").textContent = mode === "add" ? "Add" : mode === "modify" ? "Modify" : "View";
-    var readOnly = mode === "view";
+    dialog.querySelector("[data-mode-label]").textContent = MODE_LABELS[mode];
+    var readOnly = mode === "view" || mode === "delete";
     rateField.readOnly = readOnly || mode === "modify";
     accountFieldsets.forEach(function (fs) { fs.disabled = readOnly; });
-    confirmBtn.hidden = readOnly;
+    confirmBtn.hidden = mode === "view";
+    confirmBtn.textContent = mode === "delete" ? "Delete" : "Confirm";
+    confirmBtn.classList.toggle("btn--danger", mode === "delete");
+    confirmBtn.classList.toggle("btn--primary", mode !== "delete");
   }
 
   function snapshot() {
@@ -227,7 +232,7 @@
       if (row) fillAccountFields(row);
       formState.snapshot = snapshot();
       dialog.showModal();
-      (mode === "add" ? rateField : dialog.querySelector("[data-account-search]")).focus();
+      (mode === "add" ? rateField : mode === "delete" ? confirmBtn : dialog.querySelector("[data-account-search]")).focus();
     });
   }
 
@@ -275,8 +280,27 @@
     });
   }
 
+  function performDelete() {
+    var row = selectedRate();
+    if (!row) return;
+    confirmBtn.disabled = true;
+    postForm(root.dataset.deleteUrlTemplate.replace("__RATE__", encodeURIComponent(row.rate))).then(function (res) {
+      if (res.ok) {
+        dialog.close();
+        showToast(res.body.message);
+        state.selected = null;
+        refresh();
+      } else {
+        alertBox.textContent = res.body.message || "Could not delete.";
+        alertBox.hidden = false;
+        confirmBtn.disabled = false;
+      }
+    });
+  }
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (formState.mode === "delete") { ask("Are you sure you want to delete this record?", performDelete); return; }
     if (formState.mode === "view") return;
     ask("Are you sure?", save);
   });
@@ -291,50 +315,13 @@
     else requestExit();
   });
 
-  /* --- Delete ------------------------------------------------------------------- */
-
-  var delDialog = document.getElementById("gst-delete-dialog");
-  function openDelete(row) {
-    var dl = delDialog.querySelector("[data-delete-details]");
-    dl.textContent = "";
-    [["GST %", row.rate]].forEach(function (p) {
-      var dt = document.createElement("dt"), dd = document.createElement("dd");
-      dt.textContent = p[0]; dd.textContent = p[1];
-      dl.append(dt, dd);
-    });
-    delDialog.querySelector("[data-delete-alert]").hidden = true;
-    delDialog.querySelector("[data-delete-yes]").disabled = false;
-    delDialog.showModal();
-    delDialog.querySelector("[data-delete-no]").focus();
-  }
-  delDialog.querySelector("[data-delete-no]").addEventListener("click", function () { delDialog.close(); });
-  delDialog.querySelector("[data-delete-yes]").addEventListener("click", function () {
-    var row = selectedRate();
-    var btn = delDialog.querySelector("[data-delete-yes]");
-    var alertBox2 = delDialog.querySelector("[data-delete-alert]");
-    if (!row) return;
-    btn.disabled = true;
-    postForm(root.dataset.deleteUrlTemplate.replace("__RATE__", encodeURIComponent(row.rate))).then(function (res) {
-      if (res.ok) {
-        delDialog.close();
-        showToast(res.body.message);
-        state.selected = null;
-        refresh();
-      } else {
-        alertBox2.textContent = res.body.message || "Could not delete.";
-        alertBox2.hidden = false;
-        btn.disabled = false;
-      }
-    });
-  });
-
   /* --- Toolbar ------------------------------------------------------------------ */
 
   var actions = {
     add: function () { openForm("add"); },
     modify: function () { if (selectedRate()) openForm("modify"); },
     view: function () { if (selectedRate()) openForm("view"); },
-    "delete": function () { var r = selectedRate(); if (r) openDelete(r); },
+    "delete": function () { if (selectedRate()) openForm("delete"); },
     exit: function () { window.location.href = root.dataset.exitUrl; },
   };
   root.querySelectorAll("[data-action]").forEach(function (btn) {

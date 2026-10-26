@@ -1,0 +1,35 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Party Wise Production · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <script src="{% static 'sale_order/js/party_wise_production.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Party Wise Production{% endblock %}
+{% block page_subtitle %}Reports &rsaquo; Sales Reports &rsaquo; Party Wise Production{% endblock %}
+
+{% block content %}
+<section class="pe-page" data-party-wise-production
+         data-export-url="{% url 'sale_order:party_wise_production_export' %}"
+         data-exit-url="{% url 'dashboard:home' %}">
+  <div class="pe-titlebar">PARTYWISE ORDER AND SALE REPORT</div>
+
+  <div class="ml-head">
+    <label class="ml-row ml-row--date"><span>RUN DATE</span>
+      <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-run-date data-date-mask></label>
+  </div>
+
+  <div class="pe-toolbar master-toolbar">
+    <button type="button" class="btn btn--secondary" data-excel>EXCEL</button>
+    <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+  </div>
+
+  <div class="pe-alert" role="alert" data-alert hidden></div>
+</section>
+
+{{ initial_data|json_script:"pwp-initial-data" }}
+{% endblock %}

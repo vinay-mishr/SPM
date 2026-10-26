@@ -73,19 +73,4 @@
 
 {% block modals %}
   {% include "outstanding/previous_outstanding_form.html" %}
-
-  <dialog class="modal modal--sm" id="po-delete-dialog" aria-labelledby="po-delete-title">
-    <header class="modal__header">
-      <h2 class="modal__title" id="po-delete-title">Previous Outstanding — Delete</h2>
-    </header>
-    <div class="modal__body">
-      <dl class="detail-list" data-delete-details></dl>
-      <p class="modal-question">Are you sure you want to delete this Previous Outstanding entry?</p>
-      <div class="alert alert--error" role="alert" data-delete-alert hidden></div>
-    </div>
-    <footer class="modal__footer">
-      <button class="btn btn--danger" type="button" data-delete-yes>Yes</button>
-      <button class="btn btn--secondary" type="button" data-delete-no>No</button>
-    </footer>
-  </dialog>
 {% endblock %}

@@ -1,0 +1,59 @@
+{# Shared Add / Modify / View form for User Master. user_master.js switches the mode. #}
+<dialog class="modal user-form-modal" id="user-form-dialog" aria-labelledby="user-form-title">
+  <form class="user-form" novalidate data-user-form>
+    <header class="modal__header">
+      <h2 class="modal__title" id="user-form-title">User Master — <span data-mode-label>Add</span></h2>
+      <button class="modal__close" type="button" aria-label="Close" data-form-exit>&times;</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="alert alert--error form-alert" role="alert" data-form-alert hidden></div>
+
+      <div class="mform">
+        <label class="mform__label mform__label--required" for="user-username">Username</label>
+        <div class="mform__field">
+          <input class="form-control mform__input" id="user-username" name="username" type="text" maxlength="150" autocomplete="off" required data-field="username">
+          <p class="mform__error" data-error-for="username"></p>
+        </div>
+
+        <label class="mform__label mform__label--required" for="user-role">Role</label>
+        <div class="mform__field">
+          <select class="form-control mform__input" id="user-role" name="role" data-field="role">
+            {% for value, label in initial_data.roles %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+          <p class="mform__error" data-error-for="role"></p>
+        </div>
+
+        <label class="mform__label" for="user-active" data-active-row>Active</label>
+        <div class="mform__field" data-active-row>
+          <input type="checkbox" id="user-active" name="is_active" data-field="is_active">
+          <p class="mform__error" data-error-for="is_active"></p>
+        </div>
+
+        <label class="mform__label" for="user-password" data-password-label>Password</label>
+        <div class="mform__field">
+          <input class="form-control mform__input" id="user-password" name="password" type="password" autocomplete="new-password" data-field="password">
+          <p class="mform__hint" data-password-hint>Leave blank to keep the current password.</p>
+          <p class="mform__error" data-error-for="password"></p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn btn--primary" type="submit" data-form-confirm>Confirm</button>
+      <button class="btn btn--secondary" type="button" data-form-exit>Exit</button>
+    </footer>
+  </form>
+
+  <div class="modal-discard" data-discard hidden>
+    <div class="modal-discard__box" role="alertdialog" aria-labelledby="user-discard-title">
+      <p class="modal-discard__title" id="user-discard-title">Discard unsaved changes?</p>
+      <div class="modal-discard__actions">
+        <button class="btn btn--secondary" type="button" data-discard-cancel>Cancel</button>
+        <button class="btn btn--primary" type="button" data-discard-confirm>Exit</button>
+      </div>
+    </div>
+  </div>
+</dialog>

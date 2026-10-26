@@ -12,7 +12,6 @@
   var countNote = root.querySelector("[data-count]");
   var searchBox = root.querySelector("[data-search]");
   var toast = document.querySelector("[data-toast]");
-  var delDialog = document.getElementById("part-delete-dialog");
   var csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]").value;
   var initial = JSON.parse(document.getElementById("part-initial-data").textContent);
   var money = new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -94,64 +93,11 @@
       });
   }
 
-  var DETAIL_LABELS = [["part_number", "Part No"], ["description_1", "Description"], ["description_2", "Description 2"],
-    ["drawing_no", "Drawing No"], ["gauge", "Gauge"], ["grade", "Grade"], ["material", "Material"],
-    ["location", "Location"], ["unit", "Unit"], ["hsn_code", "HSN Code"], ["part_type", "Part Type"],
-    ["sub_assembly", "Sub Assembly"], ["gst_percent", "GST %"],
-    ["purchase_rate", "Purchase Rate"], ["sale_rate", "Sale Rate"],
-    ["rate_1", "Rate 1"], ["rate_2", "Rate 2"], ["rate_3", "Rate 3"], ["rate_4", "Rate 4"],
-    ["supplier_1", "Supplier 1"], ["supplier_2", "Supplier 2"], ["supplier_3", "Supplier 3"], ["supplier_4", "Supplier 4"],
-    ["packing", "Packing"], ["gross_weight", "Gross Weight"], ["weight_by_100", "Weight / 100"],
-    ["quantity_in_order", "Qty in Order"], ["opening_stock", "Opening Stock"],
-    ["current_stock", "Current Stock"], ["reorder_qty", "Reorder Qty"]];
-
-  function openDelete(p) {
-    var dl = delDialog.querySelector("[data-delete-details]");
-    dl.textContent = "";
-    DETAIL_LABELS.forEach(function (pair) {
-      var dt = document.createElement("dt"), dd = document.createElement("dd");
-      dt.textContent = pair[1]; dd.textContent = p[pair[0]] || "—";
-      dl.append(dt, dd);
-    });
-    delDialog.querySelector("[data-delete-alert]").hidden = true;
-    delDialog.querySelector("[data-delete-confirm]").disabled = false;
-    delDialog.showModal();
-    delDialog.querySelector(".modal__footer [data-delete-cancel]").focus();
-  }
-
-  function confirmDelete() {
-    var p = selected();
-    var btn = delDialog.querySelector("[data-delete-confirm]");
-    var alertBox = delDialog.querySelector("[data-delete-alert]");
-    if (!p) return;
-    btn.disabled = true;
-    fetch(root.dataset.deleteUrl.replace("/0/", "/" + encodeURIComponent(p.id) + "/"), {
-      method: "POST", credentials: "same-origin",
-      headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" }
-    })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, body: b }; }); })
-      .then(function (res) {
-        if (res.ok) {
-          delDialog.close();
-          state.selected = null;
-          showToast(res.body.message);
-          return refresh();
-        }
-        alertBox.textContent = res.body.message || "The part could not be deleted.";
-        alertBox.hidden = false;
-      })
-      .catch(function () {
-        alertBox.textContent = "Could not reach the server. Please try again.";
-        alertBox.hidden = false;
-        btn.disabled = false;
-      });
-  }
-
   var actions = {
     add: function () { SPPartForm.open("add", null); },
     modify: function () { var p = selected(); if (p) SPPartForm.open("modify", p); },
     view: function () { var p = selected(); if (p) SPPartForm.open("view", p); },
-    "delete": function () { var p = selected(); if (p) openDelete(p); },
+    "delete": function () { var p = selected(); if (p) SPPartForm.open("delete", p); },
     exit: function () { window.location.href = root.dataset.exitUrl; }
   };
 
@@ -177,15 +123,14 @@
     var btn = map[e.key.toLowerCase()] && root.querySelector('[data-action="' + map[e.key.toLowerCase()] + '"]');
     if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
   });
-  delDialog.querySelectorAll("[data-delete-cancel]").forEach(function (b) { b.addEventListener("click", function () { delDialog.close(); }); });
-  delDialog.querySelector("[data-delete-confirm]").addEventListener("click", confirmDelete);
-
   SPPartForm.init({
     createUrl: root.dataset.createUrl,
     updateUrl: root.dataset.updateUrl,
+    deleteUrl: root.dataset.deleteUrl,
     partiesUrl: root.dataset.partiesUrl,
     csrfToken: csrfToken,
-    onSaved: function (p, message) { showToast(message); refresh(p.id); }
+    onSaved: function (p, message) { showToast(message); refresh(p.id); },
+    onDeleted: function (message) { state.selected = null; showToast(message); refresh(); }
   });
 
   render();

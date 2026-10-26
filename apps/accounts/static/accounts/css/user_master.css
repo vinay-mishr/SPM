@@ -1,0 +1,16 @@
+/* User Master — list + Add/Modify/View form. Shared master / modal / form styles
+   come from static/css/components.css; only this screen's specifics live here. */
+
+.user-form-modal {
+  width: min(360px, calc(100vw - 32px));
+}
+
+[data-user-master] .master-table-wrap {
+  max-height: 640px;
+}
+
+.mform__hint {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted, #666);
+}

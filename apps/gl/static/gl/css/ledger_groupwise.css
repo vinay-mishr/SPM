@@ -1,0 +1,9 @@
+/* Accounts > Ledger Printing > Ledger Groupwise -- the ledger-picker grid
+   (checkbox FLAG column, tag/untag) reuses apps.gst_invoice's own .gi-*
+   listing classes; the printed result reuses apps.gl.main_ledger's own
+   .ml-*/.cb-* block classes. */
+.lgw-grid-wrap { max-height: 420px; overflow-y: auto; }
+.lgw-flag { width: 60px; text-align: center; }
+.lgw-grid-wrap td.lgw-flag { text-align: center; }
+.lgw-grid-wrap input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.lgw-grid-wrap tr.is-tagged { background: #fef9c3; }

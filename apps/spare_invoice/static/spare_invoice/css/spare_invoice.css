@@ -1,7 +1,7 @@
 /* Spare Part Invoice reuses apps.gst_invoice's .gi-* layout classes wholesale
    (identical field shapes) -- this file only holds the one class it adds. */
 .si-form-modal {
-  width: min(1400px, 98vw);
+  width: min(1550px, 98vw);
   max-height: calc(100vh - 32px);
   margin: auto;
   padding: 0;
@@ -18,6 +18,18 @@
    the gst_invoice screen) at the browser's normal weight. */
 .si-form-modal input, .si-form-modal select { font-weight: 700; }
 
+/* GST % sits as a small compact field to the left of FREIGHT, which keeps the
+   same 190px input width and right-hand alignment as TOTAL AMOUNT and the rest
+   of the summary column (matching the old VFP screen's layout). */
+.si-form-modal .gi-summary-row { width: 380px; gap: 8px; align-items: center; }
+.si-form-modal .gi-summary-row label:first-child { flex: none; width: auto; gap: 6px; }
+.si-form-modal .gi-summary-row label:first-child input { width: 55px; }
+.si-form-modal .gi-summary-row label:last-child { flex: 1 1 auto; width: auto; justify-content: space-between; }
+.si-form-modal .gi-summary-row label:last-child input { width: 190px; }
+
+/* Widen the ADD/LESS ledger amount inputs. */
+.si-form-modal .gi-summary-adj-row input[data-adj-amount] { width: 190px; }
+
 /* Particulars + Current Stk sit on their own row right under the item-entry row. */
 .gi-item-extra { display: flex; align-items: flex-end; gap: 14px; margin: 2px 0 4px; }
 .gi-item-extra .gi-narration { margin-top: 0; flex: 1 1 auto; max-width: 600px; }
@@ -30,17 +42,9 @@
 /* Due Balance sits directly under E-WAY NUMBER instead of up in the invoice-details column. */
 .gi-stack { display: flex; flex-direction: column; gap: 3px; }
 
-.gi-summary { margin-top: -140px; }
-.gi-footer { margin-top: -40px; }
-
 /* --- Compact layout (Spare Part Invoice only -- scoped under .si-form-modal so
    apps.gst_invoice and the other modules sharing gi-*.css are untouched). ------- */
 .si-form-modal .gi-body { padding: 4px 12px; gap: 3px; }
-/* Spread the 4 header columns across the modal's full width instead of leaving
-   them left-packed with empty space on the right -- pushes G.R./Order columns
-   (3rd/4th) over to the right side of the panel. */
-.si-form-modal .gi-columns { gap: 6px 20px; width: 100%; justify-content: space-between; }
-.si-form-modal .gi-column { gap: 2px; }
 .si-form-modal .gi-item-row { margin: 1px 0; }
 .si-form-modal .gi-items { min-height: 56px; }
 .si-form-modal .gi-summary label { gap: 8px; }
@@ -57,6 +61,9 @@
 
 /* --- ADD CHALLAN button (near Party/Transport) and its picker dialog. */
 .gi-challan-row { margin-top: 4px; }
+.gi-challan-row--inline { display: flex; align-items: end; gap: 8px; }
+.gi-challan-row--inline .inv-field { flex: 1 1 auto; }
+.gi-challan-row--inline button { flex: none; }
 [data-challan-rows] tr { cursor: pointer; }
 [data-challan-rows] tr:hover { background: var(--bg-mint-subtle, #f0f8f2); }
 [data-challan-rows] .empty { cursor: default; color: var(--text-secondary, #6b7280); text-align: center; }

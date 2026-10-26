@@ -1,0 +1,15 @@
+/* Accounts > Data Entry > Cash In Hand -- narrower columns/padding than
+   apps.money_receipt's own .po-table default (that table has many wide
+   text columns; this one is just S.NO/DATE/AMOUNT/Dr.-Cr., so the shared
+   sizing left it looking sparse). Scoped to this screen only. */
+[data-cash-in-hand] table.po-table { table-layout: fixed; max-width: 480px; }
+[data-cash-in-hand] table.po-table th,
+[data-cash-in-hand] table.po-table td { padding: 2px 8px; }
+[data-cash-in-hand] table.po-table th:nth-child(1),
+[data-cash-in-hand] table.po-table td:nth-child(1) { width: 60px; }
+[data-cash-in-hand] table.po-table th:nth-child(2),
+[data-cash-in-hand] table.po-table td:nth-child(2) { width: 120px; }
+[data-cash-in-hand] table.po-table th:nth-child(3),
+[data-cash-in-hand] table.po-table td:nth-child(3) { width: 140px; }
+[data-cash-in-hand] table.po-table th:nth-child(4),
+[data-cash-in-hand] table.po-table td:nth-child(4) { width: 50px; }

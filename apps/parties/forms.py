@@ -50,7 +50,7 @@ class PartyForm(forms.Form):
     is_active = forms.TypedChoiceField(choices=YES_NO, coerce=lambda v: v == "true", initial="true")
     association = forms.CharField(max_length=4, required=False)
     supply_type = forms.ChoiceField(choices=[("", "—")] + list(SupplyType.choices), required=False)
-    permit = forms.TypedChoiceField(choices=YES_NO, coerce=lambda v: v == "true", initial="false")
+    permit = forms.TypedChoiceField(choices=YES_NO, coerce=lambda v: v == "true", initial="false", required=False)
 
     def __init__(self, *args, original=None, **kwargs):
         super().__init__(*args, **kwargs)

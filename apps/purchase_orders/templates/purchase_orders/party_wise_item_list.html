@@ -22,9 +22,11 @@
   <div class="master-toolbar ipl-toolbar" role="toolbar" aria-label="Party wise item list filters">
     <div class="ipl-item">
       <span class="ipl-item__label">Party Name</span>
-      <input class="form-control ipl-item__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search>
-      <input class="form-control ipl-item__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
-      <input class="form-control ipl-item__code" type="text" autocomplete="off" placeholder="Grade" data-party-grade readonly tabindex="-1">
+      <div class="ipl-item__row">
+        <input class="form-control ipl-item__name" type="text" autocomplete="off" placeholder="Type party name to search…" data-party-search>
+        <input class="form-control ipl-item__code" type="text" maxlength="4" autocomplete="off" placeholder="Code" data-party-code readonly tabindex="-1">
+        <input class="form-control ipl-item__code" type="text" autocomplete="off" placeholder="Grade" data-party-grade readonly tabindex="-1">
+      </div>
     </div>
 
     <div class="master-toolbar__actions">

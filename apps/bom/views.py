@@ -44,7 +44,8 @@ def bom_detail(request, part_code):
 @login_required
 @require_GET
 def part_search(request):
-    return JsonResponse({"parts": services.search_parts(request.GET.get("q", ""))})
+    only_sub_assembly = request.GET.get("sub_assembly") == "1"
+    return JsonResponse({"parts": services.search_parts(request.GET.get("q", ""), only_sub_assembly=only_sub_assembly)})
 
 
 @login_required

@@ -65,6 +65,7 @@
         <input data-party-search placeholder="Type party name and press Enter" autocomplete="off">
         <input type="hidden" data-field="party_code">
         <input data-party-code-display readonly tabindex="-1" class="mr-vfp-code">
+        <input data-party-city-display readonly tabindex="-1" class="mr-vfp-city">
       </label>
 
       <label class="mr-f-rdate" data-receipt-date-label>RECEIPT DATE <input data-field="slip_date" type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-date-mask></label>
@@ -102,7 +103,7 @@
         <button type="button" class="mr-vfp-ok" data-alloc-ok disabled>OK</button>
       </div>
       <div class="mr-vfp-footer-actions">
-        <button type="button" class="mr-vfp-btn" data-confirm>CONFIRM</button>
+        <button type="button" class="mr-vfp-btn mr-vfp-btn--confirm" data-confirm>CONFIRM</button>
         <button type="button" class="mr-vfp-btn mr-vfp-btn--exit" data-form-exit>EXIT</button>
       </div>
     </div>

@@ -10,9 +10,15 @@
   gap: 10px 12px;
 }
 
+.mat-form .mform__label {
+  font-size: 1.0625rem;
+}
+
 .mat-form .mform__input.form-control {
-  min-height: 36px;
+  min-height: 44px;
   padding: 6px 10px;
+  font-size: 1.0625rem;
+  font-weight: 700;
 }
 
 .mat-code {

@@ -6,7 +6,19 @@
 @page { size: A4 portrait; margin: 10mm; }
 html, body { margin: 0; padding: 0; background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
 
-.mop-sheet { border: 2px solid #000; }
+/* Fills the full printable page, like the Purchase Order print -- a flex column
+   so the signature strip at the bottom is pushed all the way down (margin-top:
+   auto) instead of sitting right under a short items table. */
+.mop-sheet {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 260mm; /* A4 height minus the @page margin, with real slack
+    below the 277mm theoretical max -- print rendering can measure a few px
+    taller than on-screen layout (different font metrics), and that was
+    tipping the sheet onto a second page when it sat right at the edge. */
+  border: 2px solid #000;
+}
 
 .mop-topline {
   display: flex; align-items: center; justify-content: space-between;
@@ -16,40 +28,75 @@ html, body { margin: 0; padding: 0; background: #fff; color: #000; font-family: 
 .mop-topline h2 { margin: 0; font-size: 18px; letter-spacing: 0.04em; flex: 1; text-align: center; }
 
 .mop-company {
-  position: relative; text-align: center; padding: 6px 8px 10px 2.1in; border-bottom: 1px solid #000;
+  position: relative; text-align: center; padding: 4px 8px 6px 2.1in; border-bottom: 1px solid #000;
 }
-.mop-logo { position: absolute; left: 10px; top: 6px; width: 1.8in; height: auto; }
-.mop-company h1 { margin: 2px 0 8px; font-size: 30px; letter-spacing: 0.03em; }
-.mop-company p { margin: 3px 0; font-size: 15px; }
+.mop-logo { position: absolute; left: 10px; top: 4px; width: 1.4in; height: auto; }
+.mop-company h1 { margin: 2px 0 4px; font-size: 22px; letter-spacing: 0.03em; }
+.mop-company p { margin: 1px 0; font-size: 12px; }
 
 .mop-party {
-  display: flex; border-bottom: 1px solid #000; font-size: 14px;
+  display: flex; border-bottom: 1px solid #000; font-size: 12px;
 }
-.mop-party__left, .mop-party__right { padding: 8px 10px; }
+.mop-party__left, .mop-party__right { padding: 5px 10px; }
 .mop-party__left { flex: 1.2; border-right: 1px solid #000; }
 .mop-party__right { flex: 1; }
-.mop-party p { margin: 3px 0; }
-.mop-party__name { font-weight: bold; font-size: 16px; }
+.mop-party p { margin: 2px 0; }
+.mop-party__name { font-weight: bold; font-size: 13px; }
 .mop-field-label { font-weight: bold; }
 .mop-field-label--inline { margin-left: 10px; }
 
-.mop-table { width: 100%; border-collapse: collapse; }
-.mop-table th, .mop-table td { border: 1px solid #000; padding: 3px 5px; font-size: 10px; vertical-align: top; }
+/* Only vertical column rules inside the grid -- no horizontal line between
+   rows. The header keeps its own top/bottom rule, and the grid has no
+   bottom border of its own: Remarks' top border is the one line shared
+   between the grid and Remarks/Totals below it, same as the Purchase
+   Order print. */
+.mop-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.mop-table th, .mop-table td {
+  padding: 3px 5px; font-size: 10px; vertical-align: top;
+  border-left: 1px solid #000; border-right: 1px solid #000;
+}
+.mop-table tr > *:first-child { border-left: none; }
+.mop-table tr > *:last-child { border-right: none; }
+.mop-table thead th { border-top: 1px solid #000; border-bottom: 1px solid #000; }
 .mop-table th { background: #eee; text-align: center; font-size: 10px; }
 .mop-table .num { text-align: right; }
-.mop-table .mop-sno { width: 30px; text-align: center; }
+.mop-table .mop-sno { text-align: center; }
 .mop-table .mop-desc { text-align: left; font-size: 12px; }
-.mop-table tbody tr { height: 24px; }
+.mop-col-sno { width: 4%; }
+.mop-col-desc { width: 22%; }
+.mop-col-uom { width: 6%; }
+.mop-col-num { width: 11.143%; }
+.mop-table tbody td { height: 16px; } /* keeps every row -- real or filler -- the same compact height */
 
-.mop-totals {
-  text-align: right; padding: 6px 10px; border-left: 1px solid #000; border-right: 1px solid #000;
-  border-bottom: 1px solid #000; font-weight: bold; font-size: 12px;
+.mop-bottom-block { margin-top: auto; }
+
+.mop-bottom {
+  display: flex; border: 1px solid #000;
 }
-.mop-totals p { margin: 0; }
+.mop-remarks { flex: 1 1 auto; padding: 6px 10px; min-height: 40px; border-right: 1px solid #000; }
+.mop-remarks__label { margin: 0 0 4px; font-weight: bold; font-size: 12px; }
+.mop-remarks__text { margin: 0; font-size: 12px; }
 
-.mop-sign { width: 100%; border-collapse: collapse; }
-.mop-sign th, .mop-sign td { border: 1px solid #000; padding: 4px 6px; font-size: 10px; font-weight: bold; text-align: left; }
-.mop-sign td { height: 30px; font-weight: normal; }
+.mop-totals { flex: 0 0 220px; padding: 6px 10px; font-size: 12px; }
+.mop-totals__row { display: flex; justify-content: space-between; gap: 6px; margin: 2px 0; }
+.mop-totals__row--net { font-weight: bold; border-top: 1px solid #000; padding-top: 3px; margin-top: 4px; }
+.mop-rupee { font-weight: normal; }
+
+.mop-footer {
+  display: flex; border-left: 1px solid #000; border-right: 1px solid #000; border-bottom: 1px solid #000;
+}
+.mop-terms { flex: 1.3; padding: 6px 10px; font-size: 10px; border-right: 1px solid #000; }
+.mop-terms__title { margin: 0 0 4px; font-weight: bold; }
+.mop-terms ol { margin: 0; padding-left: 16px; }
+.mop-terms li { margin-bottom: 3px; }
+
+.mop-signature { flex: 1; padding: 4px 10px; text-align: center; font-size: 12px; }
+.mop-signature p { margin: 1px 0; }
+.mop-signature__space { height: 28px; }
+
+.mop-sign { width: 100%; border-collapse: collapse; margin-top: 2px; }
+.mop-sign th, .mop-sign td { border: 1px solid #000; padding: 2px 6px; font-size: 10px; font-weight: bold; text-align: left; }
+.mop-sign td { height: 22px; font-weight: normal; }
 
 .mop-public-bar {
   display: flex;

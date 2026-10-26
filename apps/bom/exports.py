@@ -23,7 +23,7 @@ def build_consumption_master_workbook(data, company_name):
     from openpyxl.styles import Alignment, Border, Font, Side
 
     font_name = "Arial Narrow"
-    thin = Side(style="thin")
+    thin = Side(style="thin", color="000000")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
     wb = Workbook()

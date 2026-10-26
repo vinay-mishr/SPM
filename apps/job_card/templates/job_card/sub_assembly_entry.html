@@ -14,6 +14,7 @@
 
 {% block content %}
 <section class="master-page sa-page" data-sa
+         data-list-url="{% url 'job_card:sa_list' %}"
          data-next-url="{% url 'job_card:sa_next' %}"
          data-detail-url-template="{% url 'job_card:sa_detail' number='__NO__' %}"
          data-save-url="{% url 'job_card:sa_save' %}"
@@ -28,6 +29,30 @@
       <button class="btn btn--secondary" type="button" data-act="delete"{% if not can_edit %} disabled{% endif %}><span class="master-toolbar__key">D</span>elete</button>
       <button class="btn btn--secondary" type="button" data-act="close"{% if not can_edit %} disabled{% endif %}>C<span class="master-toolbar__key">l</span>ose</button>
     </div>
+    <div class="jc-filters">
+      <label class="jc-filter">Start Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-start-date data-date-mask>
+      </label>
+      <label class="jc-filter">End Date
+        <input class="form-control" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" data-end-date data-date-mask>
+      </label>
+      <label class="jc-filter jc-filter--search">Search (job no. / product)
+        <input class="form-control" type="text" autocomplete="off" placeholder="Type to search..." data-search>
+      </label>
+    </div>
+    <div class="master-toolbar__actions">
+      <button class="btn btn--secondary" type="button" data-act="refresh"><span class="master-toolbar__key">R</span>efresh</button>
+    </div>
+  </div>
+
+  <div class="master-table-wrap">
+    <table class="table master-table sa-table">
+      <thead>
+        <tr><th scope="col">Job No.</th><th scope="col">Date</th><th scope="col">Product</th><th scope="col">Job Qty</th><th scope="col">Produced</th><th scope="col">Issued</th><th scope="col">Closed</th></tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+    <p class="master-table__empty" data-empty hidden>No job entries found for this date range.</p>
   </div>
 
   <div class="dn-alert" role="alert" data-alert hidden></div>
@@ -61,4 +86,6 @@
     </form>
   </dialog>
 </section>
+
+{{ initial_data|json_script:"sa-initial-data" }}
 {% endblock %}

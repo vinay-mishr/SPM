@@ -56,6 +56,18 @@
     </section>
 
     <table class="mop-table">
+      <colgroup>
+        <col class="mop-col-sno">
+        <col class="mop-col-desc">
+        <col class="mop-col-uom">
+        <col class="mop-col-num">
+        <col class="mop-col-num">
+        <col class="mop-col-num">
+        <col class="mop-col-num">
+        <col class="mop-col-num">
+        <col class="mop-col-num">
+        <col class="mop-col-num">
+      </colgroup>
       <thead>
         <tr>
           <th class="mop-sno">SNO</th>
@@ -85,30 +97,101 @@
           <td class="num">{{ item.amount }}</td>
         </tr>
         {% endfor %}
-      </tbody>
-    </table>
-
-    <section class="mop-totals">
-      <p>TOTAL&nbsp;&nbsp;{{ order.net_amount }}</p>
-    </section>
-
-    <table class="mop-sign">
-      <thead>
-        <tr>
-          <th>RECEIPT INCHARGE</th>
-          <th>QUALITY</th>
-          <th>RM STORE</th>
-          <th>PURCHASE</th>
-          <th>ACCOUNTS</th>
+        {% for _ in fill_rows %}
+        <tr class="mop-fill-row">
+          <td class="mop-sno">&nbsp;</td>
+          <td class="mop-desc">&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
         </tr>
-      </thead>
-      <tbody>
-        <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+        {% endfor %}
+        <!-- Grown by the script at the bottom of this page, by exactly the gap
+             still left above Remarks after the fixed filler rows above -- so
+             the grid's vertical lines reach Remarks exactly, however many
+             items or filler rows came before it. -->
+        <tr class="mop-fill-row" id="mop-grid-spacer-row">
+          <td class="mop-sno">&nbsp;</td>
+          <td class="mop-desc">&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
       </tbody>
     </table>
+
+    <div class="mop-bottom-block">
+      <section class="mop-bottom">
+        <div class="mop-remarks">
+          <p class="mop-remarks__label">Remarks :</p>
+          <p class="mop-remarks__text">{{ order.remarks }}</p>
+        </div>
+        <div class="mop-totals">
+          <div class="mop-totals__row"><span>Total</span><span class="mop-rupee">₹</span><span class="num">{{ order.amount }}</span></div>
+          <div class="mop-totals__row"><span>Discount Amt</span><span class="mop-rupee">₹</span><span class="num">{{ order.discount_amount }}</span></div>
+          <div class="mop-totals__row"><span>GST Amount</span><span class="mop-rupee">₹</span><span class="num">{{ order.gst_amount }}</span></div>
+          <div class="mop-totals__row mop-totals__row--net"><span>Net Amount</span><span class="mop-rupee">₹</span><span class="num">{{ order.net_amount }}</span></div>
+        </div>
+      </section>
+
+      <section class="mop-footer">
+        <div class="mop-signature">
+          <p>For {{ brand.name }}</p>
+          <div class="mop-signature__space"></div>
+          <p>Authorised Signatory</p>
+          <p>Purchase Department</p>
+        </div>
+      </section>
+
+      <table class="mop-sign">
+        <thead>
+          <tr>
+            <th>RECEIPT INCHARGE</th>
+            <th>QUALITY</th>
+            <th>RM STORE</th>
+            <th>PURCHASE</th>
+            <th>ACCOUNTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-  {% if not preview %}
-  <script>window.addEventListener("load", function () { window.print(); });</script>
-  {% endif %}
+  <script>
+    window.addEventListener("load", function () {
+      // Close the gap between the item grid and Remarks/Totals exactly, by
+      // growing OR shrinking the one spacer row at the bottom of the grid by
+      // however much space is actually left above Remarks. Shrinking matters
+      // too: a description or other cell that wraps onto a second line makes
+      // its row taller than the fixed filler-row height assumes, which would
+      // otherwise push the whole page over by that same amount with nothing
+      // to claw the space back -- clamped at 0, not negative.
+      try {
+        var table = document.querySelector(".mop-table");
+        var bottomBlock = document.querySelector(".mop-bottom-block");
+        var spacerRow = document.getElementById("mop-grid-spacer-row");
+        if (table && bottomBlock && spacerRow) {
+          var gap = bottomBlock.getBoundingClientRect().top - table.getBoundingClientRect().bottom;
+          var newHeight = Math.max(0, spacerRow.getBoundingClientRect().height + gap);
+          spacerRow.querySelectorAll("td").forEach(function (td) { td.style.height = newHeight + "px"; });
+        }
+      } catch (e) { /* print still works even if this adjustment fails */ }
+      {% if not preview %}
+      window.print();
+      {% endif %}
+    });
+  </script>
 </body>
 </html>

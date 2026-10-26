@@ -60,6 +60,20 @@ def party_next_code(request):
 
 
 @login_required
+@require_GET
+def party_gstin_lookup(request):
+    """Auto-fill support for the Add/Modify form: looks up a GSTIN against the
+    configured GST provider and returns whatever fields it actually has.
+    Never fabricates a result -- an invalid GSTIN or a provider miss/failure
+    is reported as an error, and the form falls back to manual entry."""
+    gstin = (request.GET.get("gstin") or "").strip()
+    try:
+        return JsonResponse({"fields": services.lookup_gstin_details(gstin)})
+    except services.GstinLookupError as exc:
+        return JsonResponse({"message": str(exc)}, status=400)
+
+
+@login_required
 @require_POST
 def party_save(request, pk=None):
     if not services.writes_enabled():

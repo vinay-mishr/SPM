@@ -1,0 +1,20 @@
+/* Accounts > Data Entry > Bank Entry -- reuses apps.gl.cash_entry's own
+   .ce-* dialog chrome (identical layout, just with a BANK/BANK BALANCE row
+   added above the DR/CR section), so this file only adds that one row and
+   the page-level zoom (cash_entry.css's own zoom rule is scoped to
+   [data-ce], not this screen's [data-be]). */
+[data-be] { zoom: 1.25; }
+
+.be-bank-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 20px;
+  padding: 2px 12px 0;
+}
+
+/* Bank Balance box sized down to 30% of its row's width (a 70% reduction),
+   left-aligned in its grid cell instead of stretching to fill it. */
+.be-bank-row [data-bank-balance] {
+  width: 30%;
+  justify-self: start;
+}

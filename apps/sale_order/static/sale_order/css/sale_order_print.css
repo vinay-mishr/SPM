@@ -40,7 +40,13 @@ html, body {
      trustworthy if what's on screen is the same size as what gets printed. */
   width: 201.4mm;
   margin: 0 auto;
-  min-height: 282.6mm; /* A4 height minus the @page margins above */
+  /* 270mm, not the full 282.6mm printable area (A4 height minus the @page
+     margins above) -- the grid-spacer script below stretches content to fill
+     exactly this height, so a shorter target leaves a real ~12.6mm buffer at
+     the bottom of the page. That buffer is what keeps a real printer (whose
+     driver can add its own margin on top of @page's, unlike "Save as PDF")
+     from pushing the last bit of content onto a second sheet. */
+  min-height: 270mm;
   padding: 4px 8px;
   border: 2px solid #000;
 }

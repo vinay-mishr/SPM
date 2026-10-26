@@ -3,7 +3,7 @@
   --pe-border: #9ca3af;
   --pe-ro: #e5e7eb;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   min-height: 0;
   box-sizing: border-box;
   background: #f2faf5;
@@ -14,7 +14,14 @@
   color: #111827;
 }
 
-.pe-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.pe-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.pe-toolbar .pe-search {
+  flex: 0 0 330px; margin-left: auto; width: 330px; height: 38px; font-size: 0.9375rem;
+  -webkit-appearance: none; appearance: none; /* search inputs render with a
+    native rounded look in Chrome/Safari that mutes a CSS border */
+  border: 3px solid #000;
+  border-radius: 4px;
+}
 
 .pe-alert {
   margin-bottom: 10px;
@@ -183,7 +190,7 @@
 .pe-form .pe-grid { height: 180px; min-height: 144px; }
 .pe-page .pe-actions .btn { height: 26px; min-height: 26px; padding: 0 10px; font-size: 12px; }
 .pe-page .pe-list .pe-grid { height: calc(100vh - 240px); min-height: 420px; }
-.pe-list { max-width: 1000px; }
+.pe-list { max-width: 1300px; }
 .pe-form { max-width: 1200px; }
 .pe-form .pe-bills th, .pe-form .pe-bills td { padding: 2px 4px; }
 .pe-form .pe-bills { float: left; margin-right: 16px; }
@@ -193,3 +200,16 @@
 .pe-form .pe-grid th, .pe-form .pe-grid td { border: 1px solid #000; padding: 1px 4px; font-size: 0.9rem; }
 
 .pe-page[data-os] { max-width: none; }
+
+/* Creditor Outstanding Statement and Payment Report grids -- bold black
+   vertical column dividers, same as the Payment Made list. */
+.pe-page[data-os] .pe-grid table th, .pe-page[data-os] .pe-grid table td,
+.pe-page[data-pr] .pe-grid table th, .pe-page[data-pr] .pe-grid table td { border-right: 2px solid #000; }
+.pe-page[data-os] .pe-grid table th:last-child, .pe-page[data-os] .pe-grid table td:last-child,
+.pe-page[data-pr] .pe-grid table th:last-child, .pe-page[data-pr] .pe-grid table td:last-child { border-right: 0; }
+
+/* Payment Made list -- bigger rows/text than the shared .pe-page table default. */
+.pe-list table th, .pe-list table td { font-size: 1.1875rem; padding: 8px 20px; }
+.pe-list table th, .pe-list table td { border-right: 2px solid #000; }
+.pe-list table th:last-child, .pe-list table td:last-child { border-right: 0; }
+.pe-list .pe-toolbar .btn { height: 38px; min-height: 38px; padding: 0 18px; font-size: 0.9375rem; }

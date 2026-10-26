@@ -8,20 +8,30 @@
 
 .ipl-item {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .ipl-item__label {
-  font-size: 0.75rem;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.ipl-item__name { width: 260px; }
-.ipl-item__code { width: 90px; text-transform: uppercase; }
+.ipl-item__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-.ipl-table { min-width: 600px; font-size: 0.8125rem; }
-.ipl-table th, .ipl-table td { padding: 4px 8px; white-space: nowrap; }
+.ipl-item__name { width: 560px; min-height: 46px; font-size: 1.125rem; font-weight: 700; }
+.ipl-item__code { width: 100px; min-height: 46px; font-size: 1.0625rem; text-transform: uppercase; font-weight: 700; }
+
+.ipl-table { min-width: 600px; font-size: 1.125rem; }
+.ipl-table td:nth-child(2) { min-width: 338px; white-space: normal; }
+.ipl-table td:nth-child(3) { min-width: 160px; }
+.ipl-table td:nth-child(5) { min-width: 140px; }
+.ipl-table th, .ipl-table td { padding: 6px 12px; white-space: nowrap; border-right: 2px solid #000; }
+.ipl-table tbody td { border-bottom: 2px solid #000; }
 .ipl-table .num { text-align: right; font-variant-numeric: tabular-nums; }

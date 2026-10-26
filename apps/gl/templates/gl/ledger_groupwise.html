@@ -1,0 +1,70 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ledger Groupwise · {{ brand.name }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gst_invoice/css/gst_invoice.css' %}">
+  <link rel="stylesheet" href="{% static 'creditor_outstanding/css/payment_entry.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/voucher_printing.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/cash_book.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/main_ledger.css' %}">
+  <link rel="stylesheet" href="{% static 'gl/css/ledger_groupwise.css' %}">
+  <script src="{% static 'gl/js/ledger_groupwise.js' %}" defer></script>
+{% endblock %}
+
+{% block page_title %}Ledger Groupwise{% endblock %}
+{% block page_subtitle %}Accounts &rsaquo; Ledger Printing &rsaquo; Ledger Groupwise{% endblock %}
+
+{% block content %}
+<section class="gi-page" data-ledger-groupwise
+         data-rows-url="{% url 'gl:ledger_groupwise_rows' %}"
+         data-data-url="{% url 'gl:ledger_groupwise_data' %}"
+         data-exit-url="{% url 'dashboard:home' %}"
+         data-brand-name="{{ brand.name }}"
+         data-brand-address="{{ brand.address_line1 }}">
+  {% csrf_token %}
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <label>START DATE
+        <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-start-date data-date-mask>
+      </label>
+      <label>END DATE
+        <input type="text" inputmode="numeric" placeholder="dd-mm-yyyy" maxlength="10" data-end-date data-date-mask>
+      </label>
+    </div>
+  </div>
+  <div class="gi-toolbar master-toolbar">
+    <label class="gi-search">SEARCH
+      <input class="form-control" type="text" data-search placeholder="Type ledger name...">
+    </label>
+    <button type="button" class="btn btn--secondary" data-ok>OK</button>
+  </div>
+
+  <div class="gi-alert" role="alert" data-alert hidden></div>
+
+  <div class="gi-grid lgw-grid-wrap">
+    <table>
+      <thead><tr><th>GCODE</th><th>LEDGER DESCRIPTION</th><th class="lgw-flag">FLAG</th></tr></thead>
+      <tbody data-rows></tbody>
+    </table>
+  </div>
+
+  <div class="gi-toolbar master-toolbar">
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--secondary" data-tag-all>TAG ALL</button>
+      <button type="button" class="btn btn--secondary" data-untag-all>UNTAG ALL</button>
+    </div>
+    <div class="gi-buttons">
+      <button type="button" class="btn btn--primary" data-view>VIEW</button>
+      <button type="button" class="btn btn--danger" data-exit>EXIT</button>
+    </div>
+  </div>
+
+  <div class="vp-letter" data-result hidden>
+    <div class="vp-page cb-page ml-page" data-blocks></div>
+  </div>
+</section>
+
+{{ initial_data|json_script:"lgw-initial-data" }}
+{% endblock %}
