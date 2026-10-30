@@ -34,6 +34,8 @@ class SaleOrderView(LoginRequiredMixin, TemplateView):
         today = date.today()
         context["can_edit"] = _can_edit(self.request.user)
         context["initial_data"] = {"start_date": today.isoformat(), "end_date": today.isoformat()}
+        context["currencies"] = services.CURRENCIES
+        context["default_currency"] = services.DEFAULT_CURRENCY
         return context
 
 
@@ -640,6 +642,8 @@ class SpareOrderView(LoginRequiredMixin, TemplateView):
         today = date.today()
         context["can_edit"] = _can_edit(self.request.user)
         context["initial_data"] = {"start_date": today.isoformat(), "end_date": today.isoformat()}
+        context["currencies"] = services.CURRENCIES
+        context["default_currency"] = services.DEFAULT_CURRENCY
         return context
 
 
@@ -662,7 +666,7 @@ def spare_next(request):
 @login_required
 @require_GET
 def spare_detail(request, order_no):
-    data = services.spare_load(order_no)
+    data = services.spare_load(order_no, request.GET.get("div") or None)
     if not data:
         return JsonResponse({"message": "Order not found."}, status=404)
     return JsonResponse(data)
@@ -706,7 +710,7 @@ class SparePrintView(LoginRequiredMixin, TemplateView):
         from django.http import Http404
 
         context = super().get_context_data(**kwargs)
-        data = services.spare_load(kwargs["order_no"])
+        data = services.spare_load(kwargs["order_no"], self.request.GET.get("div") or None)
         if not data:
             raise Http404("Order not found.")
         context["order"] = data

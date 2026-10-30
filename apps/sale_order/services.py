@@ -1,4 +1,5 @@
 """Sale Order Entry (VFP SALE ORDER FORM): ord_mst header, order1 lines, item.order pending quantity."""
+import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -10,6 +11,23 @@ from apps.parts.models import Part
 DIV = "SP"
 Q2 = Decimal("0.01")
 MAX_RATE = Decimal("99999999.99")  # order1.brate / order1.srate widened to decimal(10,2) (matches amount/amount1)
+
+# Header-level currency -- same free-text convention apps.quotations/
+# apps.proforma_invoice already use for their own (per-line) currency field,
+# just one value for the whole order here instead of per line. ord_mst.cur /
+# ord_mst1.cur (Spare Sale Order) are new, additive-only columns added
+# specifically for this (guarded ALTER TABLE, same precedent as
+# apps.credit_note's own add_less1_type/rate/code fields on gC_bill).
+DEFAULT_CURRENCY = "RS."
+CURRENCIES = ("RS.", "USD", "EUR")
+_CURRENCY_RE = re.compile(r"^[A-Z.]{1,5}$")
+
+
+def _clean_currency(raw):
+    currency = str(raw or DEFAULT_CURRENCY).strip().upper()
+    if not _CURRENCY_RE.match(currency):
+        return None
+    return currency
 
 
 class SaleOrderError(Exception):
@@ -49,9 +67,36 @@ def _date(value):
         return None
 
 
+def _fy_start(today=None):
+    today = today or date.today()
+    return date(today.year if today.month >= 4 else today.year - 1, 4, 1)
+
+
+def _max_order_no_this_fy(cur=None):
+    """Order numbers restart each financial year -- old data really does reuse the
+    same low numbers across different years (e.g. order "3" exists for both 2021
+    and 2022), so "what's the next number" must only ever look at orders dated in
+    the CURRENT financial year, never any stored running counter: a counter value
+    carried over from last year (or left stranded above reality by a deleted
+    order -- delete never decrements it) would both hand out the wrong number.
+    Deriving it fresh from the real rows every time is self-correcting on both
+    counts, with no FY-rollover step to remember to run each April."""
+    sql = "SELECT MAX(CAST([order] AS INT)) FROM ord_mst WHERE ISNUMERIC([order]) = 1 AND ord_date >= %s"
+    params = [_fy_start()]
+    if cur is None:
+        rows = _rows(sql.replace("MAX(CAST([order] AS INT))", "MAX(CAST([order] AS INT)) AS mx"), params)
+        return int(rows[0]["mx"]) if rows and rows[0]["mx"] is not None else 0
+    cur.execute(sql, params)
+    row = cur.fetchone()
+    return int(row[0]) if row and row[0] is not None else 0
+
+
 def next_no():
-    rows = _rows("SELECT sp_ord_no FROM inv_no")
-    return int(_d(rows[0]["sp_ord_no"])) + 1 if rows else 1
+    """A preview of the likely next order no. for the Add form -- NOT the
+    authoritative allocation (that only happens, locked, inside
+    _allocate_order_no(), so two users opening Add at the same moment can't
+    both end up saving the same number)."""
+    return _max_order_no_this_fy() + 1
 
 
 def list_orders(start, end, search=""):
@@ -111,6 +156,7 @@ def load(order_no):
         "discount": f"{_d(h['dis']):.2f}",
         "add_discount": f"{_d(h['adis']):.2f}",
         "net_amount": f"{_d(h['amount1']):.2f}",
+        "currency": _clean(h.get("cur")) or DEFAULT_CURRENCY,
         "lines": [{
             "code": _clean(l["i_code"]), "name": _clean(l["i_name"]) or "",
             "dis": f"{_d(l['cdis']):.2f}", "add_dis": f"{_d(l['cadis']):.2f}",
@@ -175,15 +221,12 @@ def _allocate_order_no(cur):
     inv_no row locked for the rest of the transaction, so a second concurrent Add
     blocks here until the first commits its new order_no, instead of both computing
     the same next number (the same race apps.returnable_challan/apps.mrn/etc. avoid
-    by locking their own counter row the same way via select_for_update()). Also
-    takes the existing highest ord_mst number into account, same defensive fallback
-    next_no() already has."""
+    by locking their own counter row the same way via select_for_update()). The row
+    is only ever locked here, never read -- the actual next number always comes
+    from _max_order_no_this_fy(), for the same reason next_no() does (see there)."""
     cur.execute("SELECT sp_ord_no FROM inv_no WITH (UPDLOCK, HOLDLOCK)")
-    row = cur.fetchone()
-    counter = int(_d(row[0])) if row else 0
-    cur.execute("SELECT MAX(CAST([order] AS INT)) FROM ord_mst WHERE ISNUMERIC([order]) = 1")
-    highest = cur.fetchone()[0] or 0
-    return str(max(counter, highest) + 1)
+    cur.fetchone()
+    return str(_max_order_no_this_fy(cur) + 1)
 
 
 def save(payload, mode, username=""):
@@ -192,8 +235,26 @@ def save(payload, mode, username=""):
     order_no = str(payload.get("order_no") or "").strip() if mode != "add" else None
     if mode != "add" and not order_no:
         raise SaleOrderError("Enter the order no.", {"order_no": "Enter the order no."})
+
+    if mode == "delete":
+        # Delete only ever sends order_no -- running the add/modify field validation
+        # (party, line items, ...) against that bare payload would always fail.
+        with transaction.atomic(using="legacy"):
+            if not _rows("SELECT [order] FROM ord_mst WHERE [order] = %s", [order_no]):
+                raise SaleOrderError(f"Order {order_no} not found.", {"order_no": "Order not found."})
+            for o in _rows("SELECT i_code, stock FROM order1 WHERE [order] = %s", [order_no]):
+                _exec("UPDATE item SET [order] = COALESCE([order], 0) - %s WHERE i_code = %s",
+                      [o["stock"], _clean(o["i_code"])])
+            _exec("DELETE FROM order1 WHERE [order] = %s", [order_no])
+            _exec("DELETE FROM ord_mst WHERE [order] = %s", [order_no])
+        return {"order_no": order_no}
+
     order_date = _date(payload.get("order_date")) or date.today()
     party, lines = _validate(payload)
+    currency = _clean_currency(payload.get("currency"))
+    if currency is None:
+        raise SaleOrderError("Fix the highlighted fields.",
+                             {"currency": "Currency must be up to 5 letters (e.g. RS., USD)."})
     cust = _rows("SELECT crep, cstate FROM cust_mst WHERE ccode = %s", [party])[0]
     po_no = _clean(payload.get("po_no")) or ""
     po_date = _date(payload.get("po_date"))
@@ -207,7 +268,7 @@ def save(payload, mode, username=""):
     user = (username or "")[:10]
 
     with transaction.atomic(using="legacy"):
-        if mode in ("modify", "delete"):
+        if mode == "modify":
             if not _rows("SELECT [order] FROM ord_mst WHERE [order] = %s", [order_no]):
                 raise SaleOrderError(f"Order {order_no} not found.", {"order_no": "Order not found."})
             for o in _rows("SELECT i_code, stock FROM order1 WHERE [order] = %s", [order_no]):
@@ -215,8 +276,6 @@ def save(payload, mode, username=""):
                       [o["stock"], _clean(o["i_code"])])
             _exec("DELETE FROM order1 WHERE [order] = %s", [order_no])
             _exec("DELETE FROM ord_mst WHERE [order] = %s", [order_no])
-            if mode == "delete":
-                return {"order_no": order_no}
         else:
             with connections["legacy"].cursor() as cur:
                 order_no = _allocate_order_no(cur)
@@ -235,9 +294,9 @@ def save(payload, mode, username=""):
             )
             _exec("UPDATE item SET [order] = COALESCE([order], 0) + %s WHERE i_code = %s", [l["qty"], l["code"]])
         _exec(
-            "INSERT INTO ord_mst ([div], [order], ord_date, p_code, amount, amount1, dis, adis, mcode, del_by, uname) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            [DIV, order_no, order_date, party, total, net, discount, add_discount, "", "", user],
+            "INSERT INTO ord_mst ([div], [order], ord_date, p_code, amount, amount1, dis, adis, mcode, del_by, uname, cur) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            [DIV, order_no, order_date, party, total, net, discount, add_discount, "", "", user, currency],
         )
         _exec("UPDATE inv_no SET sp_ord_no = %s WHERE sp_ord_no < %s", [int(order_no), int(order_no)])
     return {"order_no": order_no}
@@ -546,15 +605,24 @@ def adjustment_report(as_on, party_code=None):
     return {"groups": groups, "grand_total": f"{grand:.2f}"}
 
 
+def _spare_max_order_no_this_fy():
+    """Same FY-scoped-not-lifetime convention as _max_order_no_this_fy() above,
+    for the Spare Sale Order's own separate ord_mst1/sp_ord1 numbering."""
+    rows = _rows(
+        "SELECT MAX(CAST(ord_no AS INT)) AS mx FROM ord_mst1 WHERE ISNUMERIC(ord_no) = 1 AND ord_date >= %s",
+        [_fy_start()],
+    )
+    return int(rows[0]["mx"]) if rows and rows[0]["mx"] is not None else 0
+
+
 def spare_next_no():
-    rows = _rows("SELECT sp_ord1 FROM inv_no")
-    return int(_d(rows[0]["sp_ord1"])) + 1 if rows else 1
+    return _spare_max_order_no_this_fy() + 1
 
 
 def spare_list(start, end, search=""):
     search = (search or "").strip().upper()
     rows = _rows(
-        "SELECT o.ord_no, o.ord_date, o.p_code, o.amount1, c.cname, c.cadd3 FROM ord_mst1 o "
+        "SELECT o.ord_no, o.div, o.ord_date, o.p_code, o.amount1, c.cname, c.cadd3 FROM ord_mst1 o "
         "LEFT JOIN cust_mst c ON c.ccode = o.p_code WHERE o.ord_date >= %s AND o.ord_date <= %s "
         "ORDER BY o.ord_date, o.ord_no", [start, end])
     out = []
@@ -562,23 +630,41 @@ def spare_list(start, end, search=""):
         name = _clean(r["cname"]) or ""
         if search and not name.upper().startswith(search):
             continue
-        out.append({"order_no": _clean(r["ord_no"]), "date": r["ord_date"].isoformat() if r["ord_date"] else "",
+        order_no, div = _clean(r["ord_no"]), _clean(r["div"])
+        out.append({"order_no": order_no, "div": div, "key": f"{order_no}|{div}",
+                    "date": r["ord_date"].isoformat() if r["ord_date"] else "",
                     "party_name": name, "city": _clean(r["cadd3"]) or "", "amount": f"{_d(r['amount1']):.2f}"})
     return out
 
 
-def spare_load(ord_no):
-    head = _rows("SELECT * FROM ord_mst1 WHERE ord_no = %s", [str(ord_no)])
+def spare_load(ord_no, div=None):
+    """div disambiguates which physical row to open when ord_no collides
+    across divisions -- see spare_save()/_spare_reverse()'s own notes on this
+    (ord_no is only unique within a financial year, old div='' historical
+    rows can share a number with a new div='SP' one). Left optional so a
+    caller without a specific row still gets the previous (first-match)
+    behaviour rather than breaking outright on old historical orders."""
+    where = ["ord_no = %s"]
+    params = [str(ord_no)]
+    if div is not None:
+        where.append("div = %s")
+        params.append(div)
+    head = _rows("SELECT * FROM ord_mst1 WHERE " + " AND ".join(where), params)
     if not head:
         return None
     h = head[0]
     cust = _rows("SELECT ccode, cname, cadd1, cadd2, cadd3, cphno, cstat, crep FROM cust_mst WHERE ccode = %s", [_clean(h["p_code"])])
     c = cust[0] if cust else {}
     rep = _rows("SELECT rname FROM rep_mst WHERE rcode = %s", [_clean(c.get("crep")) or ""])
-    lines = _rows("SELECT i_code, qty_ord, rate, dis, amount FROM ord_dat WHERE ord_no = %s ORDER BY i_code", [str(ord_no)])
+    lines_where = ["ord_no = %s"]
+    lines_params = [str(ord_no)]
+    if div is not None:
+        lines_where.append("dv_code = %s")
+        lines_params.append(div)
+    lines = _rows("SELECT i_code, qty_ord, rate, dis, amount FROM ord_dat WHERE " + " AND ".join(lines_where) + " ORDER BY i_code", lines_params)
     names = {r["icod"].strip(): r["ides"] for r in _rows("SELECT icod, ides FROM [part-mst]") if r["icod"]}
     return {
-        "order_no": _clean(h["ord_no"]),
+        "order_no": _clean(h["ord_no"]), "div": _clean(h["div"]),
         "order_date": h["ord_date"].isoformat() if h["ord_date"] else "",
         "party_code": _clean(h["p_code"]), "party_name": _clean(c.get("cname")) or "",
         "city": _clean(c.get("cadd3")) or "", "address1": _clean(c.get("cadd1")) or "",
@@ -593,6 +679,7 @@ def spare_load(ord_no):
         # once, to the order subtotal. The % itself isn't persisted, only this amount.
         "add_discount": f"{_d(h['adis']):.2f}",
         "net_amount": f"{_d(h.get('amount1', h['amount'])):.2f}",
+        "currency": _clean(h.get("cur")) or DEFAULT_CURRENCY,
         "lines": [{"code": _clean(l["i_code"]), "name": _clean(names.get((l["i_code"] or "").strip())) or "",
                    "qty": f"{_d(l['qty_ord']):.3f}", "rate": f"{_d(l['rate']):.2f}", "dis": f"{_d(l['dis']):.2f}",
                    "amount": f"{_d(l['amount']):.2f}"} for l in lines],
@@ -608,11 +695,17 @@ def spare_item(code):
 
 
 def _spare_reverse(ord_no):
-    for l in _rows("SELECT i_code, qty_ord FROM ord_dat WHERE ord_no = %s", [ord_no]):
+    # Scoped by division (ord_dat.dv_code / ord_mst1.div, both always 'SP' for
+    # rows this app itself wrote -- see spare_save's own INSERTs below) for the
+    # same reason as spare_save's own existence checks: ord_no collides with
+    # old, unrelated historical orders from a different division/year, and an
+    # unscoped DELETE here would silently wipe or reverse stock against the
+    # wrong order entirely.
+    for l in _rows("SELECT i_code, qty_ord FROM ord_dat WHERE ord_no = %s AND dv_code = %s", [ord_no, DIV]):
         _exec("UPDATE [part-mst] SET [order] = COALESCE([order], 0) - %s WHERE icod = %s",
               [l["qty_ord"], _clean(l["i_code"])])
-    _exec("DELETE FROM ord_dat WHERE ord_no = %s", [ord_no])
-    _exec("DELETE FROM ord_mst1 WHERE ord_no = %s", [ord_no])
+    _exec("DELETE FROM ord_dat WHERE ord_no = %s AND dv_code = %s", [ord_no, DIV])
+    _exec("DELETE FROM ord_mst1 WHERE ord_no = %s AND div = %s", [ord_no, DIV])
 
 
 def spare_save(payload, mode, username=""):
@@ -626,7 +719,7 @@ def spare_save(payload, mode, username=""):
             raise SaleOrderError("Enter the order no.", {"order_no": "Enter the order no."})
     if mode == "delete":
         with transaction.atomic(using="legacy"):
-            if not _rows("SELECT ord_no FROM ord_mst1 WHERE ord_no = %s", [ord_no]):
+            if not _rows("SELECT ord_no FROM ord_mst1 WHERE ord_no = %s AND div = %s", [ord_no, DIV]):
                 raise SaleOrderError(f"Order {ord_no} not found.")
             _spare_reverse(ord_no)
         return {"order_no": ord_no}
@@ -657,6 +750,9 @@ def spare_save(payload, mode, username=""):
         lines.append({"code": code, "qty": qty, "rate": rate, "dis": dis, "amount": gross})
     if not lines and "lines" not in errors:
         errors["lines"] = "Add at least one item."
+    currency = _clean_currency(payload.get("currency"))
+    if currency is None:
+        errors["currency"] = "Currency must be up to 5 letters (e.g. RS., USD)."
     if errors:
         raise SaleOrderError("Fix the highlighted fields.", errors)
     gross_total = sum((l["amount"] for l in lines), Decimal("0"))
@@ -670,10 +766,20 @@ def spare_save(payload, mode, username=""):
     po_date = _date(payload.get("po_date"))
     with transaction.atomic(using="legacy"):
         if mode in ("modify",):
-            if not _rows("SELECT ord_no FROM ord_mst1 WHERE ord_no = %s", [ord_no]):
+            if not _rows("SELECT ord_no FROM ord_mst1 WHERE ord_no = %s AND div = %s", [ord_no, DIV]):
                 raise SaleOrderError(f"Order {ord_no} not found.")
             _spare_reverse(ord_no)
-        elif _rows("SELECT ord_no FROM ord_mst1 WHERE ord_no = %s", [ord_no]):
+        # Scoped by div too -- ord_no is only unique within the current FY
+        # (see spare_next_no()/_spare_max_order_no_this_fy()), but old
+        # historical rows (div='', predating this app's own div='SP' numbering)
+        # can still carry the same number from a different year. An unscoped
+        # check here false-positived "Order No. 1 already exists" on the very
+        # first Add of a new financial year, since spare_next_no() legitimately
+        # restarts from 1 once no current-FY orders exist yet, and that 1
+        # collided with an old, unrelated historical order. New orders from
+        # this app are always div='SP' (see the INSERT below), so that's the
+        # only real conflict that matters.
+        elif _rows("SELECT ord_no FROM ord_mst1 WHERE ord_no = %s AND div = %s", [ord_no, DIV]):
             raise SaleOrderError(f"Order No. {ord_no} already exists.", {"order_no": "Order No. already exists."})
         for l in lines:
             _exec("INSERT INTO ord_dat (ord_no, ord_dt, p_code, i_code, dis, qty_ord, rate, qty_iss, adj, amount, "
@@ -682,10 +788,10 @@ def spare_save(payload, mode, username=""):
                    l["amount"], DIV, po_no, po_date])
             _exec("UPDATE [part-mst] SET [order] = COALESCE([order], 0) + %s WHERE icod = %s", [l["qty"], l["code"]])
         _exec("INSERT INTO ord_mst1 (div, ord_no, ord_date, p_code, amount, amount1, dis, adis, mcode, del_by, uname, "
-              "remk, remk1, ordn, ord_dt1) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+              "remk, remk1, ordn, ord_dt1, cur) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
               [DIV, ord_no, order_date, party, gross_total, net_total, line_dis_total, addl_dis_amt, "", "", user,
                _clean(payload.get("remarks"))[:40] if payload.get("remarks") else "",
-               _clean(payload.get("remarks1"))[:40] if payload.get("remarks1") else "", po_no, po_date])
+               _clean(payload.get("remarks1"))[:40] if payload.get("remarks1") else "", po_no, po_date, currency])
         _exec("UPDATE inv_no SET sp_ord1 = %s WHERE sp_ord1 < %s", [int(ord_no), int(ord_no)])
     return {"order_no": ord_no}
 

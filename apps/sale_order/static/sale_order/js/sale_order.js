@@ -23,14 +23,27 @@
   var itemCode = form.querySelector("[data-item-code]");
   var itemError = form.querySelector("[data-item-error]");
   var confirmBtn = form.querySelector("[data-confirm]");
+  var deleteConfirmBtn = form.querySelector("[data-delete-confirm]");
 
   var state = { rows: [], selected: null, mode: "add", lines: [], editIndex: -1, item: null };
-  var MODES = { add: "Add", modify: "Modify", view: "View" };
+  var MODES = { add: "Add", modify: "Modify", view: "View", delete: "Delete" };
 
   function num(v) { return Number(v) || 0; }
   function f2(v) { return (Math.round(v * 100) / 100).toFixed(2); }
   function fQty(v) { return String(Math.round(v)); }
   function field(name) { return form.querySelector('[data-field="' + name + '"]'); }
+  function ensureCurrency(code) {
+    code = (code || "RS.").trim().toUpperCase();
+    var sel = field("currency");
+    var exists = Array.prototype.some.call(sel.options, function (o) { return o.value === code; });
+    if (!exists) {
+      var opt = document.createElement("option");
+      opt.value = code;
+      opt.textContent = code;
+      sel.appendChild(opt);
+    }
+    sel.value = code;
+  }
   function cell(text, cls) {
     var td = document.createElement("td");
     td.textContent = text == null ? "" : text;
@@ -206,7 +219,9 @@
     form.querySelector("[data-item-srate]").value = f2(l.sRate);
     state.lines.splice(i, 1);
     renderGrid();
-    form.querySelector("[data-item-qty]").focus();
+    var qtyField = form.querySelector("[data-item-qty]");
+    qtyField.focus();
+    qtyField.select();
   }
 
   function addItem() {
@@ -239,12 +254,14 @@
     state.mode = mode;
     dialog.dataset.mode = mode;
     dialog.querySelector("[data-mode-label]").textContent = MODES[mode];
-    var readOnly = mode === "view";
+    var readOnly = mode === "view" || mode === "delete";
     form.querySelectorAll("input:not([type=hidden]):not([readonly])").forEach(function (el) { el.readOnly = readOnly; });
     partySearch.readOnly = readOnly;
     itemSearch.readOnly = readOnly;
     field("order_no").readOnly = mode !== "add";
+    field("currency").disabled = readOnly;
     confirmBtn.hidden = readOnly;
+    deleteConfirmBtn.hidden = mode !== "delete";
     form.querySelector("[data-item-ok]").hidden = readOnly;
   }
 
@@ -261,6 +278,7 @@
     field("del_days").value = d.del_days;
     field("del_period").value = d.del_period;
     field("cr_days").value = d.cr_days;
+    ensureCurrency(d.currency);
   }
 
   function openForm(mode) {
@@ -279,6 +297,7 @@
       field("party_code").value = "";
       field("del_days").value = "0";
       field("cr_days").value = "0";
+      ensureCurrency("RS.");
       setMode("add");
       renderGrid();
       dialog.showModal();
@@ -313,6 +332,7 @@
       del_days: field("del_days").value,
       del_period: field("del_period").value.trim(),
       cr_days: field("cr_days").value,
+      currency: field("currency").value.trim(),
       lines: state.lines.map(function (l) {
         return { code: l.code, dis: l.dis, add_dis: l.addDis, qty: l.qty, rate: l.rate, s_rate: l.sRate };
       }),
@@ -338,13 +358,14 @@
     });
   }
 
-  function deleteOrder() {
-    var row = selectedRow();
-    if (!row) return;
-    window.askConfirm("Delete sale order " + row.order_no + "?", function () {
-      post({ mode: "delete", order_no: row.order_no }).then(function (res) {
-        if (!res.ok) { showToast(res.body.message || "Could not delete.", "error"); return; }
+  function confirmDelete() {
+    var orderNo = field("order_no").value.trim();
+    if (!orderNo) return;
+    window.askConfirm("Delete sale order " + orderNo + "?", function () {
+      post({ mode: "delete", order_no: orderNo }).then(function (res) {
+        if (!res.ok) { showFormAlert(res.body.message || "Could not delete."); return; }
         showToast(res.body.message);
+        closeForm();
         state.selected = null;
         refresh();
       });
@@ -407,6 +428,7 @@
     if (e.key === "Enter") { e.preventDefault(); addItem(); }
   });
   confirmBtn.addEventListener("click", confirm);
+  deleteConfirmBtn.addEventListener("click", confirmDelete);
   dialog.querySelectorAll("[data-cancel]").forEach(function (b) { b.addEventListener("click", closeForm); });
 
   root.querySelectorAll("[data-action]").forEach(function (btn) {
@@ -415,7 +437,7 @@
       if (action === "add") openForm("add");
       else if (action === "modify") openForm("modify");
       else if (action === "view") openForm("view");
-      else if (action === "delete") deleteOrder();
+      else if (action === "delete") openForm("delete");
       else if (action === "print") window.open(root.dataset.printUrlTemplate.replace("__NO__", encodeURIComponent(selectedRow().order_no)), "_blank");
       else if (action === "refresh") refresh();
       else if (action === "exit") window.location.href = root.dataset.exitUrl;

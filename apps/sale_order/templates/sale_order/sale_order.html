@@ -81,6 +81,11 @@
         <label class="so-podate">P.O.DATE <input data-field="po_date" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" data-date-mask></label>
         <label class="so-repcod">REP COD <input data-field="rep_code" readonly tabindex="-1"></label>
         <label class="so-repname">REP NAME <input data-field="rep_name" readonly tabindex="-1"></label>
+        <label class="so-currency">CURRENCY
+          <select data-field="currency">
+            {% for c in currencies %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </label>
       </div>
 
       <div class="so-item-row">
@@ -119,6 +124,7 @@
 
       <div class="so-actions">
         <button class="btn btn--primary" type="button" data-confirm>CONFIRM</button>
+        <button class="btn btn--danger" type="button" data-delete-confirm hidden>DELETE</button>
         <button class="btn btn--danger" type="button" data-cancel>EXIT</button>
       </div>
     </div>

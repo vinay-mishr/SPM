@@ -31,6 +31,18 @@
   function f2(v) { return (Math.round(v * 100) / 100).toFixed(2); }
   function f3(v) { return (Math.round(v * 1000) / 1000).toFixed(3); }
   function field(name) { return form.querySelector('[data-field="' + name + '"]'); }
+  function ensureCurrency(code) {
+    code = (code || "RS.").trim().toUpperCase();
+    var sel = field("currency");
+    var exists = Array.prototype.some.call(sel.options, function (o) { return o.value === code; });
+    if (!exists) {
+      var opt = document.createElement("option");
+      opt.value = code;
+      opt.textContent = code;
+      sel.appendChild(opt);
+    }
+    sel.value = code;
+  }
   function cell(text, cls) {
     var td = document.createElement("td");
     td.textContent = text == null ? "" : text;
@@ -64,7 +76,7 @@
     }).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); });
   }
 
-  function selectedRow() { return state.rows.find(function (r) { return r.order_no === state.selected; }) || null; }
+  function selectedRow() { return state.rows.find(function (r) { return r.key === state.selected; }) || null; }
 
   function updateToolbar() {
     root.querySelectorAll('[data-action="modify"], [data-action="delete"], [data-action="view"], [data-action="print"]').forEach(function (b) {
@@ -76,10 +88,10 @@
     tbody.textContent = "";
     state.rows.forEach(function (r) {
       var tr = document.createElement("tr");
-      if (r.order_no === state.selected) tr.classList.add("is-selected");
+      if (r.key === state.selected) tr.classList.add("is-selected");
       tr.append(cell(r.order_no, "master-table__code"), cell(dmy(r.date)), cell(r.party_name), cell(r.city), cell(r.amount, "num"));
-      tr.addEventListener("click", function () { state.selected = r.order_no; renderList(); updateToolbar(); });
-      tr.addEventListener("dblclick", function () { state.selected = r.order_no; openForm("view"); });
+      tr.addEventListener("click", function () { state.selected = r.key; renderList(); updateToolbar(); });
+      tr.addEventListener("dblclick", function () { state.selected = r.key; openForm("view"); });
       tbody.appendChild(tr);
     });
     emptyNote.hidden = state.rows.length > 0;
@@ -170,7 +182,9 @@
       form.querySelector("[data-item-rate]").value = res.body.rate;
       itemError.textContent = "";
       updateSRate();
-      form.querySelector("[data-item-qty]").focus();
+      var disField = form.querySelector("[data-item-dis]");
+      disField.focus();
+      disField.select();
     });
   }
 
@@ -185,7 +199,9 @@
     updateSRate();
     state.lines.splice(i, 1);
     renderGrid();
-    form.querySelector("[data-item-qty]").focus();
+    var qtyField = form.querySelector("[data-item-qty]");
+    qtyField.focus();
+    qtyField.select();
   }
 
   function addItem() {
@@ -214,6 +230,7 @@
     var readOnly = mode === "view";
     form.querySelectorAll("input:not([type=hidden]):not([readonly])").forEach(function (el) { el.readOnly = readOnly; });
     field("order_no").readOnly = mode !== "add";
+    field("currency").disabled = readOnly;
     confirmBtn.hidden = readOnly;
     form.querySelector("[data-item-ok]").hidden = readOnly;
   }
@@ -230,6 +247,7 @@
     field("po_date").value = dmy(d.po_date);
     field("remarks").value = d.remarks;
     field("remarks1").value = d.remarks1;
+    ensureCurrency(d.currency);
     // ord_mst1 only stores the resulting ADD. DISCOUNT amount, not the % that
     // produced it, so the % input can't be restored on reload -- left at 0.
     form.querySelector("[data-addl-dis-pct]").value = "0.00";
@@ -249,13 +267,16 @@
       field("order_date").value = pad(now.getDate()) + "/" + pad(now.getMonth() + 1) + "/" + now.getFullYear();
       partySearch.value = "";
       field("party_code").value = "";
+      ensureCurrency("RS.");
       setMode("add");
       renderGrid();
       dialog.showModal();
       partySearch.focus();
       return;
     }
-    getJson(root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.order_no))).then(function (res) {
+    var detailUrl = root.dataset.detailUrlTemplate.replace("__NO__", encodeURIComponent(row.order_no));
+    detailUrl += "?div=" + encodeURIComponent(row.div);
+    getJson(detailUrl).then(function (res) {
       if (!res.ok) { showToast(res.body.message || "Could not load the order.", "error"); return; }
       fillHeader(res.body);
       state.lines = res.body.lines.map(function (l) { return { code: l.code, name: l.name, qty: num(l.qty), rate: num(l.rate), dis: num(l.dis) }; });
@@ -275,6 +296,7 @@
       po_date: window.DateMask.toIso(field("po_date").value),
       remarks: field("remarks").value.trim(),
       remarks1: field("remarks1").value.trim(),
+      currency: field("currency").value.trim(),
       addl_dis_pct: form.querySelector("[data-addl-dis-pct]").value,
       lines: state.lines.map(function (l) { return { code: l.code, qty: l.qty, rate: l.rate, dis: l.dis }; }),
     };
@@ -293,7 +315,9 @@
         }
         showToast(res.body.message);
         dialog.close();
-        state.selected = res.body.order_no;
+        // Every save (add or modify) is always against div='SP' server-side
+        // (see spare_save()), matching the list's own composite key shape.
+        state.selected = res.body.order_no + "|SP";
         refresh();
       });
     });
@@ -339,7 +363,22 @@
   });
 
   form.querySelector("[data-item-ok]").addEventListener("click", addItem);
-  form.querySelector("[data-item-rate]").addEventListener("keydown", function (e) {
+
+  /* Item row focus order: Item -> Dis% -> Addl.Dis% -> Qty -> Rate -> S.Rate -> OK
+     (which adds the line and returns focus to Item, see addItem() above). */
+  function onEnterFocus(el, next) {
+    el.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      next.focus();
+      if (next.select) next.select();
+    });
+  }
+  onEnterFocus(form.querySelector("[data-item-dis]"), form.querySelector("[data-addl-dis-pct]"));
+  onEnterFocus(form.querySelector("[data-addl-dis-pct]"), form.querySelector("[data-item-qty]"));
+  onEnterFocus(form.querySelector("[data-item-qty]"), form.querySelector("[data-item-rate]"));
+  onEnterFocus(form.querySelector("[data-item-rate]"), form.querySelector("[data-item-srate]"));
+  form.querySelector("[data-item-srate]").addEventListener("keydown", function (e) {
     if (e.key === "Enter") { e.preventDefault(); addItem(); }
   });
   confirmBtn.addEventListener("click", confirm);
@@ -354,7 +393,10 @@
       else if (action === "modify") openForm("modify");
       else if (action === "view") openForm("view");
       else if (action === "delete") deleteOrder();
-      else if (action === "print") window.open(root.dataset.printUrlTemplate.replace("__NO__", encodeURIComponent(selectedRow().order_no)), "_blank");
+      else if (action === "print") {
+        var row = selectedRow();
+        window.open(root.dataset.printUrlTemplate.replace("__NO__", encodeURIComponent(row.order_no)) + "?div=" + encodeURIComponent(row.div), "_blank");
+      }
       else if (action === "refresh") refresh();
       else if (action === "exit") window.location.href = root.dataset.exitUrl;
     });
